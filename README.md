@@ -119,7 +119,22 @@ The remaining ~20% of unmapped elements (complex icons, fine details) will conti
 
 ---
 
-### 2. Online Theme Creator
+### 2. Image-to-Theme Generator
+
+Upload any image — a logo, album art, a screenshot from another app, a photo — and the platform extracts its dominant colors and maps them onto the Renoise UI automatically.
+
+The existing color pipeline already handles the heavy lifting; this feature adds an image analysis step at the front:
+
+- **Color extraction** — sample dominant colors from the image using k-means clustering, weighted toward visually prominent areas
+- **Role mapping** — assign extracted colors to Renoise roles (darkest → background, lightest → text, most saturated → accents, mid-tones → ui)
+- **Instant preview** — render the generated theme across all three Renoise views before saving or exporting
+- **One-click export** — download the resulting `.xrnc` or publish it to the gallery
+
+Great for matching a Renoise setup to a favorite album cover, brand identity, or any app whose color scheme you want to replicate.
+
+---
+
+### 3. Online Theme Creator
 
 A fully browser-based theme editor — no Renoise required, built on top of the SVG renderer above:
 
