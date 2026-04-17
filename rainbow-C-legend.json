@@ -1,0 +1,352 @@
+[
+  {
+    "element": "Main_Back",
+    "hex": "#73550d",
+    "original": "22,22,22"
+  },
+  {
+    "element": "Main_Font",
+    "hex": "#400f86",
+    "original": "215,215,215"
+  },
+  {
+    "element": "Alternate_Main_Back",
+    "hex": "#119922",
+    "original": "189,189,189"
+  },
+  {
+    "element": "Alternate_Main_Font",
+    "hex": "#ac132d",
+    "original": "208,208,208"
+  },
+  {
+    "element": "Body_Back",
+    "hex": "#1563bf",
+    "original": "70,70,70"
+  },
+  {
+    "element": "Body_Font",
+    "hex": "#a4d217",
+    "original": "153,153,153"
+  },
+  {
+    "element": "Strong_Body_Font",
+    "hex": "#dd19e6",
+    "original": "255,255,255"
+  },
+  {
+    "element": "Button_Back",
+    "hex": "#0d7351",
+    "original": "91,91,91"
+  },
+  {
+    "element": "Button_Font",
+    "hex": "#863b0f",
+    "original": "253,253,253"
+  },
+  {
+    "element": "Button_Highlight_Font",
+    "hex": "#1c1199",
+    "original": "233,133,92"
+  },
+  {
+    "element": "Selected_Button_Back",
+    "hex": "#33ac13",
+    "original": "218,96,45"
+  },
+  {
+    "element": "Selected_Button_Font",
+    "hex": "#bf156b",
+    "original": "20,20,20"
+  },
+  {
+    "element": "Selection_Back",
+    "hex": "#17acd2",
+    "original": "241,106,50"
+  },
+  {
+    "element": "Selection_Font",
+    "hex": "#e6d419",
+    "original": "20,20,20"
+  },
+  {
+    "element": "StandBy_Selection_Back",
+    "hex": "#4c0d73",
+    "original": "100,100,100"
+  },
+  {
+    "element": "StandBy_Selection_Font",
+    "hex": "#0f8636",
+    "original": "255,255,255"
+  },
+  {
+    "element": "Midi_Mapping_Back",
+    "hex": "#991611",
+    "original": "39,156,99"
+  },
+  {
+    "element": "Midi_Mapping_Font",
+    "hex": "#133aac",
+    "original": "5,20,13"
+  },
+  {
+    "element": "ToolTip_Back",
+    "hex": "#72bf15",
+    "original": "255,255,255"
+  },
+  {
+    "element": "ToolTip_Font",
+    "hex": "#d217b4",
+    "original": "65,65,65"
+  },
+  {
+    "element": "ValueBox_Back",
+    "hex": "#19e6cb",
+    "original": "42,42,42"
+  },
+  {
+    "element": "ValueBox_Font",
+    "hex": "#73480d",
+    "original": "246,246,246"
+  },
+  {
+    "element": "ValueBox_Font_Icons",
+    "hex": "#310f86",
+    "original": "173,173,173"
+  },
+  {
+    "element": "Scrollbar",
+    "hex": "#119911",
+    "original": "77,77,77"
+  },
+  {
+    "element": "Slider",
+    "hex": "#ac1340",
+    "original": "42,144,94"
+  },
+  {
+    "element": "Folder",
+    "hex": "#1579bf",
+    "original": "185,82,35"
+  },
+  {
+    "element": "Pattern_Default_Back",
+    "hex": "#bcd217",
+    "original": "21,21,21"
+  },
+  {
+    "element": "Pattern_Default_Font",
+    "hex": "#c319e6",
+    "original": "148,148,148"
+  },
+  {
+    "element": "Pattern_Default_Font_Volume",
+    "hex": "#0d7344",
+    "original": "212,206,42"
+  },
+  {
+    "element": "Pattern_Default_Font_Panning",
+    "hex": "#862c0f",
+    "original": "158,214,140"
+  },
+  {
+    "element": "Pattern_Default_Font_Pitch",
+    "hex": "#111799",
+    "original": "180,80,34"
+  },
+  {
+    "element": "Pattern_Default_Font_Delay",
+    "hex": "#47ac13",
+    "original": "66,193,234"
+  },
+  {
+    "element": "Pattern_Default_Font_Global",
+    "hex": "#bf1580",
+    "original": "253,151,21"
+  },
+  {
+    "element": "Pattern_Default_Font_Other",
+    "hex": "#17c4d2",
+    "original": "186,104,187"
+  },
+  {
+    "element": "Pattern_Default_Font_DspFx",
+    "hex": "#e6ba19",
+    "original": "219,219,219"
+  },
+  {
+    "element": "Pattern_Default_Font_Unused",
+    "hex": "#3f0d73",
+    "original": "156,156,156"
+  },
+  {
+    "element": "Pattern_Highlighted_Back",
+    "hex": "#0f8627",
+    "original": "41,41,41"
+  },
+  {
+    "element": "Pattern_Highlighted_Font",
+    "hex": "#99111d",
+    "original": "255,255,255"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Volume",
+    "hex": "#134dac",
+    "original": "191,174,38"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Panning",
+    "hex": "#87bf15",
+    "original": "129,175,114"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Pitch",
+    "hex": "#d217cc",
+    "original": "155,68,29"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Delay",
+    "hex": "#19e6b1",
+    "original": "61,180,218"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Global",
+    "hex": "#733b0d",
+    "original": "198,118,16"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Other",
+    "hex": "#220f86",
+    "original": "154,86,155"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_DspFx",
+    "hex": "#239911",
+    "original": "229,229,229"
+  },
+  {
+    "element": "Pattern_Highlighted_Font_Unused",
+    "hex": "#ac1354",
+    "original": "156,156,156"
+  },
+  {
+    "element": "Pattern_PlayPosition_Back",
+    "hex": "#158fbf",
+    "original": "153,64,0"
+  },
+  {
+    "element": "Pattern_PlayPosition_Font",
+    "hex": "#d2d117",
+    "original": "255,255,255"
+  },
+  {
+    "element": "Pattern_CenterBar_Back",
+    "hex": "#a919e6",
+    "original": "40,40,40"
+  },
+  {
+    "element": "Pattern_CenterBar_Font",
+    "hex": "#0d7337",
+    "original": "255,255,255"
+  },
+  {
+    "element": "Pattern_CenterBar_Back_StandBy",
+    "hex": "#861d0f",
+    "original": "32,32,32"
+  },
+  {
+    "element": "Pattern_CenterBar_Font_StandBy",
+    "hex": "#112999",
+    "original": "125,125,125"
+  },
+  {
+    "element": "Pattern_Selection",
+    "hex": "#5aac13",
+    "original": "128,57,24"
+  },
+  {
+    "element": "Pattern_StandBy_Selection",
+    "hex": "#bf1596",
+    "original": "86,86,86"
+  },
+  {
+    "element": "Pattern_Mute_State",
+    "hex": "#17d2c9",
+    "original": "185,82,35"
+  },
+  {
+    "element": "Automation_Grid",
+    "hex": "#e6a019",
+    "original": "102,102,102"
+  },
+  {
+    "element": "Automation_Line_Edge",
+    "hex": "#320d73",
+    "original": "114,179,134"
+  },
+  {
+    "element": "Automation_Line_Fill",
+    "hex": "#0f8618",
+    "original": "40,156,98"
+  },
+  {
+    "element": "Automation_Point",
+    "hex": "#99112e",
+    "original": "241,241,241"
+  },
+  {
+    "element": "Automation_Marker_Play",
+    "hex": "#1361ac",
+    "original": "227,69,0"
+  },
+  {
+    "element": "Automation_Marker_Single",
+    "hex": "#9dbf15",
+    "original": "227,69,0"
+  },
+  {
+    "element": "Automation_Marker_Pair",
+    "hex": "#c117d2",
+    "original": "227,69,0"
+  },
+  {
+    "element": "Automation_Marker_Diamond",
+    "hex": "#19e697",
+    "original": "226,68,0"
+  },
+  {
+    "element": "VuMeter_Meter",
+    "hex": "#732e0d",
+    "original": "183,183,183"
+  },
+  {
+    "element": "VuMeter_Meter_Low",
+    "hex": "#130f86",
+    "original": "0,204,94"
+  },
+  {
+    "element": "VuMeter_Meter_Middle",
+    "hex": "#349911",
+    "original": "242,173,0"
+  },
+  {
+    "element": "VuMeter_Meter_High",
+    "hex": "#ac1367",
+    "original": "240,2,81"
+  },
+  {
+    "element": "VuMeter_Peak",
+    "hex": "#15a4bf",
+    "original": "222,98,47"
+  },
+  {
+    "element": "VuMeter_Back_Normal",
+    "hex": "#d2b917",
+    "original": "116,116,116"
+  },
+  {
+    "element": "VuMeter_Back_Clipped",
+    "hex": "#8f19e6",
+    "original": "255,18,0"
+  }
+]
