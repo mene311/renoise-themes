@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Preview</title>
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    body { background: #111; color: #eee; font-family: system-ui, sans-serif; }
+
+    .header { padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 1.5rem; }
+    .download-btn {
+      background: #e86c1b; color: #fff; border: none; padding: 10px 24px;
+      border-radius: 6px; font-size: 1rem; cursor: pointer; text-decoration: none;
+    }
+    .download-btn:hover { background: #ff7b2e; }
+
+    .tabs { display: flex; gap: 2px; padding: 0 32px; }
+    .tab {
+      padding: 10px 20px; background: #222; border: none; color: #999;
+      cursor: pointer; font-size: 0.9rem; border-radius: 6px 6px 0 0;
+    }
+    .tab.active { background: #1a1a1a; color: #fff; }
+
+    .preview-container { padding: 0 32px 32px; }
+    .preview-img {
+      width: 100%; border-radius: 0 8px 8px 8px;
+      border: 1px solid #333; display: none;
+    }
+    .preview-img.active { display: block; }
+
+    .color-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px; padding: 24px 32px;
+    }
+    .color-swatch {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      background: #1a1a1a; border-radius: 6px;
+    }
+    .swatch-box { width: 32px; height: 32px; border-radius: 4px; border: 1px solid #333; flex-shrink: 0; }
+    .swatch-label { font-size: 0.8rem; color: #999; }
+    .swatch-value { font-size: 0.75rem; color: #666; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 id="theme-name">Loading...</h1>
+    <a class="download-btn" id="download-link" href="#">Download .xrnc</a>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="pattern">Pattern Editor</button>
+    <button class="tab" data-view="mixer">Mixer</button>
+    <button class="tab" data-view="waveform">Waveform</button>
+  </div>
+
+  <div class="preview-container">
+    <img class="preview-img active" id="img-pattern" alt="Pattern Editor">
+    <img class="preview-img" id="img-mixer" alt="Mixer">
+    <img class="preview-img" id="img-waveform" alt="Waveform">
+  </div>
+
+  <h2 style="padding: 0 32px; margin-bottom: 12px;">Colors</h2>
+  <div class="color-grid" id="colors"></div>
+
+  <script>
+    const slug = new URLSearchParams(location.search).get('theme') || 'Default';
+    document.getElementById('theme-name').textContent = slug.replace(/-/g, ' ');
+    document.getElementById('download-link').href = `/themes/${slug}.xrnc`;
+
+    // Load preview images
+    for (const view of ['pattern', 'mixer', 'waveform']) {
+      document.getElementById(`img-${view}`).src = `/previews/${slug}/${view}.png`;
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.preview-img').forEach(i => i.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`img-${tab.dataset.view}`).classList.add('active');
+      });
+    });
+
+    // Load colors from theme metadata
+    fetch(`/api/theme/${slug}/colors`)
+      .then(r => r.json())
+      .then(colors => {
+        const grid = document.getElementById('colors');
+        for (const [key, rgb] of Object.entries(colors)) {
+          grid.innerHTML += `
+            <div class="color-swatch">
+              <div class="swatch-box" style="background:rgb(${rgb.join(',')})"></div>
+              <div>
+                <div class="swatch-label">${key.replace(/_/g, ' ')}</div>
+                <div class="swatch-value">${rgb.join(', ')}</div>
+              </div>
+            </div>`;
+        }
+      });
+  </script>
+</body>
+</html>

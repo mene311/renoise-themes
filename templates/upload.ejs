@@ -1,0 +1,64 @@
+<%- include('partials/header') %>
+
+<section class="upload-page">
+  <h1>⬆ Upload a Theme</h1>
+  <p class="hero-sub">Share your Renoise colors. We'll auto-generate a palette and tag it.</p>
+
+  <% if (error) { %>
+    <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
+  <% } %>
+
+  <article class="upload-form-card">
+    <form action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+
+      <!-- Theme file — input is HIDDEN, drop zone triggers it -->
+      <input type="file" id="theme" name="theme" accept=".xrnc,.xml" required style="display:none;">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">📁</div>
+        <p class="drop-text">Drag & drop your <strong>.xrnc</strong> file here</p>
+        <p class="drop-sub">or click to browse</p>
+        <div class="drop-file-name" id="fileName"></div>
+      </div>
+
+      <!-- Description -->
+      <label for="description">
+        📝 Description
+        <textarea id="description" name="description"
+          placeholder="Tell people about your theme — what inspired it, what genre you use it for, etc."
+          rows="3" maxlength="2000" class="desc-input"></textarea>
+      </label>
+      <small class="field-hint">What makes this theme special? (optional)</small>
+
+      <!-- Screenshots — also hidden input, button triggers it -->
+      <input type="file" id="screenshots" name="screenshots" accept=".png,.jpg,.jpeg,.gif,.webp" multiple style="display:none;">
+      <div class="ss-picker" id="ssPicker">
+        <span>📸 Add screenshots (up to 5)</span>
+        <small>First image = main preview</small>
+      </div>
+      <div class="screenshot-preview" id="screenshotPreview"></div>
+
+      <!-- Author -->
+      <label for="author">
+        ✍️ Your name
+        <input type="text" id="author" name="author" placeholder="e.g. meneses">
+      </label>
+
+      <button type="submit" class="btn-submit" id="submitBtn">🚀 Upload & Analyze</button>
+    </form>
+  </article>
+
+  <details class="help-section">
+    <summary>💡 Where do I find my theme file?</summary>
+    <ol>
+      <li>Open Renoise</li>
+      <li>Go to <strong>Edit → Preferences → Theme</strong></li>
+      <li>Click <strong>"Export"</strong> to save your <code>.xrnc</code> file</li>
+      <li>Upload it here!</li>
+    </ol>
+  </details>
+</section>
+
+<%- include('partials/footer') %>

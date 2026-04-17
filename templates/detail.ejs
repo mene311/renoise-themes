@@ -1,0 +1,195 @@
+<%- include('partials/header') %>
+
+<a href="/" class="back-link">&larr; Back to browse</a>
+
+<section class="detail-page">
+
+  <!-- Title bar -->
+  <div class="detail-title-bar">
+    <div>
+      <h1 class="detail-title"><%= theme.name %></h1>
+      <p class="detail-meta">
+        by <strong><%= theme.author %></strong> —
+        <%= new Date(theme.uploaded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+      </p>
+    </div>
+    <div class="detail-actions">
+      <button class="btn-like" id="likeBtn" data-id="<%= theme.id %>">
+        <span class="like-icon" id="likeIcon">🤍</span>
+        <span id="likeCount"><%= theme.likes %></span>
+      </button>
+      <button class="btn-share" id="shareBtn">📋 Share</button>
+      <a href="/download/<%= theme.id %>" class="btn-download">⬇ Download</a>
+    </div>
+  </div>
+
+  <div class="detail-stats-strip">
+    <span>❤️ <strong id="likeCountStrip"><%= theme.likes %></strong> likes</span>
+    <span>⬇ <strong><%= theme.downloads %></strong> downloads</span>
+    <span>💬 <strong><%= comments.length %></strong> comments</span>
+  </div>
+
+  <!-- ═══ RENOISE PREVIEW ═══ -->
+  <% if (theme.previewViews && theme.previewViews.length > 0) { %>
+    <div class="detail-section">
+      <h3>🖥️ Renoise Preview</h3>
+      <div class="preview-tabs">
+        <% const viewLabels = { pattern: 'Pattern Editor', mixer: 'Mixer', waveform: 'Waveform' }; %>
+        <% theme.previewViews.forEach((view, i) => { %>
+          <button class="preview-tab <%= i === 0 ? 'preview-tab-active' : '' %>" data-view="<%= view %>">
+            <%= viewLabels[view] || view %>
+          </button>
+        <% }); %>
+      </div>
+      <div class="preview-viewport">
+        <% theme.previewViews.forEach((view, i) => { %>
+          <img
+            class="preview-render <%= i === 0 ? 'preview-render-active' : '' %>"
+            id="preview-<%= view %>"
+            src="/uploads/previews/<%= theme.previewSlug %>/<%= view %>.png"
+            alt="<%= viewLabels[view] || view %> preview"
+            loading="lazy"
+          >
+        <% }); %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- ═══ HERO SECTION ═══ -->
+  <div class="detail-hero">
+
+    <!-- Left: screenshot or palette -->
+    <div class="detail-hero-visual">
+      <% if (theme.screenshots.length > 0) { %>
+        <img
+          src="/uploads/screenshots/<%= theme.screenshots[0] %>"
+          alt="<%= theme.name %>"
+          class="hero-img"
+          id="heroImage"
+        >
+      <% } else { %>
+        <div class="hero-palette-wrap">
+          <img src="<%= theme.palette_svg %>" alt="Palette" class="hero-palette-only">
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Right: sidebar -->
+    <div class="detail-sidebar">
+
+      <div class="sb-section">
+        <h3>🎨 Palette</h3>
+        <div class="sb-palette-wrap">
+          <img src="<%= theme.palette_svg %>" alt="Palette" class="sb-palette">
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <h3>🏆 Main Colors</h3>
+        <div class="sb-colors">
+          <% theme.topColors.slice(0, 5).forEach(c => { %>
+            <div class="sb-color" data-color="#<%= c.hex %>" title="Click to copy #<%= c.hex %>">
+              <div class="sb-color-block" style="background:#<%= c.hex %>;"></div>
+              <code>#<%= c.hex %></code>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <h3>🏷️ Tags</h3>
+        <div class="tags">
+          <% theme.tags.forEach(tag => { %>
+            <a href="/?tag=<%= tag %>" class="tag tag-<%= tag %>"><%= tag %></a>
+          <% }); %>
+        </div>
+      </div>
+
+      <div class="sb-section sb-section-last">
+        <h3>📊 Stats</h3>
+        <div class="sb-stats">
+          <div class="sb-stat">
+            <span>Colors</span>
+            <strong><%= theme.unique_colors %></strong>
+          </div>
+          <div class="sb-stat">
+            <span>Lightness</span>
+            <div class="sb-bar"><div class="sb-bar-fill" style="width:<%= theme.avg_lightness %>%; background:hsl(0,0%,<%= theme.avg_lightness %>%);"></div></div>
+            <strong><%= theme.avg_lightness %>%</strong>
+          </div>
+          <div class="sb-stat">
+            <span>Saturation</span>
+            <div class="sb-bar"><div class="sb-bar-fill" style="width:<%= theme.avg_saturation %>%; background:hsl(200,<%= theme.avg_saturation %>%,50%);"></div></div>
+            <strong><%= theme.avg_saturation %>%</strong>
+          </div>
+          <div class="sb-stat">
+            <span>Contrast</span>
+            <div class="sb-bar"><div class="sb-bar-fill" style="width:<%= theme.contrast_range %>%; background:#fff;"></div></div>
+            <strong><%= theme.contrast_range %>%</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ DESCRIPTION ═══ -->
+  <% if (theme.description && theme.description.trim()) { %>
+    <div class="detail-desc">
+      <h3>📝 About</h3>
+      <p><%= theme.description %></p>
+    </div>
+  <% } %>
+
+  <!-- ═══ GALLERY ═══ -->
+  <% if (theme.screenshots.length > 1) { %>
+    <div class="detail-section">
+      <h3>📸 Screenshots</h3>
+      <div class="gallery-grid">
+        <% theme.screenshots.forEach((ss, i) => { %>
+          <div class="gallery-thumb <%= i === 0 ? 'gallery-active' : '' %>" data-src="/uploads/screenshots/<%= ss %>">
+            <img src="/uploads/screenshots/<%= ss %>" alt="Screenshot <%= i + 1 %>" loading="lazy">
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- ═══ COMMENTS ═══ -->
+  <div class="detail-section" id="comments">
+    <h3>💬 Comments (<%= comments.length %>)</h3>
+
+    <form action="/theme/<%= theme.id %>/comment" method="POST" class="comment-form">
+      <div class="cf-row">
+        <input type="text" name="author" placeholder="Name (optional)" class="cf-name">
+        <textarea name="message" placeholder="Leave a comment..." required rows="2" class="cf-msg" maxlength="1000"></textarea>
+      </div>
+      <button type="submit" class="btn-comment">💬 Post</button>
+    </form>
+
+    <% if (comments.length === 0) { %>
+      <p class="no-comments">No comments yet — be the first!</p>
+    <% } else { %>
+      <div class="comment-list">
+        <% comments.forEach(c => { %>
+          <div class="comment">
+            <div class="comment-head">
+              <strong><%= c.author %></strong>
+              <span><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
+            </div>
+            <p><%= c.message %></p>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+</section>
+
+<div class="toast" id="toast"></div>
+
+<div class="lightbox" id="lightbox">
+  <img id="lightboxImg">
+</div>
+
+<%- include('partials/footer') %>

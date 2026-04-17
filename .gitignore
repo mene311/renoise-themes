@@ -1,0 +1,12 @@
+node_modules/
+db/*.db
+db/*.db-shm
+db/*.db-wal
+public/uploads/previews/*
+public/uploads/screenshots/*
+public/uploads/palettes/*
+public/uploads/themes/*
+!public/uploads/previews/.gitkeep
+!public/uploads/screenshots/.gitkeep
+!public/uploads/palettes/.gitkeep
+!public/uploads/themes/.gitkeep

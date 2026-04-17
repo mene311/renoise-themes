@@ -1,0 +1,134 @@
+<%- include('partials/header') %>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Discover Renoise Themes</h1>
+  <p class="hero-sub">Upload, browse, and download color themes for Renoise</p>
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="Search by name, author, or tag..." autocomplete="off"
+      value="<%= typeof searchQuery !== 'undefined' && searchQuery ? searchQuery : '' %>">
+  </div>
+</section>
+
+<!-- Featured -->
+<% if (featured && featured.length > 0) { %>
+  <section class="featured-section">
+    <div class="section-header">
+      <h2 class="section-title">🔥 Popular</h2>
+    </div>
+    <div class="featured-row">
+      <% featured.forEach(theme => { %>
+        <a href="/theme/<%= theme.id %>" class="featured-card">
+          <div class="featured-img">
+            <% if (theme.screenshots.length > 0) { %>
+              <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="<%= theme.name %>" loading="lazy">
+            <% } else { %>
+              <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
+            <% } %>
+            <div class="card-color-strip">
+              <% theme.topColors.slice(0, 6).forEach(c => { %>
+                <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
+              <% }); %>
+            </div>
+          </div>
+          <div class="featured-body">
+            <strong><%= theme.name %></strong>
+            <span class="card-meta">by <%= theme.author %> · ❤️ <%= theme.likes %></span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </section>
+<% } %>
+
+<!-- Controls -->
+<div class="controls-bar">
+  <div class="filter-bar">
+    <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>"
+       class="tag tag-filter <%= !filterTag ? 'tag-active' : '' %>">all</a>
+    <% allTags.forEach(t => { %>
+      <a href="/?tag=<%= t.name %><%= sort !== 'newest' ? '&sort=' + sort : '' %>"
+         class="tag tag-filter tag-<%= t.name %> <%= filterTag === t.name ? 'tag-active' : '' %>">
+        <%= t.name %> <span class="tag-count"><%= t.count %></span>
+      </a>
+    <% }); %>
+  </div>
+  <div class="sort-bar">
+    <span class="sort-label">Sort:</span>
+    <% const sorts = [
+      { key: 'newest', label: '🕐 Newest' },
+      { key: 'popular', label: '❤️ Popular' },
+      { key: 'downloads', label: '⬇ Downloads' },
+      { key: 'oldest', label: '📅 Oldest' }
+    ]; %>
+    <% sorts.forEach(s => { %>
+      <a href="/?<%= filterTag ? 'tag=' + filterTag + '&' : '' %>sort=<%= s.key %>"
+         class="sort-option <%= sort === s.key ? 'sort-active' : '' %>"><%= s.label %></a>
+    <% }); %>
+  </div>
+</div>
+
+<% if (filterTag) { %>
+  <div class="active-filter">
+    Showing: <span class="tag tag-<%= filterTag %>"><%= filterTag %></span>
+    <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>" class="clear-filter">✕ clear</a>
+  </div>
+<% } %>
+
+<div class="stats-bar">
+  <span id="themeCount"><%= themes.length %> theme<%= themes.length !== 1 ? 's' : '' %></span>
+</div>
+
+<!-- Grid -->
+<% if (themes.length === 0) { %>
+  <section class="empty-state">
+    <div class="empty-icon">🎨</div>
+    <h2>No themes yet!</h2>
+    <p>Be the first to share your Renoise colors.</p>
+    <a href="/upload" role="button">⬆ Upload a Theme</a>
+  </section>
+<% } else { %>
+  <div class="theme-grid" id="themeGrid">
+    <% themes.forEach(theme => { %>
+      <a href="/theme/<%= theme.id %>"
+         class="theme-card"
+         data-name="<%= theme.name.toLowerCase() %>"
+         data-author="<%= theme.author.toLowerCase() %>"
+         data-tags="<%= theme.tags.join(' ').toLowerCase() %>">
+        <article>
+          <!-- Screenshot or palette as preview -->
+          <div class="card-img">
+            <% if (theme.screenshots.length > 0) { %>
+              <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="<%= theme.name %>" loading="lazy">
+            <% } else { %>
+              <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
+            <% } %>
+            <!-- Color strip overlay at bottom of image -->
+            <div class="card-color-strip">
+              <% theme.topColors.slice(0, 6).forEach(c => { %>
+                <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
+              <% }); %>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="card-title-row">
+              <h4><%= theme.name %></h4>
+              <span class="card-stats-inline">
+                ❤️&nbsp;<%= theme.likes %>&nbsp;&nbsp;⬇&nbsp;<%= theme.downloads %>
+              </span>
+            </div>
+            <span class="card-author">by <%= theme.author %></span>
+            <div class="tags card-tags">
+              <% theme.tags.forEach(tag => { %>
+                <span class="tag tag-<%= tag %> tag-sm"><%= tag %></span>
+              <% }); %>
+            </div>
+          </div>
+        </article>
+      </a>
+    <% }); %>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>
