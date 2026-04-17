@@ -105,12 +105,26 @@ The SQLite database and upload directories are created automatically on first ru
 
 ## Roadmap
 
-### Online Theme Creator
+### 1. SVG-Based Preview Rendering *(top priority)*
 
-The next major feature is a fully browser-based theme editor — no Renoise required:
+The current preview system uses raster PNG screenshots with binary pixel maps to recolor the UI. The next step is moving to a purpose-built SVG of the Renoise interface where ~80% of UI regions are already mapped to named elements.
 
-- **Live preview** — every color change reflected instantly across all three UI views (Pattern, Mixer, Waveform) using the same pixel map system that powers the current renderer, but running client-side via Canvas API
-- **Color picker per role** — paint by semantic role (background, text, accent) and have the editor propagate the change to all matching elements automatically
+This unlocks:
+- **Resolution-independent previews** — crisp at any screen size or DPI
+- **Simpler rendering** — swap a `fill` attribute instead of painting pixel by pixel
+- **Better maintainability** — UI regions are editable shapes, not opaque binary blobs
+- **Foundation for the theme creator** — an SVG is directly manipulable in the browser with no canvas hacks needed
+
+The remaining ~20% of unmapped elements (complex icons, fine details) will continue to use the reference screenshot as a base layer underneath the SVG.
+
+---
+
+### 2. Online Theme Creator
+
+A fully browser-based theme editor — no Renoise required, built on top of the SVG renderer above:
+
+- **Live preview** — every color change reflected instantly across all three UI views (Pattern, Mixer, Waveform)
+- **Color picker per role** — paint by semantic role (background, text, accent) and propagate to all matching elements automatically
 - **Fine-grained control** — expand any role to tweak individual elements (e.g. set `Mixer_Font` separately from `Pattern_Font`)
 - **Export to `.xrnc`** — generate a valid Renoise theme file ready to install
 - **Fork existing themes** — load any uploaded theme as a starting point and remix it
