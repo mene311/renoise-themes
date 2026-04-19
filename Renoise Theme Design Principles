@@ -1,0 +1,863 @@
+# Renoise Theme Design Principles
+
+> A comprehensive guide to designing Renoise themes with intention.
+> Written from reverse-engineering every pixel of the interface.
+
+---
+
+## Table of Contents
+
+1. [The Mental Model: Hardware Synth](#1-the-mental-model-hardware-synth)
+2. [The Two Worlds: Main vs Body](#2-the-two-worlds-main-vs-body)
+3. [The Element Hierarchy](#3-the-element-hierarchy)
+4. [The Font Contract](#4-the-font-contract)
+5. [Color Decision Chains](#5-color-decision-chains)
+6. [Shading & Texture: The Anti-Flat Toolkit](#6-shading--texture-the-anti-flat-toolkit)
+7. [Selection & Focus States](#7-selection--focus-states)
+8. [The Pattern Editor: A World Within](#8-the-pattern-editor-a-world-within)
+9. [Design Archetypes](#9-design-archetypes)
+10. [Contrast Math](#10-contrast-math)
+11. [Common Traps](#11-common-traps)
+12. [Color Picking Order](#12-color-picking-order)
+13. [Quick Reference: Element Coverage](#13-quick-reference-element-coverage)
+
+---
+
+## 1. The Mental Model: Hardware Synth
+
+Renoise's interface maps directly to a physical instrument:
+
+```
+┌─────────────────────────────────────────────────┐
+│  CASE (Body_Back)                               │
+│  ┌───────────────────────────────────────────┐  │
+│  │  DISPLAY / SCREEN (Main_Back)             │  │
+│  │                                           │  │
+│  │  Pattern data, mixer channels, waveforms  │  │
+│  │  — the living, scrolling content          │  │
+│  │                                           │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  [Button] [Button]  ◉ Knob   ═══ Slider        │
+│  Transport, toolbars, panels — the controls     │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+- **`Main_Back`** is the **screen/display** — where data lives. It occupies ~47% of pixels.
+- **`Body_Back`** is the **chassis/case** — where controls live. It occupies ~19-23% of pixels.
+
+Together they own **65-70% of every pixel on screen.** Get these two right and the theme is already half-designed.
+
+### The Skeuomorphic Insight
+
+Think of any hardware synth, sampler, or drum machine:
+
+| Hardware Part | Renoise Element | Character |
+|---|---|---|
+| LCD/LED display | `Main_Back` | Glowing, recessed, data-dense |
+| Metal/plastic case | `Body_Back` | Solid, tactile, structural |
+| Screen text | `Main_Font` | Sharp, high-contrast against display |
+| Panel labels | `Body_Font` | Printed, readable against case |
+| Rubber buttons | `Button_Back` | Raised, pressable |
+| Knob caps | `Slider` | Distinct, grabbable |
+| Status LEDs | `VuMeter_Meter` | Bright, signal |
+
+This metaphor is **not mandatory** but it's why some themes feel "right" — they trigger the same spatial logic musicians already have from using gear.
+
+---
+
+## 2. The Two Worlds: Main vs Body
+
+The most important design decision in any Renoise theme is the **relationship between Main_Back and Body_Back**. This single choice defines the theme's personality.
+
+### THE RULE: Opposite or Complementary Hues
+
+**Main_Back and Body_Back must NOT be the same hue.** Shades of grey, or "dark grey vs slightly darker grey" = death by boredom. They must sit on opposite sides of the color wheel OR have a clear temperature split (cool vs warm).
+
+**Valid pairs:**
+- Blue main, Orange body (complementary)
+- Teal main, Red body (complementary)
+- Cool blue-black main, Warm brown body (temperature split)
+- Cool cyan-grey main, Warm magenta body (complementary hue)
+
+**Invalid pairs:**
+- Dark grey main, Medium grey body ❌ (no personality)
+- #0A0A1A main, #1A1A2E body ❌ (same hue, just lighter)
+- #161410 main, #252220 body ❌ (same warm tone, different brightness)
+
+The complementary pair creates **visual tension** that makes the interface feel alive. Without it, the theme is just a grey box.
+
+### Strategy A: High Separation (The Hardware Look)
+
+```
+Main_Back:  very dark (#0D0D1A — like a backlit LCD)
+Body_Back:  medium (#3A3A4A — like brushed aluminum)
+```
+
+**Effect:** The display "recedes" into the case. Data feels embedded. Strong spatial depth. Classic Renoise feel.
+
+**Best for:** Professional work themes, hardware emulation, long sessions.
+
+**Risk:** If Body_Back is too light, controls float and feel disconnected.
+
+### Strategy B: Low Separation (The Flat/Modern Look)
+
+```
+Main_Back:  dark (#1A1A2E)
+Body_Back:  slightly lighter dark (#22223A)
+```
+
+**Effect:** The whole interface feels like one surface. Clean. Figma-like. Modern.
+
+**Best for:** Minimal themes, dark modes, distraction-free composing.
+
+**Risk:** Without enough separation, the user can't tell where the display ends and the controls begin. Use accent colors or subtle borders to compensate.
+
+### Strategy C: Inverted (The Bold Statement)
+
+```
+Main_Back:  lighter (#2A2A4A)
+Body_Back:  darker (#0D0D1A)
+```
+
+**Effect:** The display pops forward. Feels like a floating hologram. Unusual. Attention-grabbing.
+
+**Best for:** Showcase themes, experimental, cyberpunk aesthetics.
+
+**Risk:** Can feel wrong if not committed. Either go full sci-fi or don't.
+
+### Strategy D: Chromatic Split (The Designer's Move)
+
+```
+Main_Back:  cool (#0D1117 — blue-black)
+Body_Back:  warm (#2A1F1F — brown-black)
+```
+
+**Effect:** Subtle color temperature contrast. The eye separates the zones without even noticing why. Very sophisticated.
+
+**Best for:** High-end themes, "premium" feel, editorial aesthetic.
+
+**Risk:** If the hues clash, it looks like a mistake. Keep both muted.
+
+### Saturation Strategy
+
+Once you've chosen your complementary pair, manage saturation carefully:
+
+**For low-intensity work (professional, long sessions):**
+- Keep both Main_Back and Body_Back at **low saturation** (10-25% HSL saturation)
+- Dark, muted tones. The complementary hue is there but subtle.
+- Example: muted teal-black main, muted rust-brown body
+
+**For high-intensity work (showcase, experimental, cyberpunk):**
+- Use **moderate saturation** (30-50% HSL saturation) on BOTH
+- Bold but not neon. The hues are clear and create tension.
+- Example: saturated deep blue main, saturated deep orange body
+
+**Avoid:**
+- One saturated, one muted ❌ (looks like a mistake)
+- Pure neon on both ❌ (fatigues the eyes quickly)
+- Desaturating one hue to match the other ❌ (defeats the purpose of choosing complementary colors)
+
+---
+
+## 3. The Element Hierarchy
+
+Every element in the theme falls into a layer. Design top-down:
+
+```
+Layer 0 — CANVAS
+├── Main_Back (47%)           The display surface
+├── Body_Back (19-23%)        The control surface
+│
+Layer 1 — CONTAINERS
+├── Pattern_Default_Back (12%)    Pattern editor rows
+├── Pattern_Highlighted_Back (4%) Alternating row highlight
+├── ValueBox_Back (1-1.4%)        Input fields
+├── Button_Back (0.9-1.2%)        All buttons
+├── Selected_Button_Back (0.2-0.4%)  Active tab/toggle
+│
+Layer 2 — INTERACTIVE
+├── Slider                        Knobs, faders, scrollbars
+├── Selection_Back                Current selection
+├── StandBy_Selection_Back        Unfocused selection
+├── VuMeter_Meter                 Level meters
+│
+Layer 3 — TEXT (see Font Contract)
+├── Main_Font
+├── Body_Font
+├── Strong_Body_Font
+├── Button_Font
+├── Pattern fonts (7+ types)
+│
+Layer 4 — DEPTH (see Shading)
+├── Knob_Shade
+├── Body_Shade
+├── Main_Font_Shadow
+```
+
+### Pixel Budget Reality
+
+| Element | % of screen | Design implication |
+|---|---|---|
+| `Main_Back` | 47% | This IS your theme's color |
+| `Body_Back` | 19-23% | This is your theme's frame |
+| `Pattern_Default_Back` | 12% | Must harmonize with Main_Back |
+| `Pattern_Highlighted_Back` | 4% | Subtle shift from Default_Back |
+| Everything else combined | ~17% | Accents, details, personality |
+
+**Translation:** If someone squints at your theme, they see `Main_Back`. If they unfocus slightly, they see `Main_Back` + `Body_Back`. The rest is detail work.
+
+---
+
+## 4. The Font Contract
+
+**The unbreakable rule: every font must be readable against its background.**
+
+This is not a suggestion. This is the contract. Break it and the theme is unusable.
+
+### Font → Background Pairings
+
+| Font | Sits on top of | Minimum contrast ratio |
+|---|---|---|
+| `Main_Font` | `Main_Back` | 7:1 (WCAG AAA) |
+| `Body_Font` | `Body_Back` | 4.5:1 (WCAG AA) |
+| `Strong_Body_Font` | `Body_Back` | 7:1 (should pop) |
+| `Button_Font` | `Button_Back` | 4.5:1 |
+| `Selected_Button_Font` | `Selected_Button_Back` | 4.5:1 |
+| `ValueBox_Font` | `ValueBox_Back` | 7:1 (data entry!) |
+| `Pattern_Default_Font_*` | `Pattern_Default_Back` | 4.5:1+ |
+| `Pattern_Highlighted_Font_*` | `Pattern_Highlighted_Back` | 4.5:1+ |
+
+### The Font Shadow Escape Hatch
+
+`Main_Font_Shadow` can rescue low-contrast fonts by adding a dark halo. But don't rely on it — it only works on `Main_Font`, and it muddies the look if overused.
+
+**Best practice:** Design fonts to be readable WITHOUT shadow first. Add shadow only for polish.
+
+### The Pattern Font Family
+
+The pattern editor has its own micro-typography system:
+
+```
+Pattern_Default_Font_Note      — C-4, D#5  (the notes — most important!)
+Pattern_Default_Font_Volume    — 40, 7F    (velocity values)
+Pattern_Default_Font_Panning   — 80, L20   (stereo position)
+Pattern_Default_Font_Pitch     — 01, 0F    (pitch commands)
+Pattern_Default_Font_Delay     — Qx        (timing)
+Pattern_Default_Font_Global    — ZT, ZL    (global FX)
+Pattern_Default_Font_Unused    — .. --     (empty cells)
+```
+
+Each has a `Highlighted` variant for alternating rows.
+
+**Design principle:** The **note column is king**. It should be the most readable, the most contrasty. Volume and panning can be slightly muted. Unused cells (the `..` dots) should **recede** — they're visual noise.
+
+A common pro technique:
+```
+Note:    full brightness white/color
+Volume:  80% brightness
+Panning: 60% brightness
+Unused:  30% brightness (barely visible)
+```
+
+This creates a natural visual hierarchy where your eye finds the notes instantly.
+
+---
+
+## 5. Color Decision Chains
+
+Don't pick colors randomly. Each choice constrains the next.
+
+### Chain 1: The Background Chain
+
+```
+START
+  │
+  ▼
+Pick Main_Back ──────────────────────── This is THE color. Dark? Light? Tinted?
+  │
+  ▼
+Pick Body_Back ──────────────────────── What's the relationship? (See Section 2)
+  │
+  ├──▶ Pattern_Default_Back            Usually = Main_Back or very close
+  │      │
+  │      └──▶ Pattern_Highlighted_Back Shift lightness by 5-15% from Default
+  │
+  ├──▶ ValueBox_Back                   Darker than Body_Back (recessed input fields)
+  │
+  └──▶ Button_Back                     Between Body_Back and Main_Back, or an accent
+```
+
+### Chain 2: The Font Chain
+
+```
+After backgrounds are set:
+  │
+  ▼
+Pick Main_Font ──────────────────────── Must contrast Main_Back. Usually light.
+  │
+  ▼
+Pick Body_Font ──────────────────────── Must contrast Body_Back. Can match Main_Font or differ.
+  │
+  ├──▶ Strong_Body_Font               Brighter/bolder Body_Font
+  │
+  ├──▶ Button_Font                     Must contrast Button_Back
+  │
+  └──▶ All Pattern fonts               Must contrast Pattern_Default_Back AND Pattern_Highlighted_Back
+```
+
+### Chain 3: The Accent Chain
+
+```
+After backgrounds + fonts:
+  │
+  ▼
+Pick Selection_Back ─────────────────── THE accent color. Blue? Orange? Theme's signature.
+  │
+  ├──▶ StandBy_Selection_Back          Desaturated version (30-50% saturation)
+  │
+  ├──▶ Selected_Button_Back            Can match or complement Selection_Back
+  │
+  ├──▶ VuMeter_Meter                   Usually green for "signal" or matches accent
+  │
+  └──▶ Slider                          Can match accent or stay neutral
+```
+
+### Chain 4: The Depth Chain
+
+```
+After all colors:
+  │
+  ▼
+Derive shading from existing colors (see Section 6)
+```
+
+---
+
+## 6. Shading & Texture: The Anti-Flat Toolkit
+
+Renoise provides shading elements that add dimensionality. Most theme designers ignore these. Don't.
+
+### Body_Shade
+
+A gradient/overlay color applied to `Body_Back` areas.
+
+```
+Body_Back:  #3A3A4A (the base)
+Body_Shade: #00000033 (semi-transparent black)
+```
+
+**Effect:** Panels get subtle top-to-bottom gradient. Feels like light hitting a physical surface.
+
+**Rules:**
+- Use a semi-transparent dark color for a "lit from above" look
+- Use a semi-transparent light color for a "glowing" look
+- Use `#00000000` (fully transparent) for dead flat
+- **Subtle is better** — opacity between 10-30% (hex `1A`-`4D` in alpha channel)
+
+### Knob_Shade
+
+Applied to knobs, sliders controls.
+
+```
+Slider:     #6688AA (the knob color)
+Knob_Shade: #FFFFFF20 (slight white sheen)
+```
+
+**Effect:** Knobs appear to have a specular highlight, like polished plastic.
+
+**Techniques:**
+- White shade = glossy plastic knob
+- Black shade = matte rubber knob
+- Colored shade = metallic / anodized aluminum
+- No shade = flat UI / digital feel
+
+### Main_Font_Shadow
+
+A drop shadow behind Main_Font text.
+
+```
+Main_Font:        #FFFFFF (white text)
+Main_Font_Shadow: #000000AA (dark shadow behind it)
+```
+
+**Use when:**
+- Main_Back has texture or variation
+- You want an "LED display" glow (use colored shadow matching font)
+- Font contrast is borderline (shadow rescues it)
+
+**Skip when:**
+- Theme is flat/modern
+- Main_Back is very dark already (shadow is invisible / adds mud)
+
+### Shadow + Shade Recipes
+
+| Look | Body_Shade | Knob_Shade | Font_Shadow |
+|---|---|---|---|
+| Hardware synth | `#00000030` | `#FFFFFF18` | `#000000AA` |
+| Flat modern | `#00000000` | `#00000000` | `#00000000` |
+| Neon/cyberpunk | `#00000050` | accent color `40` | accent color `88` |
+| Vintage/warm | `#0000001A` | `#FFFFFF10` | `#00000060` |
+| Glass/frost | `#FFFFFF10` | `#FFFFFF30` | `#00000040` |
+
+---
+
+## 7. Selection & Focus States
+
+### Selection_Back — The Signature Color
+
+This is the cursor, the highlight, the "you are here" beacon. It's the most **emotionally charged** color in the theme.
+
+**Rules:**
+- Must contrast against BOTH `Pattern_Default_Back` and `Pattern_Highlighted_Back`
+- Must allow `Selection_Font` (if defined) or pattern fonts to remain readable on top
+- Should be **immediately visible** — no subtlety here
+
+**Common choices and their personality:**
+
+| Color | Feeling | Works with |
+|---|---|---|
+| Blue (#2266CC) | Professional, calm, trustworthy | Dark themes |
+| Orange (#CC6622) | Warm, creative, energetic | Cool-toned themes |
+| Purple (#6622CC) | Creative, mysterious, modern | Dark or warm themes |
+| Green (#22CC66) | Technical, matrix-like, signal | Very dark themes |
+| Red (#CC2244) | Urgent, passionate, intense | Dark themes (use carefully) |
+| White (#AAAAAA) | Minimal, stark, no-nonsense | Very dark themes |
+
+### StandBy_Selection_Back
+
+When the pattern editor loses focus (e.g., you click into the mixer), the selection doesn't disappear — it becomes **standby**.
+
+```
+Selection_Back:         #2266CC (vivid blue)
+StandBy_Selection_Back: #334455 (muted, desaturated blue-grey)
+```
+
+**The math:** Take Selection_Back, reduce saturation by 50-70%, reduce lightness by 30-40%.
+
+This lets the user always know where they were, without the standby selection screaming for attention.
+
+### Cursor vs Selection
+
+- `Cursor` — the single-cell cursor (thin border or highlight)
+- `Selection_Back` — multi-cell selection (block highlight)
+
+These should be clearly different, or at minimum, `Cursor` should be a brighter/more intense variant.
+
+---
+
+## 8. The Pattern Editor: A World Within
+
+The pattern editor is Renoise's heart. It occupies 12%+ of screen and has its own complete color system.
+
+### Row Alternation
+
+```
+Pattern_Default_Back      — Every odd group of rows
+Pattern_Highlighted_Back  — Every even group of rows (configurable in Renoise)
+```
+
+**The relationship:** These two should be **close but distinguishable**.
+
+| Approach | Default_Back | Highlighted_Back | Effect |
+|---|---|---|---|
+| Subtle (pro) | `#1A1A2E` | `#1E1E34` | Barely visible zebra stripe |
+| Medium | `#1A1A2E` | `#242438` | Clear grouping |
+| Strong | `#1A1A2E` | `#2E2E42` | Very obvious blocks |
+| Inverted | `#1E1E34` | `#1A1A2E` | Darker highlight (unusual) |
+
+**Pro tip:** Match `Pattern_Default_Back` to `Main_Back` exactly, then shift `Highlighted_Back` slightly lighter. This makes the pattern editor feel integrated with the main display.
+
+### Pattern_CenterBar_Back
+
+The current playing/editing line. This is **the most visible single row** in the entire interface.
+
+```
+Pattern_CenterBar_Back: #2A2A5A  (distinct from both row types)
+```
+
+**Rules:**
+- Must be clearly different from both Default and Highlighted back
+- Should NOT be the same as Selection_Back (different concepts)
+- Often slightly brighter or tinted version of the selection color
+- The user's eye lives here during playback
+
+### The Font Hierarchy In Practice
+
+```
+Pattern Editor (dark theme example):
+
+Pattern_Default_Back:     #13131F
+  Font_Note:              #E8E8FF  ← BRIGHTEST (this is music)
+  Font_Volume:            #88AACC  ← dimmer, blue tint
+  Font_Panning:           #AA88CC  ← dimmer, purple tint
+  Font_Pitch:             #88CC88  ← dimmer, green tint
+  Font_Delay:             #CCAA88  ← dimmer, warm tint
+  Font_Global:            #CC8888  ← dimmer, red tint
+  Font_Unused:            #333344  ← nearly invisible
+
+Pattern_Highlighted_Back: #1A1A2A
+  (same font colors — they must work on BOTH backgrounds)
+```
+
+**Important:** You're picking 6+ font colors that must ALL be readable on TWO backgrounds (Default and Highlighted). Test every combination.
+
+### Color-Coding Philosophy
+
+The different pattern font colors serve a **functional purpose** — letting the eye scan columns by type. Two approaches:
+
+**A) Rainbow coding (functional)**
+Each column type gets a different hue. Fast scanning, but visually busy.
+
+**B) Monochrome hierarchy (minimal)**
+All the same hue, different brightness. Calm, but harder to scan.
+
+**C) Warm/Cool split (balanced)**
+Notes + Volume = cool (blue/white). FX + Global = warm (orange/yellow). Good middle ground.
+
+---
+
+## 9. Design Archetypes
+
+### The Workhorse
+
+> For 12-hour sessions. Nothing should tire the eyes.
+
+```
+Main_Back:           very dark, neutral (#161620)
+Body_Back:           slightly lighter (#252530)
+Main_Font:           off-white (#C8C8D0) — NOT pure white
+Body_Font:           grey (#888898)
+Selection_Back:      muted blue (#2A4060)
+Pattern fonts:       low saturation, good contrast
+Shading:             minimal
+```
+
+**Key principle:** No pure whites, no vivid colors, no high saturation. Everything muted. The music is the star, not the UI.
+
+### The Showpiece
+
+> For screenshots. Maximum beauty.
+
+```
+Main_Back:           deep color-tinted (#0A0A1A navy)
+Body_Back:           complementary tint (#1A1210 warm brown)
+Selection_Back:      vivid accent (#FF6B35 orange)
+Pattern fonts:       color-coded, saturated
+Shading:             rich, use all shade elements
+VuMeter:             neon or vivid
+```
+
+**Key principle:** This theme tells a story. Every color is intentional. It photographs well. It might tire the eyes after 4 hours, and that's OK.
+
+### The Flat/Modern
+
+> Clean lines, no skeuomorphism.
+
+```
+Main_Back:           pure dark (#1A1A1A)
+Body_Back:           one step up (#242424)
+All fonts:           one color, two brightnesses
+Selection_Back:      single accent hue
+Shading:             ALL transparent (flat)
+Button_Back:         barely different from Body_Back
+```
+
+**Key principle:** Reduction. Every element that can be the same, should be. The theme disappears. Content reigns.
+
+### The Neon/Cyberpunk
+
+> Blade Runner's music studio.
+
+```
+Main_Back:           near-black (#08080C)
+Body_Back:           dark with color (#0E1420 blue-dark)
+Main_Font:           neon color (#00FFAA)
+Selection_Back:      hot pink (#FF0066)
+Font_Shadow:         matching neon glow (#00FFAA44)
+VuMeter:             vivid green or matching neon
+Shading:             dark, heavy depth
+```
+
+**Key principle:** Dark backgrounds make neon colors glow. Use font shadow as "LED glow". High contrast, high saturation — against near-black.
+
+### The Vintage/Warm
+
+> Analog vibes. Tape machine. Warm studio.
+
+```
+Main_Back:           warm dark (#1A1410)
+Body_Back:           warm medium (#2E2820)
+Main_Font:           amber (#CCAA77)
+Pattern fonts:       earth tones, amber, cream
+Selection_Back:      warm accent (#885522)
+Knob_Shade:          warm white (#FFEECC18)
+```
+
+**Key principle:** No blue, no cool tones. Everything through an amber filter. Like the theme is lit by incandescent bulbs.
+
+### The Light Theme (Rare, Risky)
+
+> For daylight working. Very few succeed.
+
+```
+Main_Back:           off-white (#EEEEF0)
+Body_Back:           light grey (#D8D8DC)
+Main_Font:           near-black (#1A1A2E)
+Pattern_Default_Back: white (#F4F4F8)
+Selection_Back:      medium blue (#4488CC)
+```
+
+**Key principle:** WCAG contrast is critical. Light themes expose every contrast mistake. Test ruthlessly. Most Renoise users will hate it instinctively — make it exceptionally functional or don't bother.
+
+---
+
+## 10. Contrast Math
+
+### WCAG Relative Luminance
+
+For any color `#RRGGBB`:
+
+$$L = 0.2126 \times R_s + 0.7152 \times G_s + 0.0722 \times B_s$$
+
+where $R_s$, $G_s$, $B_s$ are the sRGB values linearized:
+
+$$C_s = \begin{cases} C/12.92 & \text{if } C \leq 0.04045 \\ \left(\frac{C + 0.055}{1.055}\right)^{2.4} & \text{otherwise} \end{cases}$$
+
+### Contrast Ratio
+
+$$CR = \frac{L_{\text{lighter}} + 0.05}{L_{\text{darker}} + 0.05}$$
+
+### Required Ratios
+
+| Use case | Minimum CR | Target CR |
+|---|---|---|
+| Body text (fonts on backgrounds) | 4.5:1 (AA) | 7:1 (AAA) |
+| Large text / headings | 3:1 | 4.5:1 |
+| Pattern note column | 7:1+ | As high as possible |
+| Pattern unused cells | 1.5:1 minimum | 2-3:1 (intentionally low) |
+| UI borders / separators | 3:1 | — |
+| Selection_Back vs row background | 3:1+ | Obvious at a glance |
+
+### Quick Contrast Checks (Dark Theme)
+
+For a dark theme with `Main_Back: #161620`:
+
+| Font Color | Approx CR | Verdict |
+|---|---|---|
+| `#FFFFFF` | 16:1 | ✅ Excellent but harsh |
+| `#C8C8D0` | 11:1 | ✅ Perfect for long sessions |
+| `#888898` | 4.8:1 | ✅ Good for secondary text |
+| `#555566` | 2.5:1 | ⚠️ Only for unused/decorative |
+| `#333344` | 1.5:1 | ⚠️ Nearly invisible (good for Unused font) |
+| `#222230` | 1.1:1 | ❌ Invisible |
+
+---
+
+## 11. Common Traps
+
+### Trap 0: Same Hue for Main_Back and Body_Back
+
+**Problem:** "I'll use dark blue for Main_Back and slightly lighter blue for Body_Back." They're the same color. The interface feels boring and flat. No personality.
+
+**Fix:** Main_Back and Body_Back MUST be complementary or opposite hues. Blue main + Orange body. Teal main + Red body. Same-hue pairings are personality death.
+
+### Trap 1: "I'll Pick My Favorite Color for Main_Back"
+
+**Problem:** Main_Back is 47% of pixels. A saturated blue `#001166` as Main_Back means staring at vivid blue for hours. Your eyes will revolt.
+
+**Fix:** Main_Back should almost always be very dark and low saturation. Save vivid colors for accents (5% of pixels).
+
+### Trap 2: Button_Back = Body_Back
+
+**Problem:** Buttons disappear into the panel. The UI feels broken.
+
+**Fix:** Button_Back should differ from Body_Back by at least 10% lightness OR have a visible border effect through shading.
+
+### Trap 3: Pattern_Highlighted_Back Too Different
+
+**Problem:** The pattern editor looks like a barber pole. Distracting zebra stripes.
+
+**Fix:** Keep the difference subtle. 5-15% lightness shift. The grouping should be felt, not seen.
+
+### Trap 4: Selection_Back Too Close to Pattern Back
+
+**Problem:** User can't find their cursor. "Where am I?"
+
+**Fix:** Selection_Back should be in a completely different hue range, or at least 30% different in lightness.
+
+### Trap 5: Forgetting StandBy States
+
+**Problem:** Theme looks great in the pattern editor. Switch to mixer. Come back. Can't find where you were.
+
+**Fix:** Always design StandBy_Selection_Back as a visible but muted version of Selection_Back.
+
+### Trap 6: Pure Black `#000000` Main_Back
+
+**Problem:** No color can create depth against pure black. Everything floats in the void. No room to go darker for recessed elements.
+
+**Fix:** Use near-black with a tint: `#0D0D14`, `#0A0F0A`, `#120D0D`. Gives you room to move and adds character.
+
+### Trap 7: Ignoring VuMeter_Meter
+
+**Problem:** The default green meters clash with your carefully designed warm theme.
+
+**Fix:** VuMeter should harmonize. Warm theme? Amber meters. Cool theme? Blue-green meters. It's a small detail that breaks immersion when wrong.
+
+### Trap 8: All Pattern Fonts Same Color
+
+**Problem:** Technically readable, but the pattern becomes a wall of text. Experienced users can't speed-read columns.
+
+**Fix:** At minimum, differentiate Note (brightest), Effect values (medium), and Unused (dimmest). Color coding is optional but helpful.
+
+### Trap 9: Designing in Isolation
+
+**Problem:** Colors look great in a picker. On screen, in context, they fail.
+
+**Fix:** ALWAYS test by rendering a preview with actual pattern data. Use the index map preview tool — that's what it's for.
+
+---
+
+## 12. Color Picking Order
+
+The recommended sequence for designing a theme from scratch:
+
+```
+Step 1:  INTENTION
+         What is this theme for? Work / Show / Experiment?
+         Light or dark? Warm or cool? Flat or textured?
+
+Step 2:  MAIN_BACK
+         The canvas. 47% of your theme. Go dark, go subtle.
+
+Step 3:  BODY_BACK
+         The frame. Decide the relationship to Main_Back (Section 2).
+
+Step 4:  MAIN_FONT + BODY_FONT
+         Contrast check. If these fail, nothing else matters.
+
+Step 5:  PATTERN_DEFAULT_BACK + PATTERN_HIGHLIGHTED_BACK
+         Usually derived from Main_Back. Define the pattern editor foundation.
+
+Step 6:  PATTERN FONTS (all 7 types × 2 row variants = 14 colors)
+         The biggest color commitment. Build the hierarchy (Section 8).
+         Test on both Default_Back and Highlighted_Back.
+
+Step 7:  SELECTION_BACK
+         The accent. Your theme's personality color.
+         Check: is it visible on both Pattern backs?
+
+Step 8:  STANDBY_SELECTION_BACK
+         Muted version of Selection. Don't skip this.
+
+Step 9:  BUTTON_BACK + SELECTED_BUTTON_BACK + FONTS
+         The control layer. Derived from Body_Back.
+
+Step 10: VALUEBOX_BACK + FONT
+         Input fields. Usually darker than Body_Back (recessed).
+
+Step 11: SLIDER + VUEMETER
+         Interactive elements. Match or complement the accent.
+
+Step 12: CURSOR + PATTERN_CENTERBAR_BACK
+         Navigation indicators. Test in the pattern editor.
+
+Step 13: SHADING (Body_Shade, Knob_Shade, Main_Font_Shadow)
+         The polish layer. Add depth. Test with and without.
+
+Step 14: EDGE CASES
+         StandBy fonts, Selected_Button_Font, Strong_Body_Font.
+         These are easy to forget and create jarring moments.
+
+Step 15: FULL PREVIEW
+         Render all three views (pattern, mixer, waveform).
+         Look at them at thumbnail size. Squint. Does it feel right?
+```
+
+---
+
+## 13. Quick Reference: Element Coverage
+
+### All Theme Elements by Surface
+
+**Main Surface (Display)**
+| Element | Role |
+|---|---|
+| `Main_Back` | Primary background (47%) |
+| `Main_Font` | Primary text on Main_Back |
+| `Main_Font_Shadow` | Drop shadow behind Main_Font |
+
+**Body Surface (Case)**
+| Element | Role |
+|---|---|
+| `Body_Back` | Secondary background (19-23%) |
+| `Body_Font` | Standard text on Body_Back |
+| `Strong_Body_Font` | Emphasized text on Body_Back |
+| `Body_Shade` | Gradient/texture overlay on Body_Back |
+
+**Controls**
+| Element | Role |
+|---|---|
+| `Button_Back` | Default button background |
+| `Button_Font` | Text on buttons |
+| `Selected_Button_Back` | Active/toggled button |
+| `Selected_Button_Font` | Text on active buttons |
+| `ValueBox_Back` | Text input field background |
+| `ValueBox_Font` | Text in input fields |
+| `Slider` | Knobs, faders, scrollbar thumbs |
+| `Knob_Shade` | Specular/shadow on knobs |
+
+**Pattern Editor**
+| Element | Role |
+|---|---|
+| `Pattern_Default_Back` | Normal row background |
+| `Pattern_Highlighted_Back` | Alternating row background |
+| `Pattern_CenterBar_Back` | Current edit/play line |
+| `Pattern_Default_Font_Note` | Note column (normal rows) |
+| `Pattern_Default_Font_Volume` | Volume column |
+| `Pattern_Default_Font_Panning` | Pan column |
+| `Pattern_Default_Font_Pitch` | Pitch FX column |
+| `Pattern_Default_Font_Delay` | Delay column |
+| `Pattern_Default_Font_Global` | Global FX column |
+| `Pattern_Default_Font_Unused` | Empty cells `..` `--` |
+| `Pattern_Highlighted_Font_*` | Same 7 types for highlighted rows |
+
+**Selection & Focus**
+| Element | Role |
+|---|---|
+| `Selection_Back` | Active selection highlight |
+| `Selection_Font` | Text on selection (if different) |
+| `StandBy_Selection_Back` | Unfocused selection |
+| `StandBy_Selection_Font` | Text on unfocused selection |
+| `Cursor` | Single-cell cursor indicator |
+
+**Metering**
+| Element | Role |
+|---|---|
+| `VuMeter_Meter` | Active meter fill |
+| `VuMeter_Back` | Meter background/empty |
+
+---
+
+## Appendix: The 30-Second Rule
+
+Load the theme. Open the pattern editor. Start playback on a complex song.
+
+**After 30 seconds, ask:**
+1. Can I instantly find the current playing line?
+2. Can I read notes without squinting?
+3. Do I know where the pattern editor ends and the controls begin?
+4. Does the selection stand out when I click around?
+5. Does anything make my eyes uncomfortable?
+
+If any answer is "no," go back to the relevant section above and fix it.
+
+**A great theme is one you stop noticing.** It disappears into the music. The highest compliment is: "I forgot I was using a themed Renoise."
+
+Unless it's a showpiece. Then the highest compliment is: "How do I get that theme?"
+
+---
+
+*This document is part of the Renoise Theme Designer toolkit.*
+*Generated from pixel-level analysis of the Renoise interface.*

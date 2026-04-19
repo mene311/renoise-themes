@@ -20,7 +20,9 @@
       <% featured.forEach(theme => { %>
         <a href="/theme/<%= theme.id %>" class="featured-card">
           <div class="featured-img">
-            <% if (theme.screenshots.length > 0) { %>
+            <% if (theme.previewViews && theme.previewViews.length > 0) { %>
+              <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="<%= theme.name %>" loading="lazy">
+            <% } else if (theme.screenshots.length > 0) { %>
               <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="<%= theme.name %>" loading="lazy">
             <% } else { %>
               <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
@@ -96,9 +98,11 @@
          data-author="<%= theme.author.toLowerCase() %>"
          data-tags="<%= theme.tags.join(' ').toLowerCase() %>">
         <article>
-          <!-- Screenshot or palette as preview -->
+          <!-- Generated preview, screenshot, or palette fallback -->
           <div class="card-img">
-            <% if (theme.screenshots.length > 0) { %>
+            <% if (theme.previewViews && theme.previewViews.length > 0) { %>
+              <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="<%= theme.name %>" loading="lazy">
+            <% } else if (theme.screenshots.length > 0) { %>
               <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="<%= theme.name %>" loading="lazy">
             <% } else { %>
               <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
