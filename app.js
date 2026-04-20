@@ -8,9 +8,11 @@ import { categorizeColors } from './lib/categorize.js';
 import { generatePaletteSVG } from './lib/palette.js';
 import { generatePreviews } from './lib/preview-renderer.js';
 import {
-  saveTheme, listThemes, getTheme, getThemeBySlug, listTags,
+  saveTheme, listThemes, listThemesPage, countThemes,
+  getTheme, getThemeBySlug, listTags,
   likeTheme, unlikeTheme, trackDownload,
-  addComment, getThemeComments, getFeaturedThemes
+  addComment, getThemeComments, getFeaturedThemes,
+  getPopularThemes
 } from './lib/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,6 +27,14 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  res.locals.uiTheme = req.cookies.theme === 'light' ? 'light' : 'dark';
+  res.locals.marquee = getPopularThemes(12);
+  next();
+});
+
+const PAGE_SIZE = 24;
 
 // --- Upload config ---
 const storage = multer.diskStorage({
@@ -55,31 +65,59 @@ app.get('/', (req, res) => {
   const searchQuery = (req.query.q || '').trim();
   const sort = req.query.sort || 'newest';
 
-  let themes = listThemes(filterTag, sort);
-
+  let themes, totalCount;
   if (searchQuery) {
+    const all = listThemes(filterTag, sort);
     const q = searchQuery.toLowerCase();
-    themes = themes.filter(t =>
+    const filtered = all.filter(t =>
       t.name.toLowerCase().includes(q) ||
       t.author.toLowerCase().includes(q) ||
       t.tags.some(tag => tag.includes(q))
     );
+    themes = filtered;
+    totalCount = filtered.length;
+  } else {
+    themes = listThemesPage(filterTag, sort, 0, PAGE_SIZE);
+    totalCount = countThemes(filterTag);
   }
 
   const allTags = listTags();
   const featured = (!filterTag && !searchQuery && sort === 'newest')
     ? getFeaturedThemes() : [];
 
-  res.render('index', { themes, allTags, filterTag, searchQuery, sort, featured, theme: req.query.theme || 'dark' });
+  res.render('index', { themes, totalCount, allTags, filterTag, searchQuery, sort, featured });
+});
+
+app.get('/api/themes', (req, res) => {
+  const filterTag = req.query.tag || null;
+  const sort = req.query.sort || 'newest';
+  const offset = Math.max(0, parseInt(req.query.offset, 10) || 0);
+  const limit = Math.min(60, Math.max(1, parseInt(req.query.limit, 10) || PAGE_SIZE));
+
+  const themes = listThemesPage(filterTag, sort, offset, limit);
+  let html = '';
+  let pending = themes.length;
+  if (pending === 0) return res.json({ html: '', count: 0 });
+
+  themes.forEach((theme, idx) => {
+    app.render('partials/theme-card', { theme }, (err, str) => {
+      if (err) return res.status(500).json({ error: err.message });
+      themes[idx]._html = str;
+      if (--pending === 0) {
+        res.json({ html: themes.map(t => t._html).join(''), count: themes.length });
+      }
+    });
+  });
 });
 
 app.get('/set-theme/:theme', (req, res) => {
-  res.cookie('theme', req.params.theme);
-  res.redirect('back');
+  const t = req.params.theme === 'light' ? 'light' : 'dark';
+  res.cookie('theme', t, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: false });
+  res.redirect(req.get('Referer') || '/');
 });
 
 app.get('/upload', (req, res) => {
-  res.render('upload', { error: null, success: null, theme: 'dark' });
+  res.render('upload', { error: null, success: null });
 });
 
 app.post('/upload',
@@ -89,7 +127,7 @@ app.post('/upload',
   ]),
   async (req, res) => {
     if (!req.files || !req.files.theme) {
-      return res.render('upload', { error: 'Please select a .xrnc theme file!', success: null, theme: 'dark' });
+      return res.render('upload', { error: 'Please select a .xrnc theme file!', success: null });
     }
 
     const themeFile = req.files.theme[0];
@@ -103,7 +141,7 @@ app.post('/upload',
       console.log(`🎨 Found ${parsed.totalColors} colors (${parsed.weighted.length} unique)`);
 
       if (parsed.weighted.length === 0) {
-        return res.render('upload', { error: 'No colors found. Is this a valid Renoise theme?', success: null, theme: 'dark' });
+        return res.render('upload', { error: 'No colors found. Is this a valid Renoise theme?', success: null });
       }
 
       const { tags, stats } = categorizeColors(parsed.weighted);
@@ -147,7 +185,7 @@ app.post('/upload',
 
     } catch (err) {
       console.error('❌ Parse error:', err);
-      res.render('upload', { error: `Could not parse theme: ${err.message}`, success: null, theme: 'dark' });
+      res.render('upload', { error: `Could not parse theme: ${err.message}`, success: null });
     }
   }
 );
@@ -156,7 +194,7 @@ app.get('/theme/:slug', (req, res) => {
   const theme = getThemeBySlug(req.params.slug);
   if (!theme) return res.status(404).send('Theme not found');
   const comments = getThemeComments(theme.id);
-  res.render('detail', { theme, comments, theme: req.query.theme || 'dark' });
+  res.render('detail', { theme, comments });
 });
 
 app.get('/download/:slug', (req, res) => {
@@ -202,7 +240,7 @@ app.get('/download/:id', (req, res) => {
 // Multer error handler
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError || err.message) {
-    return res.render('upload', { error: err.message, success: null, theme: 'dark' });
+    return res.render('upload', { error: err.message, success: null });
   }
   next(err);
 });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="<%= theme || 'dark' %>">
+<html lang="en" data-theme="<%= uiTheme %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,11 +22,27 @@
         <span class="logo-text">Renoise<strong>Themes</strong></span>
       </a>
       <nav class="header-nav">
-        <a href="/" class="theme-toggle" data-theme="dark" title="Dark">🌙</a>
-        <a href="/" class="theme-toggle" data-theme="light" title="Light">☀️</a>
+        <a href="/set-theme/dark" class="theme-toggle <%= uiTheme === 'dark' ? 'theme-toggle-active' : '' %>" title="Dark">🌙</a>
+        <a href="/set-theme/light" class="theme-toggle <%= uiTheme === 'light' ? 'theme-toggle-active' : '' %>" title="Light">☀️</a>
         <a href="/">Browse</a>
         <a href="/upload" class="btn-upload">⬆ Upload</a>
       </nav>
     </div>
   </header>
+  <% if (typeof marquee !== 'undefined' && marquee && marquee.length) { %>
+    <div class="marquee" aria-label="Popular themes">
+      <div class="marquee-track">
+        <% for (let dup = 0; dup < 2; dup++) { %>
+          <% marquee.forEach(t => { %>
+            <a href="/theme/<%= t.slug || t.id %>" class="marquee-item">
+              <span class="marquee-swatch" style="background:#<%= (t.topColors[0] && t.topColors[0].hex) || '888' %>"></span>
+              <strong><%= t.name %></strong>
+              <span class="marquee-author">by <%= t.author %></span>
+              <span class="marquee-likes">❤ <%= t.likes %></span>
+            </a>
+          <% }); %>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
   <main class="container">

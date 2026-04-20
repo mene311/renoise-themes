@@ -25,6 +25,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── Infinite scroll ────────────────────
+  const sentinel = document.getElementById('loadMoreSentinel');
+  if (grid && sentinel) {
+    let loading = false;
+    let done = false;
+    let loaded = parseInt(grid.dataset.loaded, 10) || 0;
+    const total = parseInt(grid.dataset.total, 10) || 0;
+    const tag = grid.dataset.tag || '';
+    const q = grid.dataset.q || '';
+    const sort = grid.dataset.sort || 'newest';
+
+    if (q || loaded >= total) {
+      sentinel.remove();
+      done = true;
+    }
+
+    const loadMore = async () => {
+      if (loading || done) return;
+      loading = true;
+      sentinel.classList.add('loading');
+      try {
+        const params = new URLSearchParams({ offset: String(loaded), limit: '24', sort });
+        if (tag) params.set('tag', tag);
+        const r = await fetch('/api/themes?' + params.toString());
+        const data = await r.json();
+        if (data.count > 0) {
+          grid.insertAdjacentHTML('beforeend', data.html);
+          loaded += data.count;
+          if (tc) tc.textContent = `${loaded} theme${loaded !== 1 ? 's' : ''}`;
+        }
+        if (data.count < 24 || loaded >= total) {
+          done = true;
+          sentinel.remove();
+        }
+      } catch (e) { console.error('Load more failed', e); }
+      loading = false;
+      sentinel.classList.remove('loading');
+    };
+
+    const obs = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) loadMore();
+    }, { rootMargin: '400px' });
+    obs.observe(sentinel);
+  }
+
   // ── Like ───────────────────────────────
   const likeBtn = document.getElementById('likeBtn');
   if (likeBtn) {
