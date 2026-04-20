@@ -18,7 +18,7 @@
     </div>
     <div class="featured-row">
       <% featured.forEach(theme => { %>
-        <a href="/theme/<%= theme.id %>" class="featured-card">
+        <a href="/theme/<%= theme.slug || theme.id %>" class="featured-card">
           <div class="featured-img">
             <% if (theme.previewViews && theme.previewViews.length > 0) { %>
               <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="<%= theme.name %>" loading="lazy">
@@ -28,7 +28,7 @@
               <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
             <% } %>
             <div class="card-color-strip">
-              <% theme.topColors.slice(0, 6).forEach(c => { %>
+              <% theme.topColors.slice(0, 4).forEach(c => { %>
                 <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
               <% }); %>
             </div>
@@ -92,7 +92,7 @@
 <% } else { %>
   <div class="theme-grid" id="themeGrid">
     <% themes.forEach(theme => { %>
-      <a href="/theme/<%= theme.id %>"
+      <a href="/theme/<%= theme.slug || theme.id %>"
          class="theme-card"
          data-name="<%= theme.name.toLowerCase() %>"
          data-author="<%= theme.author.toLowerCase() %>"
@@ -109,7 +109,7 @@
             <% } %>
             <!-- Color strip overlay at bottom of image -->
             <div class="card-color-strip">
-              <% theme.topColors.slice(0, 6).forEach(c => { %>
+              <% theme.topColors.slice(0, 4).forEach(c => { %>
                 <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
               <% }); %>
             </div>

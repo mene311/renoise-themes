@@ -154,14 +154,36 @@ async function processScreenshot(imagePath, legend, textMask) {
   const map = new Uint8Array(W * H);
   let themed = 0;
   for (let i = 0; i < W * H; i++) {
-    if (textMask && textMask[i]) {
-      map[i] = UNMATCHED; // text region — skip classification
-      continue;
-    }
     const px = i * 4;
     const idx = nearestElement(legend, data[px], data[px + 1], data[px + 2]);
     map[i] = idx;
     if (idx !== UNMATCHED) themed++;
+  }
+
+  // Phase 2: assign text pixels to nearest non-text element for font lookup
+  if (textMask) {
+    const TEXT_SEARCH_RADIUS = 20;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x;
+        if (!textMask[i]) continue;
+        
+        // Search outward for nearest non-text element
+        let bestIdx = UNMATCHED, bestDist = Infinity;
+        for (let dy = -TEXT_SEARCH_RADIUS; dy <= TEXT_SEARCH_RADIUS && bestDist > 0; dy++) {
+          for (let dx = -TEXT_SEARCH_RADIUS; dx <= TEXT_SEARCH_RADIUS; dx++) {
+            if (dy === 0 && dx === 0) continue;
+            const ny = y + dy, nx = x + dx;
+            if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
+            const ni = ny * W + nx;
+            if (textMask[ni]) continue;
+            const d = dx * dx + dy * dy;
+            if (d < bestDist) { bestDist = d; bestIdx = map[ni]; }
+          }
+        }
+        if (bestIdx !== UNMATCHED) map[i] = bestIdx;
+      }
+    }
   }
 
   const pct = (themed / (W * H) * 100).toFixed(1);

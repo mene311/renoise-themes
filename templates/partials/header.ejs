@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="<%= theme || 'dark' %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +22,8 @@
         <span class="logo-text">Renoise<strong>Themes</strong></span>
       </a>
       <nav class="header-nav">
+        <a href="/" class="theme-toggle" data-theme="dark" title="Dark">🌙</a>
+        <a href="/" class="theme-toggle" data-theme="light" title="Light">☀️</a>
         <a href="/">Browse</a>
         <a href="/upload" class="btn-upload">⬆ Upload</a>
       </nav>
