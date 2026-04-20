@@ -2,7 +2,20 @@
 
 A web platform for sharing, browsing, and previewing Renoise color themes. Upload a `.xrnc` file and the app automatically generates a color palette, applies the theme to live Renoise UI screenshots, and tags it by mood and color family.
 
-![Preview](public/previews/Default/pattern.png)
+![Home](screenshot-home.png)
+![Dark Themes](screenshot-dark.png)
+
+## Features
+
+- **Upload** `.xrnc` theme files
+- **Auto-generated** color palettes and tags (dark/light, neon/pastel/monochrome, warm/cool)
+- **Pixel-accurate** preview rendering across Pattern Editor, Mixer, and Waveform views
+- **Browse** by tags, search by name/author, sort by newest/popular
+- **Light/dark** UI toggle for the site itself
+- **Infinite scroll** for smooth browsing
+
+![Upload](screenshot-upload.png)
+![Theme Detail](screenshot-detail.png)
 
 ---
 
