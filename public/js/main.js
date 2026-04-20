@@ -245,3 +245,46 @@ document.querySelectorAll('.preview-tab').forEach(tab => {
     document.getElementById('preview-' + tab.dataset.view).classList.add('preview-render-active');
   });
 });
+
+// ── Featured Scroller ───────────────────────
+const track = document.getElementById('featuredTrack');
+if (track) {
+  const inner = track.querySelector('.scroller-inner');
+  const itemWidth = 220 + 16;
+  let currentIndex = 0;
+
+  track.addEventListener('mousedown', e => {
+    track.classList.add('dragging');
+    track.dataset.startX = e.pageX - track.offsetLeft;
+    track.dataset.scrollLeft = track.scrollLeft;
+  });
+  track.addEventListener('mouseleave', () => track.classList.remove('dragging'));
+  track.addEventListener('mouseup', () => track.classList.remove('dragging'));
+  track.addEventListener('mousemove', e => {
+    if (!track.classList.contains('dragging')) return;
+    e.preventDefault();
+    const x = e.pageX - track.offsetLeft;
+    const walk = (x - parseFloat(track.dataset.startX)) * 1.5;
+    track.scrollLeft = parseFloat(track.dataset.scrollLeft) - walk;
+  });
+
+  document.querySelector('.scroller-prev')?.addEventListener('click', () => {
+    currentIndex = Math.max(0, currentIndex - 1);
+    track.scrollTo({ left: currentIndex * itemWidth, behavior: 'smooth' });
+  });
+  document.querySelector('.scroller-next')?.addEventListener('click', () => {
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    currentIndex = Math.min(currentIndex + 1, Math.floor(maxScroll / itemWidth));
+    track.scrollTo({ left: currentIndex * itemWidth, behavior: 'smooth' });
+  });
+}
+
+// ── Header Search ───────────────────────────
+const hsi = document.getElementById('headerSearchInput');
+if (hsi) {
+  hsi.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && hsi.value.trim()) {
+      window.location.href = '/?q=' + encodeURIComponent(hsi.value.trim());
+    }
+  });
+}

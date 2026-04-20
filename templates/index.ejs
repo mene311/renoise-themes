@@ -10,35 +10,43 @@
   </div>
 </section>
 
-<!-- Featured -->
+<!-- Featured Scroller -->
 <% if (featured && featured.length > 0) { %>
-  <section class="featured-section">
-    <div class="section-header">
-      <h2 class="section-title">🔥 Popular</h2>
-    </div>
-    <div class="featured-row">
-      <% featured.forEach(theme => { %>
-        <a href="/theme/<%= theme.slug || theme.id %>" class="featured-card">
-          <div class="featured-img">
-            <% if (theme.previewViews && theme.previewViews.length > 0) { %>
-              <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="<%= theme.name %>" loading="lazy">
-            <% } else if (theme.screenshots.length > 0) { %>
-              <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="<%= theme.name %>" loading="lazy">
-            <% } else { %>
-              <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
-            <% } %>
-            <div class="card-color-strip">
-              <% theme.topColors.slice(0, 4).forEach(c => { %>
-                <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
-              <% }); %>
+  <section class="featured-scroller">
+    <div class="scroller-track" id="featuredTrack">
+      <div class="scroller-inner">
+        <% function renderCard(t) { %>
+          <a href="/theme/<%= t.slug || t.id %>" class="scroller-card">
+            <div class="scroller-img">
+              <% if (t.previewViews && t.previewViews.length > 0) { %>
+                <img src="/uploads/previews/<%= t.previewSlug %>/<%= t.previewViews[0] %>.png" alt="<%= t.name %>" loading="lazy">
+              <% } else if (t.screenshots && t.screenshots.length > 0) { %>
+                <img src="<%= t.screenshots[0] %>" alt="<%= t.name %>" loading="lazy">
+              <% } else { %>
+                <img src="<%= t.palette_svg %>" alt="<%= t.name %>" loading="lazy">
+              <% } %>
             </div>
+            <div class="scroller-overlay">
+              <strong><%= t.name %></strong>
+              <span>by <%= t.author %> · ❤ <%= t.likes %></span>
+            </div>
+          </a>
+        <% } %>
+        <% for (let i = 0; i < featured.length; i += 3) { %>
+          <div class="scroller-item">
+            <%- renderCard(featured[i]) %>
+            <%- renderCard(featured[i+1] || featured[i]) %>
+            <%- renderCard(featured[i+2] || featured[i]) %>
           </div>
-          <div class="featured-body">
-            <strong><%= theme.name %></strong>
-            <span class="card-meta">by <%= theme.author %> · ❤️ <%= theme.likes %></span>
+        <% } %>
+        <% for (let i = 0; i < featured.length; i += 3) { %>
+          <div class="scroller-item">
+            <%- renderCard(featured[i]) %>
+            <%- renderCard(featured[i+1] || featured[i]) %>
+            <%- renderCard(featured[i+2] || featured[i]) %>
           </div>
-        </a>
-      <% }); %>
+        <% } %>
+      </div>
     </div>
   </section>
 <% } %>
