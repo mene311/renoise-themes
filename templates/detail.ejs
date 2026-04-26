@@ -30,11 +30,14 @@
   </div>
 
   <!-- ═══ RENOISE PREVIEW ═══ -->
-  <% if (theme.previewViews && theme.previewViews.length > 0) { %>
-    <div class="detail-section">
-      <h3>🖥️ Renoise Preview</h3>
+  <% const viewLabels = { pattern: 'Pattern Editor', mixer: 'Mixer', waveform: 'Waveform' }; %>
+  <% const hasPreviews = theme.previewViews && theme.previewViews.length > 0; %>
+
+  <div class="detail-section">
+    <h3>🖥️ Renoise Preview</h3>
+
+    <% if (hasPreviews) { %>
       <div class="preview-tabs">
-        <% const viewLabels = { pattern: 'Pattern Editor', mixer: 'Mixer', waveform: 'Waveform' }; %>
         <% theme.previewViews.forEach((view, i) => { %>
           <button class="preview-tab <%= i === 0 ? 'preview-tab-active' : '' %>" data-view="<%= view %>">
             <%= viewLabels[view] || view %>
@@ -46,14 +49,27 @@
           <img
             class="preview-render <%= i === 0 ? 'preview-render-active' : '' %>"
             id="preview-<%= view %>"
-            src="/uploads/previews/<%= theme.previewSlug %>/<%= view %>.png"
-            alt="<%= viewLabels[view] || view %> preview"
+            <%= i === 0 ? `src="/uploads/previews/${theme.previewSlug}/${view}.png"` : `data-src="/uploads/previews/${theme.previewSlug}/${view}.png" src=""` %>
+            alt="Renoise <%= viewLabels[view] || view %> with the <%= theme.name %> color theme"
             loading="lazy"
           >
         <% }); %>
       </div>
-    </div>
-  <% } %>
+      <% if (theme.previewError) { %>
+        <div class="preview-warning">
+          ⚠️ <%= theme.previewError %> — some views may be missing
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="preview-unavailable">
+        <% if (theme.previewError) { %>
+          ⚠️ Preview generation failed: <%= theme.previewError %>
+        <% } else { %>
+          ℹ️ No preview available — check the palette and screenshots below
+        <% } %>
+      </div>
+    <% } %>
+  </div>
 
   <!-- ═══ HERO SECTION ═══ -->
   <div class="detail-hero">
@@ -63,13 +79,13 @@
       <% if (theme.screenshots.length > 0) { %>
         <img
           src="/uploads/screenshots/<%= theme.screenshots[0] %>"
-          alt="<%= theme.name %>"
+          alt="Renoise window showing the <%= theme.name %> color theme"
           class="hero-img"
           id="heroImage"
         >
       <% } else { %>
         <div class="hero-palette-wrap">
-          <img src="<%= theme.palette_svg %>" alt="Palette" class="hero-palette-only">
+          <img src="<%= theme.palette_svg %>" alt="Color palette strip for <%= theme.name %> — <%= theme.unique_colors %> unique colors" class="hero-palette-only">
         </div>
       <% } %>
     </div>
@@ -78,17 +94,10 @@
     <div class="detail-sidebar">
 
       <div class="sb-section">
-        <h3>🎨 Palette</h3>
-        <div class="sb-palette-wrap">
-          <img src="<%= theme.palette_svg %>" alt="Palette" class="sb-palette">
-        </div>
-      </div>
-
-      <div class="sb-section">
         <h3>🏆 Main Colors</h3>
         <div class="sb-colors">
-          <% theme.topColors.slice(0, 5).forEach(c => { %>
-            <div class="sb-color" data-color="#<%= c.hex %>" title="Click to copy #<%= c.hex %>">
+          <% theme.topColors.slice(0, 3).forEach(c => { %>
+            <div class="sb-color" data-color="#<%= c.hex %>" title="Click to copy #<%= c.hex %>" role="button" aria-label="Copy hex color #<%= c.hex %>">
               <div class="sb-color-block" style="background:#<%= c.hex %>;"></div>
               <code>#<%= c.hex %></code>
             </div>
@@ -148,7 +157,7 @@
       <div class="gallery-grid">
         <% theme.screenshots.forEach((ss, i) => { %>
           <div class="gallery-thumb <%= i === 0 ? 'gallery-active' : '' %>" data-src="/uploads/screenshots/<%= ss %>">
-            <img src="/uploads/screenshots/<%= ss %>" alt="Screenshot <%= i + 1 %>" loading="lazy">
+            <img src="/uploads/screenshots/<%= ss %>" alt="User screenshot <%= i + 1 %> of <%= theme.name %> theme" loading="lazy">
           </div>
         <% }); %>
       </div>
@@ -160,9 +169,9 @@
     <h3>💬 Comments (<%= comments.length %>)</h3>
 
     <form action="/theme/<%= theme.id %>/comment" method="POST" class="comment-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="cf-row">
-        <input type="text" name="author" placeholder="Name (optional)" class="cf-name">
-        <textarea name="message" placeholder="Leave a comment..." required rows="2" class="cf-msg" maxlength="1000"></textarea>
+        <textarea name="message" placeholder="Leave a comment..." required rows="2" class="cf-msg" maxlength="1000" aria-label="Write a comment"></textarea>
       </div>
       <button type="submit" class="btn-comment">💬 Post</button>
     </form>

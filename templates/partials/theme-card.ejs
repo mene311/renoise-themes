@@ -6,14 +6,14 @@
   <article>
     <div class="card-img">
       <% if (theme.previewViews && theme.previewViews.length > 0) { %>
-        <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="<%= theme.name %>" loading="lazy">
+        <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="Renoise UI preview of <%= theme.name %> theme by <%= theme.author %>" loading="lazy">
       <% } else if (theme.screenshots.length > 0) { %>
-        <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="<%= theme.name %>" loading="lazy">
+        <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="Screenshot of <%= theme.name %> theme by <%= theme.author %>" loading="lazy">
       <% } else { %>
-        <img src="<%= theme.palette_svg %>" alt="<%= theme.name %>" loading="lazy" class="palette-fallback">
+        <img src="<%= theme.palette_svg %>" alt="Color palette for <%= theme.name %> theme by <%= theme.author %>" loading="lazy" class="palette-fallback">
       <% } %>
       <div class="card-color-strip">
-        <% theme.topColors.slice(0, 4).forEach(c => { %>
+        <% theme.topColors.slice(0, 2).forEach(c => { %>
           <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
         <% }); %>
       </div>

@@ -236,15 +236,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// ── Preview tab switching ─────────────
+// ── Preview tab switching (with lazy loading) ─
 document.querySelectorAll('.preview-tab').forEach(tab => {
   tab.addEventListener('click', () => {
+    const view = tab.dataset.view;
+    const img = document.getElementById('preview-' + view);
+
+    // Lazy-load: set src from data-src on first click
+    if (img && img.dataset.src && !img.src) {
+      img.src = img.dataset.src;
+    }
+
+    // Switch active tab and image
     document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('preview-tab-active'));
     document.querySelectorAll('.preview-render').forEach(i => i.classList.remove('preview-render-active'));
     tab.classList.add('preview-tab-active');
-    document.getElementById('preview-' + tab.dataset.view).classList.add('preview-render-active');
+    if (img) img.classList.add('preview-render-active');
   });
 });
+
+// ── Upload progress animation ───────────
+const uploadForm = document.getElementById('uploadForm');
+const submitBtn = document.getElementById('submitBtn');
+const progressEl = document.getElementById('uploadProgress');
+
+if (uploadForm && submitBtn) {
+  uploadForm.addEventListener('submit', () => {
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Processing...';
+
+    if (progressEl) {
+      progressEl.style.display = 'block';
+      const steps = progressEl.querySelectorAll('.progress-step');
+      // Animate through the 3 stages with staggered delays for perceived progress
+      if (steps.length >= 1) {
+        setTimeout(() => steps[0].classList.add('active'), 300);
+        setTimeout(() => steps[1] && steps[1].classList.add('active'), 1500);
+        setTimeout(() => steps[2] && steps[2].classList.add('active'), 3000);
+      }
+    }
+  });
+}
 
 // ── Featured Scroller ───────────────────────
 const track = document.getElementById('featuredTrack');

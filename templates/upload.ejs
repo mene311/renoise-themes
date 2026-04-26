@@ -13,6 +13,7 @@
 
   <article class="upload-form-card">
     <form action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <!-- Theme file — input is HIDDEN, drop zone triggers it -->
       <input type="file" id="theme" name="theme" accept=".xrnc,.xml" required style="display:none;">
@@ -47,6 +48,15 @@
       </label>
 
       <button type="submit" class="btn-submit" id="submitBtn">🚀 Upload & Analyze</button>
+
+      <!-- Staged progress indicator (shown during submission) -->
+      <div class="upload-progress" id="uploadProgress" style="display:none;">
+        <div class="progress-steps">
+          <span class="progress-step" data-step="xml">📄 Parsing theme...</span>
+          <span class="progress-step" data-step="tags">🏷️ Analyzing colors...</span>
+          <span class="progress-step" data-step="previews">🖼️ Rendering previews...</span>
+        </div>
+      </div>
     </form>
   </article>
 

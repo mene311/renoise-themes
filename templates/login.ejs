@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<section class="auth-page">
+  <article class="auth-card">
+    <h1>Log In</h1>
+    <p class="hero-sub">Welcome back! Sign in to continue.</p>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
+    <% } %>
+
+    <form action="/login" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <label for="username">
+        👤 Username
+        <input type="text" id="username" name="username" placeholder="Your username" required>
+      </label>
+
+      <label for="password">
+        🔑 Password
+        <input type="password" id="password" name="password" placeholder="Your password" required>
+      </label>
+
+      <button type="submit" class="btn-submit">Log In</button>
+    </form>
+
+    <p class="auth-switch">
+      Don't have an account? <a href="/register">Sign up here</a>
+    </p>
+  </article>
+</section>
+
+<%- include('partials/footer') %>

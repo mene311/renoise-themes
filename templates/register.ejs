@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+
+<section class="auth-page">
+  <article class="auth-card">
+    <h1>Create an Account</h1>
+    <p class="hero-sub">Join the community to upload themes, leave comments, and build your profile.</p>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
+    <% } %>
+
+    <form action="/register" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <label for="username">
+        👤 Username
+        <input type="text" id="username" name="username" placeholder="Choose a username" required>
+      </label>
+      <small class="field-hint">This will be displayed on your themes and comments</small>
+
+      <label for="email">
+        ✉️ Email
+        <input type="email" id="email" name="email" placeholder="Your email address" required>
+      </label>
+      <small class="field-hint">We'll never share your email with anyone</small>
+
+      <label for="password">
+        🔑 Password
+        <input type="password" id="password" name="password" placeholder="At least 8 characters" required minlength="8">
+      </label>
+
+      <label for="passwordConfirm">
+        🔑 Confirm Password
+        <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="Type your password again" required minlength="8">
+      </label>
+
+      <button type="submit" class="btn-submit">Create Account</button>
+    </form>
+
+    <p class="auth-switch">
+      Already have an account? <a href="/login">Log in here</a>
+    </p>
+  </article>
+</section>
+
+<%- include('partials/footer') %>

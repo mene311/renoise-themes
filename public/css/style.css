@@ -29,50 +29,6 @@
 
 body { background: var(--bg-body); color: var(--text); }
 
-.marquee {
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-card);
-  padding: 0.65rem 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-.marquee-track {
-  display: inline-flex;
-  gap: 1.5rem;
-  white-space: nowrap;
-  animation: scroll-left 60s linear infinite;
-  padding-left: 2rem;
-}
-.marquee:hover .marquee-track { animation-play-state: paused; }
-.marquee-card {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--bg);
-  border-radius: 8px;
-  padding: 0.4rem 0.4rem 0.4rem 0.4rem;
-  text-decoration: none;
-  border: 1px solid var(--border);
-  transition: border-color 0.2s, transform 0.2s;
-}
-.marquee-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.marquee-thumb {
-  width: 70px;
-  height: 44px;
-  object-fit: cover;
-  border-radius: 5px;
-  background: var(--bg-dim);
-}
-.marquee-info { display: flex; flex-direction: column; gap: 0.15rem; }
-.marquee-info strong { color: var(--text); font-weight: 600; font-size: 0.95rem; }
-.marquee-desc { color: var(--text-dim); font-size: 0.8rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.marquee-meta { color: var(--accent); font-size: 0.8rem; font-weight: 500; }
-@keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
-}
-
 .load-more-sentinel {
   text-align: center;
   padding: 2rem 0;
@@ -92,6 +48,42 @@ body { background: var(--bg-body); color: var(--text); }
   background: var(--bg-body-rgba);
   backdrop-filter: blur(12px);
   z-index: 100;
+  
+  nav a {
+    margin-left: 0.5rem;
+    color: var(--text);
+    text-decoration: none;
+    border-radius: var(--radius);
+    padding: 0.3rem 0.7rem;
+    transition: background 0.2s;
+  }
+  nav a:hover {
+    background: var(--border);
+  }
+  
+  .user-menu {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+  }
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 0.5rem;
+  }
+  .user-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+}
 }
 .header-inner { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .logo { text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 0.4rem; font-size: 1.1rem; flex-shrink: 0; }
@@ -142,42 +134,6 @@ body { background: var(--bg-body); color: var(--text); }
 
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 .section-title { font-size: 1.1rem; margin: 0; }
-
-.featured-scroller {
-  position: relative; margin: 1.5rem 0;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); overflow: hidden;
-}
-.scroller-track {
-  overflow: hidden; position: relative;
-}
-.scroller-inner {
-  display: flex; flex-direction: column;
-  animation: scroller-scroll 20s steps(1) infinite;
-}
-.scroller-track:hover .scroller-inner { animation-play-state: paused; }
-@keyframes scroller-scroll {
-  0%, 25% { transform: translateY(0); }
-  25.01%, 100% { transform: translateY(-50%); }
-}
-.scroller-item {
-  flex: 0 0 auto;
-  display: flex; gap: 1rem;
-  padding: 1rem 1.5rem;
-  text-decoration: none; color: inherit;
-}
-.scroller-img { width: 100%; aspect-ratio: 16/10; overflow: hidden; background: #0d0d12; border-radius: 6px; }
-.scroller-img img { width: 100%; height: 100%; object-fit: cover; }
-.scroller-card {
-  flex: 1; position: relative; border-radius: 6px; overflow: hidden;
-}
-.scroller-card .scroller-overlay {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 1rem 0.75rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
-}
-.scroller-card strong { font-size: 0.9rem; display: block; margin-bottom: 0.15rem; }
-.scroller-card span { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
 
 /* ══ CONTROLS ═════════════════════════════════ */
 
@@ -283,6 +239,30 @@ body { background: var(--bg-body); color: var(--text); }
 .tag-blue { background: #1f6fa0; }
 .tag-purple { background: #6a3190; }
 .tag-pink { background: #a11450; }
+
+/* ══ AUTH PAGES ════════════════════════════════ */
+
+.auth-page { max-width: 500px; margin: 2rem auto; }
+.auth-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+}
+.auth-card h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+.auth-card .hero-sub {
+  color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;
+}
+.auth-card form label {
+  display: block; margin-bottom: 1rem;
+}
+.auth-card form input {
+  width: 100%; margin-top: 0.25rem;
+}
+.auth-card button { margin-top: 0.5rem; }
+.auth-switch {
+  text-align: center; margin-top: 1.5rem; padding-top: 1rem;
+  border-top: 1px solid var(--border); font-size: 0.9rem;
+}
+.auth-switch a { color: var(--accent); }
 
 /* ══ UPLOAD PAGE ══════════════════════════════ */
 
@@ -729,4 +709,64 @@ body { background: var(--bg-body); color: var(--text); }
 
 .preview-render-active {
   display: block;
+}
+
+/* ── Preview warning / unavailable ────── */
+
+.preview-warning {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(184, 154, 13, 0.12);
+  border: 1px solid #b89a0d;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  color: #d4b81a;
+}
+
+.preview-unavailable {
+  padding: 1rem;
+  background: rgba(124, 106, 239, 0.06);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* ── Upload progress indicator ────────── */
+
+.upload-progress {
+  margin-top: 0.75rem;
+}
+
+.progress-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  opacity: 0.4;
+  transition: opacity 0.3s, color 0.3s;
+}
+
+.progress-step.active {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.progress-step.active::before {
+  content: '▶';
+  font-size: 0.6rem;
+  animation: pulse-dot 0.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }

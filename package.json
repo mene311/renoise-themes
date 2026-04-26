@@ -9,10 +9,14 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.98",
+    "bcrypt": "^6.0.0",
     "better-sqlite3": "^11.9.1",
     "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^4.0.3",
     "ejs": "^5.0.2",
     "express": "^4.21.2",
+    "express-rate-limit": "^7.0.0",
+    "express-session": "^1.19.0",
     "fast-xml-parser": "^5.2.3",
     "multer": "^1.4.5-lts.2"
   },
