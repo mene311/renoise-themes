@@ -1,0 +1,209 @@
+{
+  "generatedAt": "2026-04-27T02:33:23.867Z",
+  "sourceCommit": "5ed12412f4147309e2635622b6b056ed674b3d8e",
+  "width": 1920,
+  "height": 1080,
+  "totalPixels": 2073600,
+  "elementCount": 37,
+  "unmatched": 122828,
+  "unmatchedPct": 5.92,
+  "coverage": [
+    {
+      "name": "Main_Back",
+      "px": 955007,
+      "pct": "46.06"
+    },
+    {
+      "name": "Body_Back",
+      "px": 446566,
+      "pct": "21.54"
+    },
+    {
+      "name": "Pattern_Default_Back",
+      "px": 369048,
+      "pct": "17.80"
+    },
+    {
+      "name": "Pattern_Highlighted_Back",
+      "px": 40224,
+      "pct": "1.94"
+    },
+    {
+      "name": "Main_Font",
+      "px": 27581,
+      "pct": "1.33"
+    },
+    {
+      "name": "Button_Back",
+      "px": 24889,
+      "pct": "1.20"
+    },
+    {
+      "name": "Scrollbar",
+      "px": 22680,
+      "pct": "1.09"
+    },
+    {
+      "name": "Pattern_CenterBar_Back",
+      "px": 19546,
+      "pct": "0.94"
+    },
+    {
+      "name": "ValueBox_Back",
+      "px": 16612,
+      "pct": "0.80"
+    },
+    {
+      "name": "Pattern_Default_Font",
+      "px": 9173,
+      "pct": "0.44"
+    },
+    {
+      "name": "Selection_Back",
+      "px": 8642,
+      "pct": "0.42"
+    },
+    {
+      "name": "Selected_Button_Back",
+      "px": 5267,
+      "pct": "0.25"
+    },
+    {
+      "name": "Body_Font",
+      "px": 4965,
+      "pct": "0.24"
+    },
+    {
+      "name": "Button_Font",
+      "px": 3052,
+      "pct": "0.15"
+    },
+    {
+      "name": "Strong_Body_Font",
+      "px": 2695,
+      "pct": "0.13"
+    },
+    {
+      "name": "Pattern_Default_Font_Volume",
+      "px": 2312,
+      "pct": "0.11"
+    },
+    {
+      "name": "StandBy_Selection_Back",
+      "px": 2178,
+      "pct": "0.11"
+    },
+    {
+      "name": "Slider",
+      "px": 1954,
+      "pct": "0.09"
+    },
+    {
+      "name": "Pattern_Highlighted_Font",
+      "px": 1485,
+      "pct": "0.07"
+    },
+    {
+      "name": "Selected_Button_Font",
+      "px": 801,
+      "pct": "0.04"
+    },
+    {
+      "name": "ValueBox_Font",
+      "px": 772,
+      "pct": "0.04"
+    },
+    {
+      "name": "Pattern_CenterBar_Font",
+      "px": 756,
+      "pct": "0.04"
+    },
+    {
+      "name": "Pattern_Mute_State",
+      "px": 621,
+      "pct": "0.03"
+    },
+    {
+      "name": "ValueBox_Font_Icons",
+      "px": 608,
+      "pct": "0.03"
+    },
+    {
+      "name": "Pattern_Highlighted_Font_Volume",
+      "px": 344,
+      "pct": "0.02"
+    },
+    {
+      "name": "Selection_Font",
+      "px": 328,
+      "pct": "0.02"
+    },
+    {
+      "name": "Automation_Grid",
+      "px": 258,
+      "pct": "0.01"
+    },
+    {
+      "name": "Pattern_Default_Font_Panning",
+      "px": 214,
+      "pct": "0.01"
+    },
+    {
+      "name": "Pattern_Default_Font_Delay",
+      "px": 187,
+      "pct": "0.01"
+    },
+    {
+      "name": "Pattern_Default_Font_Pitch",
+      "px": 150,
+      "pct": "0.01"
+    },
+    {
+      "name": "StandBy_Selection_Font",
+      "px": 146,
+      "pct": "0.01"
+    },
+    {
+      "name": "Pattern_Highlighted_Font_Pitch",
+      "px": 144,
+      "pct": "0.01"
+    },
+    {
+      "name": "Pattern_Highlighted_Font_Delay",
+      "px": 105,
+      "pct": "0.01"
+    },
+    {
+      "name": "Folder",
+      "px": 103,
+      "pct": "0.00"
+    },
+    {
+      "name": "VuMeter_Back_Normal",
+      "px": 100,
+      "pct": "0.00"
+    },
+    {
+      "name": "Button_Highlight_Font",
+      "px": 48,
+      "pct": "0.00"
+    },
+    {
+      "name": "Pattern_Highlighted_Font_Panning",
+      "px": 8,
+      "pct": "0.00"
+    }
+  ],
+  "files": {
+    "pattern.json": {
+      "path": "maps/pattern.json",
+      "sha256": "f38e7078ed46bea5742118e7627b213a4e3d3165f15405e40c00691b47539b3f",
+      "size": 1040
+    },
+    "pattern.bin": {
+      "path": "maps/pattern.bin",
+      "sha256": "c73e28a02127defd309a0e3a63fbf83ffcad59b0b97276c5e8b14d50909fc181",
+      "size": 2073600
+    }
+  }
+}

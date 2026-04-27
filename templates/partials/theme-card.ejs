@@ -2,36 +2,39 @@
    class="theme-card"
    data-name="<%= theme.name.toLowerCase() %>"
    data-author="<%= theme.author.toLowerCase() %>"
-   data-tags="<%= theme.tags.join(' ').toLowerCase() %>">
-  <article>
-    <div class="card-img">
-      <% if (theme.previewViews && theme.previewViews.length > 0) { %>
-        <img src="/uploads/previews/<%= theme.previewSlug %>/<%= theme.previewViews[0] %>.png" alt="Renoise UI preview of <%= theme.name %> theme by <%= theme.author %>" loading="lazy">
-      <% } else if (theme.screenshots.length > 0) { %>
-        <img src="/uploads/screenshots/<%= theme.screenshots[0] %>" alt="Screenshot of <%= theme.name %> theme by <%= theme.author %>" loading="lazy">
-      <% } else { %>
-        <img src="<%= theme.palette_svg %>" alt="Color palette for <%= theme.name %> theme by <%= theme.author %>" loading="lazy" class="palette-fallback">
-      <% } %>
-      <div class="card-color-strip">
-        <% theme.topColors.slice(0, 2).forEach(c => { %>
-          <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>;"></div>
-        <% }); %>
-      </div>
-    </div>
+   data-tags="<%= theme.tags.join(' ').toLowerCase() %>"
+   aria-label="<%= theme.name %> by <%= theme.author %>, <%= theme.likes %> likes">
 
-    <div class="card-body">
-      <div class="card-title-row">
-        <h4><%= theme.name %></h4>
-        <span class="card-stats-inline">
-          ❤️&nbsp;<%= theme.likes %>&nbsp;&nbsp;⬇&nbsp;<%= theme.downloads %>
-        </span>
+  <div class="card-preview" aria-hidden="true">
+    <% const hasPreview = theme.previewSlug && theme.previewViews && theme.previewViews.includes('pattern'); %>
+    <% if (hasPreview) { %>
+      <img src="/uploads/previews/<%= theme.previewSlug %>/pattern.png"
+           alt="Pattern Editor preview of <%= theme.name %>">
+    <% } else if (theme.palette_svg) { %>
+      <img src="<%= theme.palette_svg %>"
+           alt="Color palette for <%= theme.name %>">
+    <% } else { %>
+      <div class="card-preview-empty">
+        <span>◈</span>
       </div>
-      <span class="card-author">by <%= theme.author %></span>
-      <div class="tags card-tags">
-        <% theme.tags.forEach(tag => { %>
-          <span class="tag tag-<%= tag %> tag-sm"><%= tag %></span>
-        <% }); %>
-      </div>
+    <% } %>
+  </div>
+
+  <div class="card-info">
+    <div class="card-title" title="<%= theme.name %>"><%= theme.name %></div>
+    <div class="card-meta">
+      <span class="card-author"><%= theme.author %></span>
+      <span class="card-likes" aria-label="<%= theme.likes %> likes">♥ <%= theme.likes %></span>
     </div>
-  </article>
+  </div>
+
+  <div class="card-palette" aria-hidden="true">
+    <% if (theme.topColors && theme.topColors.length > 0) { %>
+      <% theme.topColors.slice(0, 6).forEach(c => { %>
+        <div style="background:#<%= c.hex %>; flex-grow:<%= Math.max(c.weight,1) %>"></div>
+      <% }); %>
+    <% } else { %>
+      <div style="background:var(--chrome-border); flex:1"></div>
+    <% } %>
+  </div>
 </a>

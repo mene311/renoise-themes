@@ -1,204 +1,211 @@
-<%- include('partials/header', { theme: 'dark' }) %>
+<%
+  const pageTitle = theme.name + ' by ' + theme.author + ' — Renoise Theme Share';
+  const pageDescription = (theme.description || 'A Renoise color theme').substring(0, 160);
+  const ogTitle = theme.name + ' by ' + theme.author;
+  const ogDescription = pageDescription;
+%>
+<%- include('partials/header', { pageTitle, pageDescription, ogTitle, ogDescription, ogImage }) %>
 
-<a href="/" class="back-link">&larr; Back to browse</a>
+<%
+  // Pick an accent color based on theme tags for dynamic UI tinting
+  const accentMap = {
+    red: 'red', orange: 'orange', yellow: 'yellow', green: 'green',
+    cyan: 'cyan', blue: 'blue', purple: 'purple', pink: 'pink'
+  };
+  let accentColor = 'green';
+  for (const tag of theme.tags) {
+    if (accentMap[tag]) { accentColor = accentMap[tag]; break; }
+  }
+%>
 
-<section class="detail-page">
+<div class="detail-layout" data-accent="<%= accentColor %>" role="application" aria-label="Theme detail view">
 
-  <!-- Title bar -->
-  <div class="detail-title-bar">
-    <div>
+  <!-- LEFT SIDEBAR: Track Info -->
+  <aside class="detail-sidebar-left" aria-label="Theme information">
+    <a href="/" class="back-link">← Back to browse</a>
+
+    <div class="panel-section">
       <h1 class="detail-title"><%= theme.name %></h1>
-      <p class="detail-meta">
-        by <strong><%= theme.author %></strong> —
-        <%= new Date(theme.uploaded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
-      </p>
+      <p class="detail-meta">by <strong><%= theme.author %></strong></p>
+      <p class="detail-meta"><%= new Date(theme.uploaded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+
+      <div class="detail-actions">
+        <button class="btn-like" id="likeBtn" data-id="<%= theme.id %>" aria-label="Like this theme">
+          <span id="likeIcon" aria-hidden="true">♥</span>
+          <span id="likeCount"><%= theme.likes %></span>
+        </button>
+        <button class="btn-share" id="shareBtn" aria-label="Share theme link">
+          Share
+        </button>
+        <a href="/download/<%= theme.slug %>" class="btn-primary" aria-label="Download theme file">
+          ⬇ Download
+        </a>
+      </div>
     </div>
-    <div class="detail-actions">
-      <button class="btn-like" id="likeBtn" data-id="<%= theme.id %>">
-        <span class="like-icon" id="likeIcon">🤍</span>
-        <span id="likeCount"><%= theme.likes %></span>
-      </button>
-      <button class="btn-share" id="shareBtn">📋 Share</button>
-      <a href="/download/<%= theme.id %>" class="btn-download">⬇ Download</a>
+
+    <div class="panel-section">
+      <h3>Stats</h3>
+      <div class="detail-stats-grid">
+        <div class="stat-cell">
+          <span class="stat-value" id="likeCountStrip"><%= theme.likes %></span>
+          <span class="stat-label">Likes</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-value"><%= theme.downloads %></span>
+          <span class="stat-label">Downloads</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-value"><%= comments.length %></span>
+          <span class="stat-label">Comments</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-value"><%= theme.unique_colors %></span>
+          <span class="stat-label">Colors</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="detail-stats-strip">
-    <span>❤️ <strong id="likeCountStrip"><%= theme.likes %></strong> likes</span>
-    <span>⬇ <strong><%= theme.downloads %></strong> downloads</span>
-    <span>💬 <strong><%= comments.length %></strong> comments</span>
-  </div>
-
-  <!-- ═══ RENOISE PREVIEW ═══ -->
-  <% const viewLabels = { pattern: 'Pattern Editor', mixer: 'Mixer', waveform: 'Waveform' }; %>
-  <% const hasPreviews = theme.previewViews && theme.previewViews.length > 0; %>
-
-  <div class="detail-section">
-    <h3>🖥️ Renoise Preview</h3>
-
-    <% if (hasPreviews) { %>
-      <div class="preview-tabs">
-        <% theme.previewViews.forEach((view, i) => { %>
-          <button class="preview-tab <%= i === 0 ? 'preview-tab-active' : '' %>" data-view="<%= view %>">
-            <%= viewLabels[view] || view %>
-          </button>
+    <div class="panel-section">
+      <h3>Prominent Colors</h3>
+      <div class="color-swatches">
+        <% theme.topColors.slice(0, 3).forEach(c => { %>
+          <div class="color-swatch" data-color="#<%= c.hex %>" role="button" tabindex="0" aria-label="Copy hex color <%= c.hex %>">
+            <div class="color-swatch-block" style="background:#<%= c.hex %>"></div>
+            <code>#<%= c.hex %></code>
+          </div>
         <% }); %>
       </div>
-      <div class="preview-viewport">
-        <% theme.previewViews.forEach((view, i) => { %>
-          <img
-            class="preview-render <%= i === 0 ? 'preview-render-active' : '' %>"
-            id="preview-<%= view %>"
-            <%= i === 0 ? `src="/uploads/previews/${theme.previewSlug}/${view}.png"` : `data-src="/uploads/previews/${theme.previewSlug}/${view}.png" src=""` %>
-            alt="Renoise <%= viewLabels[view] || view %> with the <%= theme.name %> color theme"
-            loading="lazy"
-          >
+    </div>
+
+    <div class="panel-section">
+      <h3>Tags</h3>
+      <div class="tags">
+        <% theme.tags.forEach(tag => { %>
+          <a href="/?tag=<%= tag %>" class="tag tag-<%= tag %>"><%= tag %></a>
         <% }); %>
       </div>
-      <% if (theme.previewError) { %>
-        <div class="preview-warning">
-          ⚠️ <%= theme.previewError %> — some views may be missing
+    </div>
+
+    <div class="panel-section">
+      <h3>Properties</h3>
+      <div class="stat-bar-row">
+        <span class="stat-bar-label">Lightness</span>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:<%= theme.avg_lightness %>%"></div></div>
+        <span class="stat-bar-value"><%= theme.avg_lightness %>%</span>
+      </div>
+      <div class="stat-bar-row">
+        <span class="stat-bar-label">Saturation</span>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:<%= theme.avg_saturation %>%"></div></div>
+        <span class="stat-bar-value"><%= theme.avg_saturation %>%</span>
+      </div>
+      <div class="stat-bar-row">
+        <span class="stat-bar-label">Contrast</span>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:<%= theme.contrast_range %>%"></div></div>
+        <span class="stat-bar-value"><%= theme.contrast_range %>%</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN: Preview + Content -->
+  <div class="detail-main">
+
+    <% const hasPreviews = theme.previewViews && theme.previewViews.includes('pattern'); %>
+
+    <!-- Preview Viewport -->
+    <div class="preview-viewport">
+      <% if (hasPreviews) { %>
+        <img
+          class="preview-render"
+          src="/uploads/previews/<%= theme.previewSlug %>/pattern.png"
+          alt="Renoise Pattern Editor preview using the <%= theme.name %> color theme"
+          loading="lazy"
+          draggable="false"
+        >
+        <% if (theme.previewError) { %>
+          <div class="preview-warning" role="alert">
+            ⚠ <%= theme.previewError %> — some views may be missing
+          </div>
+        <% } %>
+      <% } else { %>
+        <div class="preview-unavailable">
+          <% if (theme.previewError) { %>
+            ⚠ Preview generation failed: <%= theme.previewError %>
+          <% } else { %>
+            ℹ No preview available — check the palette below
+          <% } %>
         </div>
       <% } %>
-    <% } else { %>
-      <div class="preview-unavailable">
-        <% if (theme.previewError) { %>
-          ⚠️ Preview generation failed: <%= theme.previewError %>
+    </div>
+
+    <!-- Content sections below preview -->
+    <div class="detail-sections">
+
+      <!-- Description -->
+      <% if (theme.description && theme.description.trim()) { %>
+        <div class="detail-section-box">
+          <h3>About</h3>
+          <p><%= theme.description %></p>
+        </div>
+      <% } %>
+
+      <!-- Gallery -->
+      <% if (theme.screenshots.length > 0) { %>
+        <div class="detail-section-box">
+          <h3>Screenshots</h3>
+          <div class="gallery-grid">
+            <% theme.screenshots.forEach((ss, i) => { %>
+              <div class="gallery-thumb <%= i === 0 ? 'gallery-active' : '' %>" data-src="/uploads/screenshots/<%= ss %>" tabindex="0" role="button" aria-label="View screenshot <%= i + 1 %>">
+                <img src="/uploads/screenshots/<%= ss %>" alt="User screenshot <%= i + 1 %> of <%= theme.name %> theme" loading="lazy">
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Palette strip (full width) -->
+      <div class="detail-section-box">
+        <h3>Full Palette</h3>
+        <img src="<%= theme.palette_svg %>" alt="Complete color palette for <%= theme.name %> — <%= theme.unique_colors %> unique colors" style="width:100%; display:block; border:1px solid var(--chrome-border);">
+      </div>
+
+      <!-- Comments -->
+      <div class="detail-section-box" id="comments">
+        <h3>Comments (<%= comments.length %>)</h3>
+
+        <form action="/theme/<%= theme.slug %>/comment" method="POST" class="comment-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label for="commentMessage" class="sr-only">Write a comment</label>
+          <textarea id="commentMessage" name="message" placeholder="Leave a comment…" required maxlength="1000" rows="3"></textarea>
+          <button type="submit">Post Comment</button>
+        </form>
+
+        <% if (comments.length === 0) { %>
+          <p class="no-comments">No comments yet — be the first!</p>
         <% } else { %>
-          ℹ️ No preview available — check the palette and screenshots below
+          <div class="comment-list">
+            <% comments.forEach(c => { %>
+              <article class="comment">
+                <div class="comment-head">
+                  <strong><%= c.author %></strong>
+                  <time datetime="<%= c.created_at %>"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></time>
+                </div>
+                <p><%= c.message %></p>
+              </article>
+            <% }); %>
+          </div>
         <% } %>
       </div>
-    <% } %>
-  </div>
-
-  <!-- ═══ HERO SECTION ═══ -->
-  <div class="detail-hero">
-
-    <!-- Left: screenshot or palette -->
-    <div class="detail-hero-visual">
-      <% if (theme.screenshots.length > 0) { %>
-        <img
-          src="/uploads/screenshots/<%= theme.screenshots[0] %>"
-          alt="Renoise window showing the <%= theme.name %> color theme"
-          class="hero-img"
-          id="heroImage"
-        >
-      <% } else { %>
-        <div class="hero-palette-wrap">
-          <img src="<%= theme.palette_svg %>" alt="Color palette strip for <%= theme.name %> — <%= theme.unique_colors %> unique colors" class="hero-palette-only">
-        </div>
-      <% } %>
-    </div>
-
-    <!-- Right: sidebar -->
-    <div class="detail-sidebar">
-
-      <div class="sb-section">
-        <h3>🏆 Main Colors</h3>
-        <div class="sb-colors">
-          <% theme.topColors.slice(0, 3).forEach(c => { %>
-            <div class="sb-color" data-color="#<%= c.hex %>" title="Click to copy #<%= c.hex %>" role="button" aria-label="Copy hex color #<%= c.hex %>">
-              <div class="sb-color-block" style="background:#<%= c.hex %>;"></div>
-              <code>#<%= c.hex %></code>
-            </div>
-          <% }); %>
-        </div>
-      </div>
-
-      <div class="sb-section">
-        <h3>🏷️ Tags</h3>
-        <div class="tags">
-          <% theme.tags.forEach(tag => { %>
-            <a href="/?tag=<%= tag %>" class="tag tag-<%= tag %>"><%= tag %></a>
-          <% }); %>
-        </div>
-      </div>
-
-      <div class="sb-section sb-section-last">
-        <h3>📊 Stats</h3>
-        <div class="sb-stats">
-          <div class="sb-stat">
-            <span>Colors</span>
-            <strong><%= theme.unique_colors %></strong>
-          </div>
-          <div class="sb-stat">
-            <span>Lightness</span>
-            <div class="sb-bar"><div class="sb-bar-fill" style="width:<%= theme.avg_lightness %>%; background:hsl(0,0%,<%= theme.avg_lightness %>%);"></div></div>
-            <strong><%= theme.avg_lightness %>%</strong>
-          </div>
-          <div class="sb-stat">
-            <span>Saturation</span>
-            <div class="sb-bar"><div class="sb-bar-fill" style="width:<%= theme.avg_saturation %>%; background:hsl(200,<%= theme.avg_saturation %>%,50%);"></div></div>
-            <strong><%= theme.avg_saturation %>%</strong>
-          </div>
-          <div class="sb-stat">
-            <span>Contrast</span>
-            <div class="sb-bar"><div class="sb-bar-fill" style="width:<%= theme.contrast_range %>%; background:#fff;"></div></div>
-            <strong><%= theme.contrast_range %>%</strong>
-          </div>
-        </div>
-      </div>
 
     </div>
   </div>
+</div>
 
-  <!-- ═══ DESCRIPTION ═══ -->
-  <% if (theme.description && theme.description.trim()) { %>
-    <div class="detail-desc">
-      <h3>📝 About</h3>
-      <p><%= theme.description %></p>
-    </div>
-  <% } %>
+<!-- Toast notification -->
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- ═══ GALLERY ═══ -->
-  <% if (theme.screenshots.length > 1) { %>
-    <div class="detail-section">
-      <h3>📸 Screenshots</h3>
-      <div class="gallery-grid">
-        <% theme.screenshots.forEach((ss, i) => { %>
-          <div class="gallery-thumb <%= i === 0 ? 'gallery-active' : '' %>" data-src="/uploads/screenshots/<%= ss %>">
-            <img src="/uploads/screenshots/<%= ss %>" alt="User screenshot <%= i + 1 %> of <%= theme.name %> theme" loading="lazy">
-          </div>
-        <% }); %>
-      </div>
-    </div>
-  <% } %>
-
-  <!-- ═══ COMMENTS ═══ -->
-  <div class="detail-section" id="comments">
-    <h3>💬 Comments (<%= comments.length %>)</h3>
-
-    <form action="/theme/<%= theme.id %>/comment" method="POST" class="comment-form">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div class="cf-row">
-        <textarea name="message" placeholder="Leave a comment..." required rows="2" class="cf-msg" maxlength="1000" aria-label="Write a comment"></textarea>
-      </div>
-      <button type="submit" class="btn-comment">💬 Post</button>
-    </form>
-
-    <% if (comments.length === 0) { %>
-      <p class="no-comments">No comments yet — be the first!</p>
-    <% } else { %>
-      <div class="comment-list">
-        <% comments.forEach(c => { %>
-          <div class="comment">
-            <div class="comment-head">
-              <strong><%= c.author %></strong>
-              <span><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
-            </div>
-            <p><%= c.message %></p>
-          </div>
-        <% }); %>
-      </div>
-    <% } %>
-  </div>
-
-</section>
-
-<div class="toast" id="toast"></div>
-
-<div class="lightbox" id="lightbox">
-  <img id="lightboxImg">
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Image preview" aria-modal="true">
+  <img id="lightboxImg" alt="">
 </div>
 
 <%- include('partials/footer') %>

@@ -1,76 +1,125 @@
-<%- include('partials/header') %>
+<%
+  let pageTitle = 'Renoise Theme Share';
+  if (searchQuery) pageTitle = 'Search: ' + searchQuery + ' — Renoise Theme Share';
+  else if (filterTag) pageTitle = filterTag.charAt(0).toUpperCase() + filterTag.slice(1) + ' themes — Renoise Theme Share';
+%>
+<%- include('partials/header', { pageTitle }) %>
 
-<!-- Hero -->
-<section class="hero">
-  <h1>Discover Renoise Themes</h1>
-  <p class="hero-sub">Upload, browse, and download color themes for Renoise</p>
-  <div class="search-box">
-    <input type="search" id="searchInput" placeholder="Search by name, author, or tag..." autocomplete="off"
-      value="<%= typeof searchQuery !== 'undefined' && searchQuery ? searchQuery : '' %>">
-  </div>
-</section>
-
-<!-- Controls -->
-<div class="controls-bar">
-  <div class="filter-bar">
-    <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>"
-       class="tag tag-filter <%= !filterTag ? 'tag-active' : '' %>">all</a>
-    <% allTags.forEach(t => { %>
-      <a href="/?tag=<%= t.name %><%= sort !== 'newest' ? '&sort=' + sort : '' %>"
-         class="tag tag-filter tag-<%= t.name %> <%= filterTag === t.name ? 'tag-active' : '' %>">
-        <%= t.name %> <span class="tag-count"><%= t.count %></span>
-      </a>
-    <% }); %>
-  </div>
-  <div class="sort-bar">
-    <span class="sort-label">Sort:</span>
-    <% const sorts = [
-      { key: 'newest', label: '🕐 Newest' },
-      { key: 'popular', label: '❤️ Popular' },
-      { key: 'downloads', label: '⬇ Downloads' },
-      { key: 'oldest', label: '📅 Oldest' }
-    ]; %>
-    <% sorts.forEach(s => { %>
-      <a href="/?<%= filterTag ? 'tag=' + filterTag + '&' : '' %>sort=<%= s.key %>"
-         class="sort-option <%= sort === s.key ? 'sort-active' : '' %>"><%= s.label %></a>
-    <% }); %>
-  </div>
+<!-- What's New Banner -->
+<div class="announcement-bar" id="whatsNewBanner" hidden>
+  <span class="announcement-label">NEW</span>
+  <span class="announcement-text">Pattern Editor previews are now <strong>pixel-perfect</strong> — rendered directly from theme files with real note data.</span>
+  <a href="/how-it-works" class="announcement-link" target="_blank">How it works →</a>
+  <button class="announcement-close" id="closeBanner" aria-label="Dismiss announcement">✕</button>
 </div>
 
-<% if (filterTag) { %>
-  <div class="active-filter">
-    Showing: <span class="tag tag-<%= filterTag %>"><%= filterTag %></span>
-    <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>" class="clear-filter">✕ clear</a>
-  </div>
-<% } %>
+<div class="tracker-layout" role="application" aria-label="Renoise theme browser">
 
-<div class="stats-bar">
-  <span id="themeCount"><%= themes.length %> theme<%= themes.length !== 1 ? 's' : '' %></span>
-</div>
+  <!-- LEFT: Theme Gallery -->
+  <section class="track-list" aria-label="Theme gallery">
+    <div class="gallery-header" aria-hidden="true">
+      <span>Themes</span>
+      <span class="gallery-count"><%= totalCount %> total</span>
+    </div>
 
-<!-- Grid -->
-<% if (themes.length === 0) { %>
-  <section class="empty-state">
-    <div class="empty-icon">🎨</div>
-    <h2>No themes yet!</h2>
-    <p>Be the first to share your Renoise colors.</p>
-    <a href="/upload" role="button">⬆ Upload a Theme</a>
+    <% if (filterTag) { %>
+      <div class="active-filter-bar">
+        <span>Filter: <strong><%= filterTag %></strong></span>
+        <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>" class="clear-filter">✕ clear</a>
+      </div>
+    <% } %>
+
+    <div class="track-list-body theme-grid"
+         id="themeGrid"
+         data-total="<%= totalCount %>"
+         data-loaded="<%= themes.length %>"
+         data-tag="<%= filterTag || '' %>"
+         data-q="<%= searchQuery || '' %>"
+         data-sort="<%= sort %>">
+
+      <% if (themes.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-icon" aria-hidden="true">◈</div>
+          <h2>No themes found</h2>
+          <p>Try a different search or be the first to share.</p>
+          <a href="/upload" class="btn-submit" style="width:auto; padding: 6px 16px; margin-top: 8px;">Upload a Theme</a>
+        </div>
+      <% } else { %>
+        <% themes.forEach((theme, i) => { %>
+          <%- include('partials/theme-card', { theme }) %>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <% if (themes.length > 0) { %>
+      <div id="loadMoreSentinel" class="load-more-sentinel" aria-hidden="true">
+        <span class="load-more-spinner">Loading more themes…</span>
+      </div>
+    <% } %>
   </section>
-<% } else { %>
-  <div class="theme-grid"
-       id="themeGrid"
-       data-total="<%= totalCount %>"
-       data-loaded="<%= themes.length %>"
-       data-tag="<%= filterTag || '' %>"
-       data-q="<%= searchQuery || '' %>"
-       data-sort="<%= sort %>">
-    <% themes.forEach(theme => { %>
-      <%- include('partials/theme-card', { theme }) %>
-    <% }); %>
-  </div>
-  <div id="loadMoreSentinel" class="load-more-sentinel" aria-hidden="true">
-    <span class="load-more-spinner">Loading more themes…</span>
-  </div>
-<% } %>
+
+  <!-- RIGHT: Filter / Detail Panel -->
+  <aside class="side-panel" aria-label="Filters and controls">
+
+    <!-- Search -->
+    <div class="panel-section">
+      <h3>Search</h3>
+      <div class="cmd-search">
+        <label for="searchInput" class="sr-only">Search themes</label>
+        <input type="search" id="searchInput" placeholder="type to filter…" autocomplete="off"
+          value="<%= typeof searchQuery !== 'undefined' && searchQuery ? searchQuery : '' %>">
+      </div>
+      <p class="panel-stat" style="margin-top:6px"><strong id="themeCount"><%= themes.length %></strong> theme<%= themes.length !== 1 ? 's' : '' %></p>
+    </div>
+
+    <!-- Tags -->
+    <div class="panel-section">
+      <h3>Tags</h3>
+      <div class="tag-grid" role="group" aria-label="Filter by tag">
+        <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>"
+           class="tag-btn <%= !filterTag ? 'active' : '' %>">all</a>
+        <% allTags.forEach(t => { %>
+          <a href="/?tag=<%= t.name %><%= sort !== 'newest' ? '&sort=' + sort : '' %>"
+             class="tag-btn tag-<%= t.name %> <%= filterTag === t.name ? 'active' : '' %>">
+            <%= t.name %>
+            <span class="tag-count"><%= t.count %></span>
+          </a>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Sort -->
+    <div class="panel-section">
+      <h3>Sort</h3>
+      <div class="sort-group" role="radiogroup" aria-label="Sort themes">
+        <% const sorts = [
+          { key: 'newest', label: 'Newest' },
+          { key: 'popular', label: 'Popular' },
+          { key: 'downloads', label: 'Downloads' },
+          { key: 'oldest', label: 'Oldest' }
+        ]; %>
+        <% sorts.forEach(s => { %>
+          <a href="/?<%= filterTag ? 'tag=' + filterTag + '&' : '' %>sort=<%= s.key %>"
+             class="sort-option <%= sort === s.key ? 'active' : '' %>"
+             role="radio"
+             aria-checked="<%= sort === s.key %>">
+            <%= s.label %>
+          </a>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Keyboard hints -->
+    <div class="panel-section" style="margin-top:auto; border-top:1px solid var(--chrome-border);">
+      <h3>Shortcuts</h3>
+      <div style="font-size:11px; color:var(--chrome-text-dim); line-height:1.8;">
+        <div><kbd>/</kbd> focus search</div>
+        <div><kbd>↑</kbd><kbd>↓</kbd> navigate themes</div>
+        <div><kbd>Enter</kbd> open theme</div>
+      </div>
+    </div>
+
+  </aside>
+</div>
 
 <%- include('partials/footer') %>

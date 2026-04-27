@@ -1,0 +1,33 @@
+<%- include('partials/header', { pageTitle: 'Edit ' + theme.name + ' — Renoise Theme Share' }) %>
+
+<div class="auth-page">
+  <article class="auth-card">
+    <h1>Edit Theme</h1>
+    <p class="hero-sub"><%= theme.name %></p>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
+    <% } %>
+
+    <form action="/theme/<%= theme.slug %>/edit" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <label for="description">
+        Description
+        <textarea id="description" name="description" rows="4" style="width: 100%; margin-top: 4px; background: var(--chrome-bg-deep); border: 1px solid var(--chrome-border); color: var(--chrome-text); font-family: var(--font-mono); font-size: 12px; padding: 8px; resize: vertical; outline: none;"><%= theme.description || '' %></textarea>
+      </label>
+
+      <button type="submit" class="btn-submit" style="margin-top: 8px;">Save Changes</button>
+    </form>
+
+    <p class="auth-switch">
+      <a href="/theme/<%= theme.slug %>/edit-colors">🎨 Edit Colors</a> |
+      <a href="/theme/<%= theme.slug %>">&larr; Back to theme</a>
+    </p>
+  </article>
+</div>
+
+<%- include('partials/footer') %>

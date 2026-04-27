@@ -1,67 +1,57 @@
 <%- include('partials/header') %>
 
-<h1>✅ Theme Uploaded!</h1>
+<section class="result-page">
+  <h1>✅ Theme Uploaded!</h1>
 
-<article>
-  <header>
-    <h2><%= theme.originalName %></h2>
-    <small>by <strong><%= theme.author %></strong></small>
-  </header>
+  <article>
+    <header>
+      <h2><%= theme.originalName %></h2>
+      <small>by <strong><%= theme.author %></strong></small>
+    </header>
 
-  <!-- Weighted color palette -->
-  <h3>🎨 Color Palette</h3>
-  <img
-    src="<%= theme.paletteSVG %>"
-    alt="Color palette"
-    style="width: 100%; max-width: 550px; border-radius: 8px;"
-  >
+    <h3>Color Palette</h3>
+    <img
+      src="<%= theme.paletteSVG %>"
+      alt="Color palette for <%= theme.originalName %>"
+      style="width: 100%; display: block; border: 1px solid var(--chrome-border);"
+    >
 
-  <!-- Top colors -->
-  <h3 style="margin-top: 1.5rem;">🏆 Most Prominent Colors</h3>
-  <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
-    <% theme.topColors.slice(0, 3).forEach(c => { %>
-      <div style="text-align: center;">
-        <div style="
-          width: 48px;
-          height: 48px;
-          background: #<%= c.hex %>;
-          border-radius: 8px;
-          border: 2px solid #333;
-        "></div>
-        <small style="font-family: monospace; font-size: 0.7rem;">#<%= c.hex %></small>
-        <br>
-        <small style="opacity: 0.5;">w:<%= c.weight %></small>
-      </div>
-    <% }); %>
-  </div>
+    <h3>Most Prominent Colors</h3>
+    <div class="color-swatches">
+      <% theme.topColors.slice(0, 3).forEach(c => { %>
+        <div class="color-swatch" data-color="#<%= c.hex %>" role="button" tabindex="0" aria-label="Copy hex color <%= c.hex %>">
+          <div class="color-swatch-block" style="background:#<%= c.hex %>"></div>
+          <code>#<%= c.hex %></code>
+        </div>
+      <% }); %>
+    </div>
 
-  <!-- Auto-tags -->
-  <h3 style="margin-top: 1.5rem;">🏷️ Auto-Tags</h3>
-  <div class="tags">
-    <% theme.tags.forEach(tag => { %>
-      <span class="tag tag-<%= tag %>"><%= tag %></span>
-    <% }); %>
-  </div>
+    <h3>Auto-Tags</h3>
+    <div class="tags">
+      <% theme.tags.forEach(tag => { %>
+        <span class="tag tag-<%= tag %>"><%= tag %></span>
+      <% }); %>
+    </div>
 
-  <!-- Stats -->
-  <h3 style="margin-top: 1.5rem;">📊 Stats</h3>
-  <table>
-    <tr><td>Unique colors</td><td><strong><%= theme.stats.totalUnique %></strong></td></tr>
-    <tr><td>Chromatic (colorful)</td><td><strong><%= theme.stats.chromaticCount %></strong></td></tr>
-    <tr><td>Avg lightness (weighted)</td><td><strong><%= theme.stats.avgLightness %>%</strong></td></tr>
-    <tr><td>Avg saturation (weighted)</td><td><strong><%= theme.stats.avgSaturation %>%</strong></td></tr>
-    <tr><td>Contrast range</td><td><strong><%= theme.stats.contrastRange %>%</strong></td></tr>
-  </table>
+    <h3>Stats</h3>
+    <table>
+      <tr><td>Unique colors</td><td><strong><%= theme.stats.totalUnique %></strong></td></tr>
+      <tr><td>Chromatic (colorful)</td><td><strong><%= theme.stats.chromaticCount %></strong></td></tr>
+      <tr><td>Avg lightness (weighted)</td><td><strong><%= theme.stats.avgLightness %>%</strong></td></tr>
+      <tr><td>Avg saturation (weighted)</td><td><strong><%= theme.stats.avgSaturation %>%</strong></td></tr>
+      <tr><td>Contrast range</td><td><strong><%= theme.stats.contrastRange %>%</strong></td></tr>
+    </table>
 
-  <% if (theme.screenshot) { %>
-    <h3>📸 Screenshot</h3>
-    <img src="/uploads/screenshots/<%= theme.screenshot %>" alt="Screenshot" style="width: 100%; border-radius: 8px;">
-  <% } %>
+    <% if (theme.screenshot) { %>
+      <h3>Screenshot</h3>
+      <img src="/uploads/screenshots/<%= theme.screenshot %>" alt="Screenshot of <%= theme.originalName %>" style="width: 100%; display: block; border: 1px solid var(--chrome-border);">
+    <% } %>
 
-  <footer>
-    <a href="/upload" role="button" class="outline">Upload Another</a>
-    <a href="/" role="button">Browse All</a>
-  </footer>
-</article>
+    <footer>
+      <a href="/upload">Upload Another</a>
+      <a href="/" role="button">Browse All</a>
+    </footer>
+  </article>
+</section>
 
 <%- include('partials/footer') %>

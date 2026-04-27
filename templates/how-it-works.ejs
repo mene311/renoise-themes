@@ -1,0 +1,268 @@
+<%- include('partials/header', { pageTitle: 'How It Works — Renoise Theme Share' }) %>
+
+<style>
+  .doc-page { max-width: 820px; margin: 32px auto; padding: 0 16px; }
+  .doc-page h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .doc-page h2 { font-size: 1.1rem; margin-top: 32px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--chrome-border); }
+  .doc-page h3 { font-size: 0.95rem; margin-top: 24px; margin-bottom: 8px; color: var(--chrome-text-bright); }
+  .doc-page h4 { font-size: 0.85rem; margin-top: 20px; margin-bottom: 6px; color: var(--accent); }
+  .doc-page p { font-size: 14px; line-height: 1.7; color: var(--chrome-text-dim); margin-bottom: 14px; }
+  .doc-page strong { color: var(--chrome-text-bright); }
+  .doc-page a { color: var(--accent); }
+  .doc-page a:hover { color: var(--accent-hover); }
+  .doc-page ul, .doc-page ol { color: var(--chrome-text-dim); font-size: 14px; line-height: 1.7; margin-bottom: 14px; padding-left: 24px; }
+  .doc-page li { margin-bottom: 4px; }
+  .doc-page blockquote { border-left: 3px solid var(--accent); padding: 6px 14px; margin: 16px 0; background: var(--chrome-bg); color: var(--chrome-text-dim); }
+  .doc-page code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--chrome-bg-deep);
+    padding: 1px 5px;
+    border: 1px solid var(--chrome-border);
+    color: var(--accent);
+  }
+  .doc-page pre {
+    background: var(--chrome-bg-deep);
+    border: 1px solid var(--chrome-border);
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .doc-page pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--chrome-text-dim);
+  }
+  .doc-page table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .doc-page th {
+    background: var(--chrome-bg);
+    border: 1px solid var(--chrome-border);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--chrome-text-bright);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .doc-page td {
+    border: 1px solid var(--chrome-border);
+    padding: 6px 12px;
+    color: var(--chrome-text-dim);
+  }
+  .doc-page hr {
+    border: none;
+    border-top: 1px solid var(--chrome-border);
+    margin: 28px 0;
+  }
+  .doc-page em { color: var(--chrome-text-dim); font-style: italic; }
+  .doc-page .back-link { display: inline-flex; margin-bottom: 24px; }
+</style>
+
+<div class="doc-page">
+
+  <a href="/" class="back-link">&larr; Back to browse</a>
+
+  <h1>The Renoise Theme-to-Screenshot Preview System</h1>
+  <p style="color: var(--chrome-text-faint); font-size: 12px; margin-bottom: 24px;">A Pixel-Accurate Theme Preview Engine for Closed-Source Software</p>
+
+  <hr>
+
+  <p><strong>Abstract.</strong> This document covers a pixel-accurate theme preview system that renders Renoise Digital Audio Workstation (DAW) color themes without requiring a Renoise installation. The system maps every pixel in reference screenshots to semantic UI elements via binary pixel maps, then recolors those pixels using colors extracted from <code>.xrnc</code> theme files. The result is a three-pass rendering pipeline that produces Pattern Editor preview images indistinguishable from native screenshots — at a fraction of the computational and licensing cost.</p>
+
+  <h2>1. Executive Summary</h2>
+
+  <p>Renoise is a professional music tracker and Digital Audio Workstation used by electronic musicians worldwide. Like many DAWs, it supports custom color themes via <code>.xrnc</code> XML files containing 70+ color definitions. However, Renoise provides no built-in theme preview mechanism. Music producers who want to evaluate a theme must install it, restart Renoise, and manually inspect every view.</p>
+
+  <p>The Renoise Theme-to-Screenshot Preview System solves this by treating theme preview as a <strong>pixel recoloring problem</strong> rather than a UI rendering problem:</p>
+
+  <ol>
+    <li><strong>Map</strong> every pixel in a reference screenshot to a semantic UI element</li>
+    <li><strong>Parse</strong> any <code>.xrnc</code> file to extract its color definitions</li>
+    <li><strong>Recolor</strong> the mapped pixels using the theme's colors</li>
+    <li><strong>Composite</strong> text and anti-aliased details using a special black/white text-mask theme</li>
+  </ol>
+
+  <p><strong>Key innovations:</strong></p>
+  <ul>
+    <li>Binary pixel maps derived from automated green-probe differential analysis</li>
+    <li>A three-pass rendering algorithm that handles anti-aliasing, boundary smoothing, and text compositing</li>
+    <li>A headless Xvfb automation pipeline that generates 71 theme variants in ~3 minutes</li>
+    <li>A live Theme Creator tool with 70 color pickers ranked by pixel coverage</li>
+  </ul>
+
+  <h2>2. The Problem Space</h2>
+
+  <h3>2.1 What is a Renoise Theme?</h3>
+
+  <p>A Renoise theme is an XML file with the extension <code>.xrnc</code> (Renoise Color). It defines colors for 70+ UI elements, from the main application background (<code>Main_Back</code>) to the color of automation curve edges (<code>Automation_Line_Edge</code>).</p>
+
+  <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;SkinColors doc_version="12"&gt;
+  &lt;Main_Back&gt;30,30,30&lt;/Main_Back&gt;
+  &lt;Main_Font&gt;220,220,220&lt;/Main_Font&gt;
+  &lt;Body_Back&gt;40,40,50&lt;/Body_Back&gt;
+  &lt;!-- ... 70 more elements ... --&gt;
+&lt;/SkinColors&gt;</code></pre>
+
+  <p>These colors control every visible surface of Renoise's interface. Changing <code>Main_Back</code> affects roughly 46% of the screen. Changing <code>VuMeter_Peak</code> affects perhaps 0.01%.</p>
+
+  <h3>2.2 The Preview Gap</h3>
+
+  <p>Before this system existed, theme authors and curators faced three problems:</p>
+  <ol>
+    <li><strong>No built-in preview.</strong> Renoise does not generate thumbnails or previews.</li>
+    <li><strong>Manual screenshots are inconsistent.</strong> Different users run different screen resolutions, window sizes, and song projects.</li>
+    <li><strong>Renoise is required.</strong> Generating a screenshot means having Renoise installed, licensed, and running.</li>
+  </ol>
+
+  <h3>2.3 Why Not Just Render the UI?</h3>
+
+  <p>The most obvious solution — parse the theme and draw the UI from scratch — is infeasible. Renoise is closed-source. Its UI contains thousands of custom widgets, proprietary bevel and shading algorithms, and anti-aliased text with unknown font metrics. We needed a different approach.</p>
+
+  <h2>3. System Architecture</h2>
+
+  <p>The upload processing pipeline when a <code>.xrnc</code> file is uploaded:</p>
+
+  <table>
+    <tr><th>Stage</th><th>Module</th><th>What It Does</th></tr>
+    <tr><td>1</td><td><code>Multer</code></td><td>Handles file upload, sanitizes filename, stores in <code>public/uploads/themes/</code></td></tr>
+    <tr><td>2</td><td><code>lib/parser.js</code></td><td>Parses XML, extracts colors, assigns semantic roles with weights. Exports <code>elementColorMap</code> — single source of truth for all downstream steps.</td></tr>
+    <tr><td>3</td><td><code>lib/categorize.js</code></td><td>Converts colors to HSL, runs weighted analysis to auto-tag themes (dark/light, neon/pastel, etc.)</td></tr>
+    <tr><td>4</td><td><code>lib/palette.js</code></td><td>Generates SVG palette strips tiered by MAIN/SECONDARY/UI/ACCENTS bands</td></tr>
+    <tr><td>5</td><td><code>lib/preview-renderer.js</code></td><td>Renders PNG previews using the binary pixel map system (see Section 4)</td></tr>
+  </table>
+
+  <p>All stages complete in under 2 seconds for a typical theme.</p>
+
+  <h2>4. The Pixel Map System (Core Innovation)</h2>
+
+  <h3>4.1 Why Pixel Maps?</h3>
+
+  <p>Think of it like a <strong>paint-by-numbers</strong> template. Every pixel has a number, and the theme file provides the color for each number. We never need to understand <em>how</em> Renoise draws its UI — only <em>which</em> element owns <em>which</em> pixel.</p>
+
+  <h3>4.2 The White-Baseline + Green Probe Method</h3>
+
+  <p>We generate 71 variant themes and capture them via headless automation:</p>
+
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Generate <strong>1 baseline</strong> (every element = white) and <strong>70 probes</strong> (one element = green, rest = white)</td></tr>
+    <tr><td>2</td><td>Capture each variant screenshot via Renoise inside Xvfb headless display at 1920×1080</td></tr>
+    <tr><td>3</td><td>Diff each probe screenshot against the white baseline — green-ish pixels belong to that element</td></tr>
+    <tr><td>4</td><td>Resolve overlaps: smaller-coverage elements (text, icons) win over larger ones (backgrounds)</td></tr>
+  </table>
+
+  <p>Compared to the original "rainbow voting" method, this approach has zero color collision risk and clean boundary definitions.</p>
+
+  <h3>4.3 The Three-Pass Rendering Algorithm</h3>
+
+  <p><strong>Pass 1 — Paint Known Pixels:</strong> Iterate every pixel in the map. If the index is not 255 (UNMATCHED), paint with the theme's color using an O(1) lookup array.</p>
+
+  <p><strong>Pass 2 — Fill Unmatched Pixels:</strong> Fill unpainted pixels by averaging colors of 8-connected neighbors. Critical: reads from the <em>immutable</em> pixel map (not the output buffer) to prevent fill propagation artifacts.</p>
+
+  <p><strong>Pass 3 — Composite Text & Icons:</strong> Uses a special <strong>text-masking theme</strong> (all chrome = black, all text/icons = white) as an alpha mask. Rec.601 perceptual luminance converts B/W values to alpha, then blends text color over the existing pixel using standard alpha compositing.</p>
+
+  <h3>4.4 Text Masking Theme</h3>
+
+  <p>A special <code>.xrnc</code> theme renders everything black except text/icon pixels (white). Screenshotting with this theme produces an alpha mask. Rec.601 luminance (<code>0.299R + 0.587G + 0.114B</code>) accounts for human visual sensitivity to green. Known non-text elements (scrollbars, sliders, VU meters) are excluded from compositing.</p>
+
+  <h2>5. The Theme Creator Tool</h2>
+
+  <p>The creator at <a href="/create">/create</a> presents 70 color pickers ranked by pixel coverage:</p>
+
+  <table>
+    <tr><th>Rank</th><th>Element</th><th>Coverage</th></tr>
+    <tr><td>1</td><td><code>Main_Back</code></td><td>46.38%</td></tr>
+    <tr><td>2</td><td><code>Body_Back</code></td><td>31.50%</td></tr>
+    <tr><td>3</td><td><code>Button_Back</code></td><td>6.61%</td></tr>
+    <tr><td>4</td><td><code>ValueBox_Back</code></td><td>4.10%</td></tr>
+    <tr><td>5</td><td><code>Pattern_Default_Back</code></td><td>3.51%</td></tr>
+    <tr><td>6</td><td><code>Main_Font</code></td><td>2.53%</td></tr>
+  </table>
+
+  <p>This ranking is load-bearing: the top 10 elements control <strong>97.9%</strong> of the visible screen. A user can create a recognizable theme in under 30 seconds.</p>
+
+  <h2>6. Headless Automation Pipeline</h2>
+
+  <p>Generating 71 screenshots is fully automated:</p>
+
+  <table>
+    <tr><th>Tool</th><th>Role</th></tr>
+    <tr><td><strong>Xvfb</strong></td><td>Virtual X11 display (1920×1080×24) — no physical monitor</td></tr>
+    <tr><td><strong>xdotool</strong></td><td>Window detection and geometry verification</td></tr>
+    <tr><td><strong>maim</strong></td><td>Screenshot capture by window ID</td></tr>
+    <tr><td><strong>Renoise</strong></td><td>The DAW itself, with overridden config</td></tr>
+    <tr><td><strong>Bash + Python</strong></td><td>Orchestration, config injection, cleanup</td></tr>
+  </table>
+
+  <p>Key optimization: temp config isolation (never touches user config), fast kill-9 restart cycle (~1 second per variant), plugin rescanning disabled, demo song loaded via CLI argument. Full 71-variant capture completes in ~3 minutes.</p>
+
+  <h2>7. Results</h2>
+
+  <table>
+    <tr><th>Metric</th><th>Value</th></tr>
+    <tr><td>Variants captured</td><td>71 (1 baseline + 70 probes)</td></tr>
+    <tr><td>Elements mapped</td><td>37</td></tr>
+    <tr><td>Matched pixels</td><td>95.0%</td></tr>
+    <tr><td>Unmatched pixels</td><td>5.9%</td></tr>
+  </table>
+
+  <p>The system achieves <strong>pixel-perfect color assignment</strong> for all mapped elements, with zero Renoise code, assets, or runtime dependency on the server.</p>
+
+  <h2>8. Future Work</h2>
+
+  <ul>
+    <li><strong>Mixer & Waveform previews</strong> — deferred to future releases following the same white-baseline + green-probe methodology</li>
+    <li><strong>Map refinement</strong> — adjusting probe thresholds for additional UI states</li>
+    <li><strong>SVG-based vector renderer</strong> — arbitrary resolution scaling using existing <code>maps/*.svg</code> outlines</li>
+    <li><strong>Multi-view capture</strong> — capturing all 3 views per Renoise launch for faster map generation</li>
+    <li><strong>Theme diff & merge tools</strong> — perceptual distance between themes, version comparison, blending</li>
+  </ul>
+
+  <h2>9. File Index</h2>
+
+  <h3>Core Libraries</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>lib/parser.js</code></td><td>Parses .xrnc XML; extracts colors; assigns semantic roles and weights</td></tr>
+    <tr><td><code>lib/categorize.js</code></td><td>HSL conversion; weighted analysis for auto-tagging</td></tr>
+    <tr><td><code>lib/palette.js</code></td><td>Weighted SVG palette strip generation</td></tr>
+    <tr><td><code>lib/preview-renderer.js</code></td><td>Three-pass pixel map renderer: paint → fill → composite</td></tr>
+    <tr><td><code>lib/database.js</code></td><td>SQLite schema, prepared statements, auth</td></tr>
+    <tr><td><code>lib/xrnc-generator.js</code></td><td>Theme Creator .xrnc export</td></tr>
+  </table>
+
+  <h3>Automation Tools</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>tools/generate-white-variants.js</code></td><td>Generates 71 variant themes</td></tr>
+    <tr><td><code>tools/capture-variants.sh</code></td><td>Headless bash pipeline: Xvfb → Renoise → maim</td></tr>
+    <tr><td><code>tools/build-diff-maps.js</code></td><td>Builds pixel maps via green-delta detection</td></tr>
+  </table>
+
+  <h3>Map Assets</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>maps/pattern.bin</code></td><td>Flat Uint8Array — 2,073,600 bytes at 1920×1080</td></tr>
+    <tr><td><code>maps/pattern.json</code></td><td>Width, height, ordered element name array</td></tr>
+    <tr><td><code>maps/pattern-text.png</code></td><td>Cached text-theme screenshot for Pass 3</td></tr>
+    <tr><td><code>maps/*.svg</code></td><td>Vector outlines (future SVG renderer)</td></tr>
+  </table>
+
+  <hr>
+
+  <p style="font-size: 12px; color: var(--chrome-text-faint);">The demo song used during automated capture is by <strong style="color: var(--chrome-text-dim);">Hunz</strong>. The Renoise team built an extraordinarily customizable UI; this system exists to make that customization more accessible.</p>
+
+  <p style="font-size: 11px; color: var(--chrome-text-faint); margin-top: 32px;">Document version 1.0 · Generated for the Renoise Themes open-source project</p>
+
+</div>
+
+<%- include('partials/footer') %>

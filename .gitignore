@@ -11,3 +11,8 @@ public/uploads/themes/*
 !public/uploads/screenshots/.gitkeep
 !public/uploads/palettes/.gitkeep
 !public/uploads/themes/.gitkeep
+dev/
+docs/
+session-*.md
+db/database.sqlite
+tools/*.xrns

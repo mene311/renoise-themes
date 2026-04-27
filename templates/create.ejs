@@ -1,0 +1,126 @@
+<%- include('partials/header') %>
+
+<section class="creator-page">
+  <h1 class="creator-title">🎨 <%= typeof editSlug !== 'undefined' ? 'Edit: ' + editName : 'Theme Creator' %></h1>
+
+  <div class="creator-layout">
+    <!-- LEFT: Preview Column -->
+    <div class="creator-preview-col">
+      <div class="creator-preview-sticky">
+        <div class="preview-viewport" id="previewViewport">
+          <div class="preview-loading" id="previewLoading" style="display:none;">🎨 Rendering…</div>
+          <div class="preview-empty" id="previewEmpty">Pick a color to preview</div>
+          <div class="preview-render-wrap" id="previewRenderWrap" style="display:none;"></div>
+        </div>
+        <div class="creator-actions">
+          <% if (typeof editSlug !== 'undefined') { %>
+            <button class="btn-submit" id="saveBtn">💾 Save Changes</button>
+            <a href="/theme/<%= editSlug %>" class="btn-preset">← Cancel</a>
+          <% } else { %>
+            <button class="btn-submit" id="downloadBtn">⬇ Download .xrnc</button>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Color Pickers — Ranked by screen coverage -->
+    <div class="creator-pickers-col">
+      <!-- Presets & Palette Generator -->
+      <div class="creator-controls">
+        <div class="preset-bar">
+          <button type="button" class="btn-preset" id="presetDefault">⏪ Default</button>
+          <button type="button" class="btn-preset" id="presetWhite">⚪ Full White</button>
+        </div>
+        <div class="palette-gen">
+          <label class="palette-label">Base</label>
+          <input type="color" id="paletteBase" value="#6b9f40" title="Base color">
+          <select id="paletteScheme" title="Color scheme">
+            <option value="monochrome">Monochrome</option>
+            <option value="complementary">Complementary</option>
+            <option value="triadic">Triadic</option>
+            <option value="analogous">Analogous</option>
+            <option value="split-complementary">Split-Comp</option>
+          </select>
+          <label class="palette-toggle">
+            <input type="checkbox" id="paletteLight">
+            <span>Light</span>
+          </label>
+          <button type="button" class="btn-palette" id="paletteApply">🎨 Apply</button>
+          <button type="button" class="btn-preset" id="paletteRandom" title="Random palette">🎲 Random</button>
+        </div>
+      </div>
+
+      <form id="creatorForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (typeof editSlug !== 'undefined') { %>
+          <input type="hidden" name="editSlug" value="<%= editSlug %>">
+        <% } %>
+
+        <!-- Hidden default track palette colors (set by palette generator) -->
+        <div style="display:none;">
+          <% for (let i = 1; i <= 14; i++) { const n = String(i).padStart(2, '0'); %>
+            <input type="color" name="Default_Color_<%= n %>" value="#<%= (defaults && defaults['Default_Color_' + n]) ? defaults['Default_Color_' + n] : '808080' %>" data-element="Default_Color_<%= n %>">
+          <% } %>
+        </div>
+
+        <!-- 🟢 Backgrounds (top 6 — cover 94% of screen) -->
+        <details class="creator-group" open>
+          <summary>🟢 Backgrounds <span class="group-pct">94.6% of screen</span></summary>
+          <div class="color-grid color-grid-large">
+            <% ELEMENT_COVERAGE.slice(0, 6).forEach(el => { %>
+              <label class="color-pick color-pick-large">
+                <input type="color" name="<%= el.name %>" value="#<%= (defaults && defaults[el.name]) ? defaults[el.name] : '808080' %>" data-element="<%= el.name %>">
+                <div class="color-pick-info">
+                  <span class="color-name"><%= el.name.replace(/_/g, ' ') %></span>
+                  <span class="color-pct"><%= el.pct %>%</span>
+                </div>
+              </label>
+            <% }); %>
+          </div>
+        </details>
+
+        <!-- 🟡 Controls & Fonts (coverage 0.01%-2%) -->
+        <details class="creator-group" open>
+          <summary>🟡 Controls & Details <span class="group-count"><%= ELEMENT_COVERAGE.slice(6, 27).length %></span></summary>
+          <div class="color-grid">
+            <% ELEMENT_COVERAGE.slice(6, 27).forEach(el => { %>
+              <label class="color-pick">
+                <input type="color" name="<%= el.name %>" value="#<%= (defaults && defaults[el.name]) ? defaults[el.name] : '808080' %>" data-element="<%= el.name %>">
+                <div class="color-pick-info">
+                  <span class="color-name"><%= el.name.replace(/_/g, ' ') %></span>
+                  <% if (el.pct > 0) { %><span class="color-pct"><%= el.pct %>%</span><% } %>
+                </div>
+              </label>
+            <% }); %>
+          </div>
+        </details>
+
+        <!-- ⚪ Fine Details (everything else — &lt;0.01% or zero) -->
+        <details class="creator-group">
+          <summary>⚪ Fine Details <span class="group-count"><%= ELEMENT_COVERAGE.length - 27 + COVERAGE_ZERO.length %></span></summary>
+          <div class="color-grid">
+            <% ELEMENT_COVERAGE.slice(27).forEach(el => { %>
+              <label class="color-pick">
+                <input type="color" name="<%= el.name %>" value="#<%= (defaults && defaults[el.name]) ? defaults[el.name] : '808080' %>" data-element="<%= el.name %>">
+                <div class="color-pick-info">
+                  <span class="color-name"><%= el.name.replace(/_/g, ' ') %></span>
+                </div>
+              </label>
+            <% }); %>
+            <% COVERAGE_ZERO.forEach(el => { %>
+              <label class="color-pick">
+                <input type="color" name="<%= el %>" value="#<%= (defaults && defaults[el]) ? defaults[el] : '808080' %>" data-element="<%= el %>">
+                <div class="color-pick-info">
+                  <span class="color-name"><%= el.replace(/_/g, ' ') %></span>
+                </div>
+              </label>
+            <% }); %>
+          </div>
+        </details>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script src="/js/creator.js"></script>
+<%- include('partials/footer') %>

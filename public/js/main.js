@@ -1,40 +1,150 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  // ════════════════════════════════════════════
+  // UTILITIES
+  // ════════════════════════════════════════════
+
   function showToast(msg) {
     const t = document.getElementById('toast');
     if (!t) return;
-    t.textContent = msg; t.classList.add('show');
+    t.textContent = msg;
+    t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2000);
   }
 
-  // ── Search ─────────────────────────────
-  const si = document.getElementById('searchInput');
-  const grid = document.getElementById('themeGrid');
-  const tc = document.getElementById('themeCount');
-
-  if (si && grid) {
-    si.addEventListener('input', () => {
-      const q = si.value.toLowerCase().trim();
-      let v = 0;
-      grid.querySelectorAll('.theme-card').forEach(c => {
-        const m = !q || [c.dataset.name, c.dataset.author, c.dataset.tags].some(d => (d||'').includes(q));
-        c.classList.toggle('hidden', !m);
-        if (m) v++;
-      });
-      if (tc) tc.textContent = `${v} theme${v !== 1 ? 's' : ''}`;
+  // ════════════════════════════════════════════
+  // WHAT'S NEW BANNER
+  // ════════════════════════════════════════════
+  const banner = document.getElementById('whatsNewBanner');
+  const closeBanner = document.getElementById('closeBanner');
+  if (banner && closeBanner) {
+    const BANNER_KEY = 'dismissedBanner_v1';
+    if (!localStorage.getItem(BANNER_KEY)) {
+      banner.hidden = false;
+    }
+    closeBanner.addEventListener('click', () => {
+      banner.hidden = true;
+      localStorage.setItem(BANNER_KEY, '1');
     });
   }
 
-  // ── Infinite scroll ────────────────────
+  // ════════════════════════════════════════════
+  // DYNAMIC ACCENT COLOR (detail page)
+  // ════════════════════════════════════════════
+  const detailLayout = document.querySelector('.detail-layout[data-accent]');
+  if (detailLayout) {
+    const accent = detailLayout.dataset.accent;
+    if (accent) document.body.dataset.accent = accent;
+  }
+
+  // ════════════════════════════════════════════
+  // KEYBOARD NAVIGATION (theme list)
+  // ════════════════════════════════════════════
+  const themeGrid = document.getElementById('themeGrid');
+  let focusedRowIndex = -1;
+
+  function getVisibleRows() {
+    if (!themeGrid) return [];
+    return Array.from(themeGrid.querySelectorAll('.theme-card:not(.hidden)'));
+  }
+
+  function focusRow(index) {
+    const rows = getVisibleRows();
+    if (!rows.length) return;
+    // Clamp index
+    if (index < 0) index = 0;
+    if (index >= rows.length) index = rows.length - 1;
+    focusedRowIndex = index;
+    rows.forEach((r, i) => {
+      r.classList.toggle('active-row', i === index);
+      if (i === index) {
+        r.focus();
+        r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+  }
+
+  function bindRowHandlers() {
+    if (!themeGrid) return;
+    const rows = getVisibleRows();
+    rows.forEach((row, i) => {
+      if (row.dataset.bound === '1') return;
+      row.dataset.bound = '1';
+      row.setAttribute('tabindex', '0');
+      row.addEventListener('click', () => {
+        focusedRowIndex = i;
+        getVisibleRows().forEach((r, j) => r.classList.toggle('active-row', j === i));
+      });
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); focusRow(focusedRowIndex + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); focusRow(focusedRowIndex - 1); }
+        else if (e.key === 'Enter') { window.location.href = row.href; }
+      });
+    });
+  }
+
+  if (themeGrid) {
+    bindRowHandlers();
+
+    document.addEventListener('keydown', (e) => {
+      // Ignore if inside an input/textarea
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+
+      if (e.key === '/') {
+        e.preventDefault();
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.focus();
+      }
+      if (e.key === 'ArrowDown' && focusedRowIndex === -1 && getVisibleRows().length) {
+        e.preventDefault();
+        focusRow(0);
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // SEARCH (client-side filter on index)
+  // ════════════════════════════════════════════
+  const si = document.getElementById('searchInput');
+  const tc = document.getElementById('themeCount');
+
+  if (si && themeGrid) {
+    si.addEventListener('input', () => {
+      const q = si.value.toLowerCase().trim();
+      let v = 0;
+      const rows = themeGrid.querySelectorAll('.theme-card');
+      rows.forEach(r => {
+        const m = !q || [r.dataset.name, r.dataset.author, r.dataset.tags].some(d => (d || '').includes(q));
+        r.classList.toggle('hidden', !m);
+        if (m) v++;
+      });
+      if (tc) tc.textContent = `${v}`;
+      focusedRowIndex = -1;
+      rows.forEach(r => r.classList.remove('active-row'));
+    });
+
+    si.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        si.blur();
+        const rows = getVisibleRows();
+        if (rows.length) rows[0].focus();
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // INFINITE SCROLL
+  // ════════════════════════════════════════════
   const sentinel = document.getElementById('loadMoreSentinel');
-  if (grid && sentinel) {
+  if (themeGrid && sentinel) {
     let loading = false;
     let done = false;
-    let loaded = parseInt(grid.dataset.loaded, 10) || 0;
-    const total = parseInt(grid.dataset.total, 10) || 0;
-    const tag = grid.dataset.tag || '';
-    const q = grid.dataset.q || '';
-    const sort = grid.dataset.sort || 'newest';
+    let loaded = parseInt(themeGrid.dataset.loaded, 10) || 0;
+    const total = parseInt(themeGrid.dataset.total, 10) || 0;
+    const tag = themeGrid.dataset.tag || '';
+    const q = themeGrid.dataset.q || '';
+    const sort = themeGrid.dataset.sort || 'newest';
 
     if (q || loaded >= total) {
       sentinel.remove();
@@ -51,9 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const r = await fetch('/api/themes?' + params.toString());
         const data = await r.json();
         if (data.count > 0) {
-          grid.insertAdjacentHTML('beforeend', data.html);
+          themeGrid.insertAdjacentHTML('beforeend', data.html);
           loaded += data.count;
-          if (tc) tc.textContent = `${loaded} theme${loaded !== 1 ? 's' : ''}`;
+          if (tc) tc.textContent = `${loaded}`;
+          bindRowHandlers();
         }
         if (data.count < 24 || loaded >= total) {
           done = true;
@@ -70,7 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
     obs.observe(sentinel);
   }
 
-  // ── Like ───────────────────────────────
+  // ════════════════════════════════════════════
+  // LIKE
+  // ════════════════════════════════════════════
   const likeBtn = document.getElementById('likeBtn');
   if (likeBtn) {
     const id = likeBtn.dataset.id;
@@ -80,12 +193,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const store = JSON.parse(localStorage.getItem('likedThemes') || '{}');
     let liked = !!store[id];
 
-    const sync = () => { likeBtn.classList.toggle('liked', liked); icon.textContent = liked ? '❤️' : '🤍'; };
+    const sync = () => {
+      likeBtn.classList.toggle('liked', liked);
+      icon.textContent = liked ? '♥' : '♡';
+    };
     sync();
 
     likeBtn.addEventListener('click', async () => {
       try {
-        const r = await fetch(`/api/themes/${id}/${liked ? 'unlike' : 'like'}`, { method: 'POST' });
+        const r = await fetch(`/api/themes/${id}/${liked ? 'unlike' : 'like'}`, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
         const d = await r.json();
         liked = !liked;
         if (liked) store[id] = true; else delete store[id];
@@ -93,58 +212,75 @@ document.addEventListener('DOMContentLoaded', () => {
         cnt.textContent = d.likes;
         if (strip) strip.textContent = d.likes;
         sync();
-        likeBtn.style.transform = 'scale(1.15)';
-        setTimeout(() => likeBtn.style.transform = '', 150);
-        showToast(liked ? 'Liked! ❤️' : 'Unliked');
+        showToast(liked ? 'Liked ♥' : 'Unliked');
       } catch (e) { console.error(e); }
     });
   }
 
-  // ── Share ──────────────────────────────
+  // ════════════════════════════════════════════
+  // SHARE
+  // ════════════════════════════════════════════
   const shareBtn = document.getElementById('shareBtn');
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       const url = window.location.href;
-      if (navigator.share) { try { await navigator.share({ title: document.title, url }); return; } catch(e) {} }
-      try { await navigator.clipboard.writeText(url); } catch(e) {
+      if (navigator.share) {
+        try { await navigator.share({ title: document.title, url }); return; } catch (e) {}
+      }
+      try { await navigator.clipboard.writeText(url); } catch (e) {
         const i = document.createElement('input'); i.value = url;
         document.body.appendChild(i); i.select(); document.execCommand('copy'); document.body.removeChild(i);
       }
-      showToast('Link copied! 📋');
+      showToast('Link copied');
     });
   }
 
-  // ── Copy color ─────────────────────────
-  document.querySelectorAll('.sb-color').forEach(el => {
-    el.addEventListener('click', async () => {
-      const c = el.dataset.color; if (!c) return;
-      try { await navigator.clipboard.writeText(c); } catch(e) {}
+  // ════════════════════════════════════════════
+  // COPY COLOR
+  // ════════════════════════════════════════════
+  document.querySelectorAll('.color-swatch').forEach(el => {
+    const copy = async () => {
+      const c = el.dataset.color;
+      if (!c) return;
+      try { await navigator.clipboard.writeText(c); } catch (e) {}
       showToast(`Copied ${c}`);
+    };
+    el.addEventListener('click', copy);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(); }
     });
   });
 
-  // ── Gallery → swap hero ────────────────
+  // ════════════════════════════════════════════
+  // GALLERY → SWAP HERO (detail page screenshot main)
+  // ════════════════════════════════════════════
   const hero = document.getElementById('heroImage');
   document.querySelectorAll('.gallery-thumb').forEach(t => {
-    t.addEventListener('click', () => {
+    const activate = () => {
       if (hero && t.dataset.src) {
         hero.src = t.dataset.src;
         document.querySelectorAll('.gallery-thumb').forEach(g => g.classList.remove('gallery-active'));
         t.classList.add('gallery-active');
       }
+    };
+    t.addEventListener('click', activate);
+    t.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
     });
   });
 
-  // ── Lightbox ───────────────────────────
+  // ════════════════════════════════════════════
+  // LIGHTBOX
+  // ════════════════════════════════════════════
   const lbox = document.getElementById('lightbox');
   const limg = document.getElementById('lightboxImg');
 
   if (hero && lbox) {
-    hero.addEventListener('click', () => { limg.src = hero.src; lbox.classList.add('open'); });
+    hero.addEventListener('click', () => { limg.src = hero.src; lbox.classList.add('open'); limg.alt = hero.alt || ''; });
   }
   document.querySelectorAll('.gallery-thumb').forEach(t => {
     t.addEventListener('dblclick', () => {
-      if (lbox && limg && t.dataset.src) { limg.src = t.dataset.src; lbox.classList.add('open'); }
+      if (lbox && limg && t.dataset.src) { limg.src = t.dataset.src; lbox.classList.add('open'); limg.alt = t.querySelector('img')?.alt || ''; }
     });
   });
   if (lbox) {
@@ -152,20 +288,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') lbox.classList.remove('open'); });
   }
 
-  // ══════════════════════════════════════
-  // UPLOAD PAGE — fixed click + fast preview
-  // ══════════════════════════════════════
+  // ════════════════════════════════════════════
+  // ════════════════════════════════════════════
+  // UPLOAD PAGE
+  // ════════════════════════════════════════════
 
-  // ── Theme file: click drop zone → open file picker (1 click!) ──
+  // Theme file drop zone
   const dropZone = document.getElementById('dropZone');
   const themeInput = document.getElementById('theme');
   const fileName = document.getElementById('fileName');
 
   if (dropZone && themeInput) {
-    // Single click opens file browser
     dropZone.addEventListener('click', () => themeInput.click());
+    dropZone.setAttribute('tabindex', '0');
+    dropZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeInput.click(); }
+    });
 
-    // Drag & drop
     ['dragenter', 'dragover'].forEach(e =>
       dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); })
     );
@@ -179,8 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showThemeFile(files[0].name);
       }
     });
-
-    // When file is picked via dialog
     themeInput.addEventListener('change', () => {
       if (themeInput.files.length) showThemeFile(themeInput.files[0].name);
     });
@@ -191,19 +328,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── Screenshots: click picker → open dialog, instant preview ──
+  // Screenshot picker
   const ssPicker = document.getElementById('ssPicker');
   const ssInput = document.getElementById('screenshots');
   const ssPreview = document.getElementById('screenshotPreview');
 
   if (ssPicker && ssInput) {
     ssPicker.addEventListener('click', () => ssInput.click());
+    ssPicker.setAttribute('tabindex', '0');
+    ssPicker.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ssInput.click(); }
+    });
 
     ssInput.addEventListener('change', () => {
       if (!ssPreview) return;
       ssPreview.innerHTML = '';
-
-      // Use createObjectURL — instant, no FileReader blocking
       const files = Array.from(ssInput.files).slice(0, 5);
       files.forEach((file, i) => {
         const url = URL.createObjectURL(file);
@@ -213,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const img = document.createElement('img');
         img.src = url;
-        img.onload = () => URL.revokeObjectURL(url); // free memory after loaded
+        img.onload = () => URL.revokeObjectURL(url);
 
         const label = document.createElement('span');
         label.textContent = i === 0 ? 'Main' : `#${i + 1}`;
@@ -222,101 +361,105 @@ document.addEventListener('DOMContentLoaded', () => {
         wrap.appendChild(label);
         ssPreview.appendChild(wrap);
       });
-
       ssPicker.querySelector('span').textContent = `📸 ${files.length} screenshot${files.length !== 1 ? 's' : ''} selected`;
     });
   }
 
-  // ── Upload loading state ───────────────
-  const form = document.getElementById('uploadForm');
-  const subBtn = document.getElementById('submitBtn');
-  if (form && subBtn) {
-    form.addEventListener('submit', () => { subBtn.disabled = true; subBtn.textContent = '⏳ Analyzing...'; });
+  // Upload loading state
+  const uploadForm = document.getElementById('uploadForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const progressEl = document.getElementById('uploadProgress');
+  if (uploadForm && submitBtn) {
+    uploadForm.addEventListener('submit', () => {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing…';
+      if (progressEl) {
+        progressEl.style.display = 'block';
+        const steps = progressEl.querySelectorAll('.progress-step');
+        if (steps.length >= 1) { setTimeout(() => steps[0].classList.add('active'), 300); }
+        if (steps.length >= 2) { setTimeout(() => steps[1].classList.add('active'), 1500); }
+        if (steps.length >= 3) { setTimeout(() => steps[2].classList.add('active'), 3000); }
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // PREVIEW TAB SWITCHING (lazy load)
+  // ════════════════════════════════════════════
+  document.querySelectorAll('.preview-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const view = tab.dataset.view;
+      const img = document.getElementById('preview-' + view);
+      if (img && img.dataset.src && img.src !== img.dataset.src) {
+        img.src = img.dataset.src;
+      }
+      document.querySelectorAll('.preview-tab').forEach(t => {
+        t.classList.remove('preview-tab-active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.preview-render').forEach(i => i.classList.remove('preview-render-active'));
+      tab.classList.add('preview-tab-active');
+      tab.setAttribute('aria-selected', 'true');
+      if (img) img.classList.add('preview-render-active');
+    });
+  });
+
+  // ════════════════════════════════════════════
+  // FEATURED SCROLLER
+  // ════════════════════════════════════════════
+  const track = document.getElementById('featuredTrack');
+  if (track) {
+    const itemWidth = 220 + 16;
+    let currentIndex = 0;
+
+    track.addEventListener('mousedown', e => {
+      track.classList.add('dragging');
+      track.dataset.startX = e.pageX - track.offsetLeft;
+      track.dataset.scrollLeft = track.scrollLeft;
+    });
+    track.addEventListener('mouseleave', () => track.classList.remove('dragging'));
+    track.addEventListener('mouseup', () => track.classList.remove('dragging'));
+    track.addEventListener('mousemove', e => {
+      if (!track.classList.contains('dragging')) return;
+      e.preventDefault();
+      const x = e.pageX - track.offsetLeft;
+      const walk = (x - parseFloat(track.dataset.startX)) * 1.5;
+      track.scrollLeft = parseFloat(track.dataset.scrollLeft) - walk;
+    });
+
+    document.querySelector('.scroller-prev')?.addEventListener('click', () => {
+      currentIndex = Math.max(0, currentIndex - 1);
+      track.scrollTo({ left: currentIndex * itemWidth, behavior: 'smooth' });
+    });
+    document.querySelector('.scroller-next')?.addEventListener('click', () => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      currentIndex = Math.min(currentIndex + 1, Math.floor(maxScroll / itemWidth));
+      track.scrollTo({ left: currentIndex * itemWidth, behavior: 'smooth' });
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // HEADER SEARCH
+  // ════════════════════════════════════════════
+  const hsi = document.getElementById('headerSearchInput');
+  if (hsi) {
+    hsi.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && hsi.value.trim()) {
+        window.location.href = '/?q=' + encodeURIComponent(hsi.value.trim());
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // THEME TOGGLE (dark/light — server-side)
+  // ════════════════════════════════════════════
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.dataset.theme;
+      const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+      window.location.href = '/set-theme/' + nextTheme;
+    });
   }
 
 });
-
-// ── Preview tab switching (with lazy loading) ─
-document.querySelectorAll('.preview-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const view = tab.dataset.view;
-    const img = document.getElementById('preview-' + view);
-
-    // Lazy-load: set src from data-src on first click
-    if (img && img.dataset.src && !img.src) {
-      img.src = img.dataset.src;
-    }
-
-    // Switch active tab and image
-    document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('preview-tab-active'));
-    document.querySelectorAll('.preview-render').forEach(i => i.classList.remove('preview-render-active'));
-    tab.classList.add('preview-tab-active');
-    if (img) img.classList.add('preview-render-active');
-  });
-});
-
-// ── Upload progress animation ───────────
-const uploadForm = document.getElementById('uploadForm');
-const submitBtn = document.getElementById('submitBtn');
-const progressEl = document.getElementById('uploadProgress');
-
-if (uploadForm && submitBtn) {
-  uploadForm.addEventListener('submit', () => {
-    submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Processing...';
-
-    if (progressEl) {
-      progressEl.style.display = 'block';
-      const steps = progressEl.querySelectorAll('.progress-step');
-      // Animate through the 3 stages with staggered delays for perceived progress
-      if (steps.length >= 1) {
-        setTimeout(() => steps[0].classList.add('active'), 300);
-        setTimeout(() => steps[1] && steps[1].classList.add('active'), 1500);
-        setTimeout(() => steps[2] && steps[2].classList.add('active'), 3000);
-      }
-    }
-  });
-}
-
-// ── Featured Scroller ───────────────────────
-const track = document.getElementById('featuredTrack');
-if (track) {
-  const inner = track.querySelector('.scroller-inner');
-  const itemWidth = 220 + 16;
-  let currentIndex = 0;
-
-  track.addEventListener('mousedown', e => {
-    track.classList.add('dragging');
-    track.dataset.startX = e.pageX - track.offsetLeft;
-    track.dataset.scrollLeft = track.scrollLeft;
-  });
-  track.addEventListener('mouseleave', () => track.classList.remove('dragging'));
-  track.addEventListener('mouseup', () => track.classList.remove('dragging'));
-  track.addEventListener('mousemove', e => {
-    if (!track.classList.contains('dragging')) return;
-    e.preventDefault();
-    const x = e.pageX - track.offsetLeft;
-    const walk = (x - parseFloat(track.dataset.startX)) * 1.5;
-    track.scrollLeft = parseFloat(track.dataset.scrollLeft) - walk;
-  });
-
-  document.querySelector('.scroller-prev')?.addEventListener('click', () => {
-    currentIndex = Math.max(0, currentIndex - 1);
-    track.scrollTo({ left: currentIndex * itemWidth, behavior: 'smooth' });
-  });
-  document.querySelector('.scroller-next')?.addEventListener('click', () => {
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    currentIndex = Math.min(currentIndex + 1, Math.floor(maxScroll / itemWidth));
-    track.scrollTo({ left: currentIndex * itemWidth, behavior: 'smooth' });
-  });
-}
-
-// ── Header Search ───────────────────────────
-const hsi = document.getElementById('headerSearchInput');
-if (hsi) {
-  hsi.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && hsi.value.trim()) {
-      window.location.href = '/?q=' + encodeURIComponent(hsi.value.trim());
-    }
-  });
-}

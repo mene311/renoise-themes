@@ -1,0 +1,55 @@
+<%- include('partials/header', { pageTitle: 'Dashboard — Renoise Theme Share' }) %>
+
+<div class="auth-page" style="max-width: 800px;">
+  <h1>Dashboard</h1>
+  <p class="hero-sub">Manage your themes</p>
+
+  <% if (error) { %>
+    <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
+  <% } %>
+
+  <% if (themes.length === 0) { %>
+    <div class="empty-state" style="padding: 32px 0;">
+      <div class="empty-icon" aria-hidden="true">◈</div>
+      <h2>No themes yet</h2>
+      <p>You haven't uploaded any themes. <a href="/upload">Upload one now →</a></p>
+    </div>
+  <% } else { %>
+    <div class="theme-grid" style="margin-top: 16px;">
+      <% themes.forEach(theme => { %>
+        <div class="theme-card" style="position: relative;">
+          <a href="/theme/<%= theme.slug %>" style="text-decoration: none; color: inherit;">
+            <div class="card-preview" aria-hidden="true">
+              <% const hasPreview = theme.previewSlug && theme.previewViews && theme.previewViews.includes('pattern'); %>
+              <% if (hasPreview) { %>
+                <img src="/uploads/previews/<%= theme.previewSlug %>/pattern.png" alt="">
+              <% } else { %>
+                <div class="card-preview-empty"><span>◈</span></div>
+              <% } %>
+            </div>
+            <div class="card-info">
+              <div class="card-title"><%= theme.name %></div>
+              <div class="card-meta">
+                <span>♥ <%= theme.likes %></span>
+                <span>⬇ <%= theme.downloads %></span>
+              </div>
+            </div>
+          </a>
+          <div style="display: flex; gap: 4px; padding: 0 12px 12px;">
+            <a href="/theme/<%= theme.slug %>/edit" class="btn-submit" style="flex: 1; height: 28px; font-size: 11px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Edit</a>
+            <a href="/theme/<%= theme.slug %>/edit-colors" class="btn-submit" style="flex: 1; height: 28px; font-size: 11px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; background: var(--accent); border-color: var(--accent); color: #111;">🎨 Colors</a>
+            <form action="/theme/<%= theme.slug %>/delete" method="POST" style="flex: 1;" onsubmit="return confirm('Delete this theme permanently?')">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn-submit" style="width: 100%; height: 28px; font-size: 11px; background: var(--chrome-danger); border-color: var(--chrome-danger);">Delete</button>
+            </form>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

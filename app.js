@@ -1,8 +1,10 @@
+import 'dotenv/config';
 import express from 'express';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
@@ -11,12 +13,17 @@ import { parseThemeFile } from './lib/parser.js';
 import { categorizeColors } from './lib/categorize.js';
 import { generatePaletteSVG } from './lib/palette.js';
 import { generatePreviews } from './lib/preview-renderer.js';
+import { generateXrnc } from './lib/xrnc-generator.js';
+import { sendPasswordReset, sendWelcome } from './lib/email.js';
 import {
   saveTheme, listThemes, listThemesPage, countThemes,
   getTheme, getThemeBySlug, listTags,
   likeTheme, unlikeTheme, trackDownload,
   addComment, getThemeComments, getFeaturedThemes,
   getPopularThemes, registerUser, authenticateUser, getUserById,
+  createPasswordResetToken, validateResetToken, consumeResetToken,
+  searchThemes, countSearchThemes,
+  getThemesByAuthor, updateThemeDescription, updateTheme, deleteTheme,
   db
 } from './lib/database.js';
 
@@ -35,7 +42,7 @@ const PORT = process.env.PORT || 3000;
 // ── Rate limiting ──────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: 12,
   message: 'Too many attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -49,14 +56,54 @@ const downloadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const previewLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: 'Too many preview requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const likeLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20,
+  message: 'Too many likes, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const commentLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: 'Too many comments, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ── App configuration ──────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'templates'));
 app.use(express.static('public'));
+app.use('/docs', express.static('docs'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      fontSrc: ["'self'"],
+      connectSrc: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 
 // Session with hardened cookie flags
 app.use(session({
@@ -154,12 +201,16 @@ const storage = multer.diskStorage({
   }
 });
 
+const ALLOWED_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+
 const fileFilter = (req, file, cb) => {
   if (file.fieldname === 'theme') {
     const ext = path.extname(file.originalname).toLowerCase();
     cb(null, ext === '.xrnc' || ext === '.xml');
   } else if (file.fieldname === 'screenshots') {
-    cb(null, file.mimetype.startsWith('image/'));
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowed = file.mimetype.startsWith('image/') && ALLOWED_IMAGE_EXTS.includes(ext);
+    cb(null, allowed);
   }
 };
 
@@ -187,7 +238,7 @@ app.get('/register', (req, res) => {
   res.render('register', { error: null, success: null });
 });
 
-app.post('/register', authLimiter, async (req, res) => {
+app.post('/register', authLimiter, csrfProtection, async (req, res) => {
   if (req.session.user) return res.redirect('/');
 
   const { username, email, password, passwordConfirm } = req.body;
@@ -211,6 +262,7 @@ app.post('/register', authLimiter, async (req, res) => {
     }
 
     req.session.user = { id: result.userId, username, email };
+    sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
     res.redirect('/');
   } catch (err) {
     console.error('Registration error:', err);
@@ -223,7 +275,7 @@ app.get('/login', (req, res) => {
   res.render('login', { error: null, success: null });
 });
 
-app.post('/login', authLimiter, async (req, res) => {
+app.post('/login', authLimiter, csrfProtection, async (req, res) => {
   if (req.session.user) return res.redirect('/');
 
   const { username, password } = req.body;
@@ -255,6 +307,417 @@ app.get('/logout', (req, res) => {
   });
 });
 
+// ── Password Recovery ──────────────────────────────────
+
+app.get('/forgot-password', (req, res) => {
+  if (req.session.user) return res.redirect('/');
+  res.render('forgot-password', { error: null, success: null });
+});
+
+app.post('/forgot-password', authLimiter, csrfProtection, async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.render('forgot-password', { error: 'Please enter your email address', success: null });
+  }
+
+  try {
+    const result = await createPasswordResetToken(email);
+    // Always show success (don't reveal if email exists)
+    if (result) {
+      const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${result.token}`;
+      await sendPasswordReset(email, resetUrl);
+    }
+    res.render('forgot-password', {
+      error: null,
+      success: 'If that email is registered, a reset link has been sent.'
+    });
+  } catch (err) {
+    console.error('Password reset error:', err);
+    res.render('forgot-password', { error: 'Something went wrong. Please try again.', success: null });
+  }
+});
+
+app.get('/reset-password/:token', (req, res) => {
+  if (req.session.user) return res.redirect('/');
+  const tokenRow = validateResetToken(req.params.token);
+  if (!tokenRow) {
+    return res.render('reset-password', { error: 'Invalid or expired reset link. Please request a new one.', token: null });
+  }
+  res.render('reset-password', { error: null, token: req.params.token });
+});
+
+app.post('/reset-password/:token', authLimiter, csrfProtection, async (req, res) => {
+  const tokenRow = validateResetToken(req.params.token);
+  if (!tokenRow) {
+    return res.render('reset-password', { error: 'Invalid or expired reset link.', token: null });
+  }
+
+  const { password, passwordConfirm } = req.body;
+  if (!password || !passwordConfirm) {
+    return res.render('reset-password', { error: 'Both fields are required.', token: req.params.token });
+  }
+  if (password !== passwordConfirm) {
+    return res.render('reset-password', { error: 'Passwords do not match.', token: req.params.token });
+  }
+  if (password.length < 8) {
+    return res.render('reset-password', { error: 'Password must be at least 8 characters.', token: req.params.token });
+  }
+
+  try {
+    await consumeResetToken(tokenRow, password);
+    res.render('login', { error: null, success: 'Password reset successful! You can now log in.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.render('reset-password', { error: 'Something went wrong. Please try again.', token: req.params.token });
+  }
+});
+
+// ── Dashboard (My Themes) ──────────────────────────────
+
+app.get('/dashboard', requireAuth, (req, res) => {
+  const themes = getThemesByAuthor(req.session.user.username);
+  res.render('dashboard', { themes, error: null, success: null });
+});
+
+app.get('/theme/:slug/edit', requireAuth, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+  if (theme.author !== req.session.user.username) {
+    return res.status(403).send('You can only edit your own themes');
+  }
+  res.render('edit-theme', { theme, error: null, success: null });
+});
+
+app.post('/theme/:slug/edit', requireAuth, csrfProtection, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+  if (theme.author !== req.session.user.username) {
+    return res.status(403).send('You can only edit your own themes');
+  }
+
+  const { description } = req.body;
+  updateThemeDescription(theme.id, description || '', theme.screenshots);
+  res.redirect(`/theme/${theme.slug}`);
+});
+
+// ── Edit Colors ────────────────────────────────────────
+
+app.get('/theme/:slug/edit-colors', requireAuth, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+  if (theme.author !== req.session.user.username) {
+    return res.status(403).send('You can only edit your own themes');
+  }
+
+  const filePath = path.join(__dirname, 'public/uploads/themes', theme.filename);
+  let editDefaults = {};
+  try {
+    const parsed = parseThemeFile(filePath);
+    for (const [name, rgb] of Object.entries(parsed.elementColorMap)) {
+      editDefaults[name] = rgb[0].toString(16).padStart(2, '0') + rgb[1].toString(16).padStart(2, '0') + rgb[2].toString(16).padStart(2, '0');
+    }
+  } catch (e) {
+    console.error('Failed to parse theme for editing:', e);
+  }
+
+  res.render('create', {
+    defaults: editDefaults,
+    ELEMENT_COVERAGE, COVERAGE_ZERO, ALL_ELEMENTS_ORDERED, COVERAGE_MAP,
+    editSlug: theme.slug,
+    editName: theme.name
+  });
+});
+
+app.post('/api/save-edited-theme', requireAuth, previewLimiter, csrfProtection, async (req, res) => {
+  try {
+    const { slug, elementColorMap } = req.body;
+    if (!slug || !elementColorMap) {
+      return res.status(400).json({ success: false, error: 'Missing slug or colors' });
+    }
+
+    const theme = getThemeBySlug(slug);
+    if (!theme) return res.status(404).json({ success: false, error: 'Theme not found' });
+    if (theme.author !== req.session.user.username) {
+      return res.status(403).json({ success: false, error: 'Not your theme' });
+    }
+
+    // Normalize colors
+    const normalized = {};
+    for (const [name, val] of Object.entries(elementColorMap)) {
+      if (Array.isArray(val) && val.length === 3) {
+        normalized[name] = val;
+      } else if (typeof val === 'string') {
+        const hex = val.replace('#', '');
+        normalized[name] = [
+          parseInt(hex.substring(0, 2), 16),
+          parseInt(hex.substring(2, 4), 16),
+          parseInt(hex.substring(4, 6), 16)
+        ];
+      }
+    }
+
+    // Generate XRNC
+    const xrnc = generateXrnc(normalized);
+    const filename = `${Date.now()}-${slug}.xrnc`;
+    const themesDir = path.join(__dirname, 'public/uploads/themes');
+    const filePath = path.join(themesDir, filename);
+    fs.writeFileSync(filePath, xrnc);
+
+    // Parse for metadata
+    const parsed = parseThemeFile(filePath);
+    const { tags, stats } = categorizeColors(parsed.weighted);
+
+    // Palette SVG
+    const palettesDir = path.join(__dirname, 'public/uploads/palettes');
+    const paletteName = filename.replace('.xrnc', '.svg');
+    generatePaletteSVG(parsed.weighted, path.join(palettesDir, paletteName));
+
+    // Previews
+    const previewSlug = filename.replace('.xrnc', '');
+    const previewDir = path.join(__dirname, 'public/uploads/previews', previewSlug);
+    const previews = await generatePreviews(filePath, previewDir);
+    const previewViews = Object.keys(previews);
+
+    const topColors = parsed.weighted.slice(0, 6).map(c => ({
+      hex: c.hex, weight: c.weight, roles: c.roles
+    }));
+
+    // Delete old files
+    try {
+      const oldPath = path.join(themesDir, theme.filename);
+      if (fs.existsSync(oldPath) && oldPath !== filePath) fs.unlinkSync(oldPath);
+      const oldPalette = path.join(palettesDir, theme.filename.replace('.xrnc', '.svg'));
+      if (fs.existsSync(oldPalette)) fs.unlinkSync(oldPalette);
+      const oldPreviewDir = path.join(__dirname, 'public/uploads/previews', theme.preview_slug);
+      if (fs.existsSync(oldPreviewDir)) fs.rmSync(oldPreviewDir, { recursive: true, force: true });
+    } catch (e) { /* ignore cleanup errors */ }
+
+    // Update DB
+    updateTheme(theme.id, {
+      filename,
+      originalName: `${slug}.xrnc`,
+      paletteSVG: `/uploads/palettes/${paletteName}`,
+      previewSlug,
+      previewViews,
+      previewError: null,
+      totalColorEntries: parsed.totalColors,
+      stats,
+      tags,
+      topColors
+    });
+
+    res.json({ success: true, slug });
+  } catch (err) {
+    console.error('Save edited theme error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/theme/:slug/delete', requireAuth, csrfProtection, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+  if (theme.author !== req.session.user.username) {
+    return res.status(403).send('You can only delete your own themes');
+  }
+
+  deleteTheme(theme.id);
+  res.redirect('/dashboard');
+});
+
+// ── Admin ──────────────────────────────────────────────
+
+app.post('/admin/reload-maps', requireAdmin, async (req, res) => {
+  try {
+    const pr = await import('./lib/preview-renderer.js');
+    pr.invalidateRendererCache();
+    await pr.initRenderers(); // Force reload to validate maps immediately
+    res.json({ success: true, message: 'Preview maps reloaded successfully' });
+  } catch (err) {
+    console.error('Admin reload-maps error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── Documentation ──────────────────────────────────────
+
+app.get('/how-it-works', (req, res) => {
+  res.render('how-it-works');
+});
+
+// ── Theme Creator ──────────────────────────────────────
+
+// Element pixel coverage rankings (precomputed from pixel maps)
+// Total matched pixels: 4,868,286 across all 3 views
+const ELEMENT_COVERAGE = [
+  { name: 'Main_Back',           pct: 46.38 },
+  { name: 'Body_Back',           pct: 31.50 },
+  { name: 'Button_Back',         pct:  6.61 },
+  { name: 'ValueBox_Back',       pct:  4.10 },
+  { name: 'Pattern_Default_Back',pct:  3.51 },
+  { name: 'Main_Font',           pct:  2.53 },
+  { name: 'Scrollbar',           pct:  1.32 },
+  { name: 'Selected_Button_Back',pct:  0.99 },
+  { name: 'StandBy_Selection_Back',pct: 0.66 },
+  { name: 'Pattern_CenterBar_Back',pct: 0.40 },
+  { name: 'Pattern_Highlighted_Back',pct: 0.32 },
+  { name: 'Slider',              pct:  0.30 },
+  { name: 'Body_Font',           pct:  0.26 },
+  { name: 'ValueBox_Font',       pct:  0.19 },
+  { name: 'Selection_Back',      pct:  0.18 },
+  { name: 'VuMeter_Meter',       pct:  0.12 },
+  { name: 'Strong_Body_Font',    pct:  0.09 },
+  { name: 'Automation_Line_Fill',pct:  0.09 },
+  { name: 'VuMeter_Meter_Low',   pct:  0.08 },
+  { name: 'Automation_Grid',     pct:  0.07 },
+  { name: 'Button_Font',         pct:  0.07 },
+  { name: 'Automation_Marker_Single',pct: 0.02 },
+  { name: 'Pattern_Default_Font_Volume',pct: 0.02 },
+  { name: 'VuMeter_Back_Normal', pct:  0.02 },
+  { name: 'Selection_Font',      pct:  0.02 },
+  { name: 'Folder',              pct:  0.02 },
+  { name: 'Selected_Button_Font',pct:  0.02 },
+  { name: 'Pattern_Mute_State',  pct:  0.01 },
+  { name: 'VuMeter_Peak',        pct:  0.01 },
+  { name: 'StandBy_Selection_Font',pct: 0.01 },
+  { name: 'Pattern_Default_Font',pct:  0.01 },
+  { name: 'Pattern_PlayPosition_Back',pct: 0.01 },
+  { name: 'Midi_Mapping_Font',   pct:  0.01 },
+  { name: 'Automation_Line_Edge',pct:  0.01 },
+  { name: 'Pattern_Default_Font_Unused',pct: 0.01 },
+  { name: 'VuMeter_Meter_Middle',pct:  0.01 },
+  { name: 'Pattern_Default_Font_Other',pct: 0.01 },
+  { name: 'Pattern_Highlighted_Font_Delay',pct: 0.01 },
+  { name: 'Automation_Marker_Play',pct: 0.01 },
+  { name: 'Pattern_Default_Font_Delay',pct: 0.00 },
+  { name: 'Pattern_CenterBar_Font',pct: 0.00 },
+  { name: 'Pattern_Highlighted_Font',pct: 0.00 },
+  { name: 'ToolTip_Back',        pct:  0.00 },
+  { name: 'VuMeter_Back_Clipped',pct:  0.00 },
+  { name: 'Pattern_Highlighted_Font_Panning',pct: 0.00 },
+  { name: 'Pattern_Default_Font_DspFx',pct: 0.00 },
+  { name: 'Pattern_CenterBar_Back_StandBy',pct: 0.00 },
+  { name: 'Pattern_Highlighted_Font_Unused',pct: 0.00 },
+  { name: 'Automation_Marker_Diamond',pct: 0.00 },
+  { name: 'Pattern_Selection',   pct:  0.00 },
+  { name: 'Pattern_CenterBar_Font_StandBy',pct: 0.00 },
+];
+
+// Remaining elements with zero mapped coverage (purely font/marker elements
+// that fall in UNMATCHED text regions)
+const COVERAGE_ZERO = [
+  'Alternate_Main_Back','Alternate_Main_Font',
+  'Button_Highlight_Font','Midi_Mapping_Back','ToolTip_Font',
+  'ValueBox_Font_Icons',
+  'Pattern_Default_Font_Panning','Pattern_Default_Font_Pitch','Pattern_Default_Font_Global',
+  'Pattern_Highlighted_Font_Volume','Pattern_Highlighted_Font_Pitch','Pattern_Highlighted_Font_Global',
+  'Pattern_Highlighted_Font_Other','Pattern_Highlighted_Font_DspFx',
+  'Pattern_PlayPosition_Font','Pattern_StandBy_Selection','Automation_Point',
+  'Automation_Marker_Pair',
+  'VuMeter_Meter_High'
+];
+
+// Build full ordered list: coverage-ranked first, zero-coverage last
+const ALL_ELEMENTS_ORDERED = [
+  ...ELEMENT_COVERAGE.map(e => e.name),
+  ...COVERAGE_ZERO
+];
+
+const COVERAGE_MAP = {};
+ELEMENT_COVERAGE.forEach(e => { COVERAGE_MAP[e.name] = e.pct; });
+
+// Parse default theme colors for the creator page
+function getDefaultColors() {
+  try {
+    const defaultPath = path.join(__dirname, 'Default.xrnc');
+    if (!fs.existsSync(defaultPath)) return {};
+    const parsed = parseThemeFile(defaultPath);
+    const map = {};
+    for (const [name, rgb] of Object.entries(parsed.elementColorMap)) {
+      map[name] = rgb[0].toString(16).padStart(2,'0') + rgb[1].toString(16).padStart(2,'0') + rgb[2].toString(16).padStart(2,'0');
+    }
+    return map;
+  } catch (e) {
+    return {};
+  }
+}
+
+app.get('/create', (req, res) => {
+  res.render('create', { defaults: getDefaultColors(), ELEMENT_COVERAGE, COVERAGE_ZERO, ALL_ELEMENTS_ORDERED, COVERAGE_MAP });
+});
+
+app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res) => {
+  try {
+    const { elementColorMap } = req.body;
+    if (!elementColorMap || Object.keys(elementColorMap).length === 0) {
+      return res.status(400).json({ success: false, error: 'No colors provided' });
+    }
+
+    // Normalize: ensure values are [r,g,b] arrays
+    const normalized = {};
+    for (const [name, val] of Object.entries(elementColorMap)) {
+      if (Array.isArray(val) && val.length === 3) {
+        normalized[name] = val;
+      } else if (typeof val === 'string') {
+        const hex = val.replace('#', '');
+        normalized[name] = [
+          parseInt(hex.substring(0, 2), 16),
+          parseInt(hex.substring(2, 4), 16),
+          parseInt(hex.substring(4, 6), 16)
+        ];
+      }
+    }
+
+    const slug = 'creator-' + Date.now();
+    const previewDir = path.join('public/uploads/previews', slug);
+
+    const previews = await generatePreviews(normalized, previewDir);
+    const views = Object.keys(previews);
+
+    // Build URLs relative to public dir
+    const previewUrls = {};
+    for (const [view, filePath] of Object.entries(previews)) {
+      previewUrls[view] = '/uploads/previews/' + slug + '/' + path.basename(filePath);
+    }
+
+    res.json({ success: true, previewSlug: slug, views, previews: previewUrls });
+  } catch (err) {
+    console.error('Preview render error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/download-xrnc', downloadLimiter, csrfProtection, (req, res) => {
+  try {
+    const { elementColorMap } = req.body;
+    if (!elementColorMap || Object.keys(elementColorMap).length === 0) {
+      return res.status(400).json({ error: 'No colors provided' });
+    }
+
+    // Normalize
+    const normalized = {};
+    for (const [name, val] of Object.entries(elementColorMap)) {
+      if (Array.isArray(val) && val.length === 3) {
+        normalized[name] = val;
+      } else if (typeof val === 'string') {
+        const hex = val.replace('#', '');
+        normalized[name] = [
+          parseInt(hex.substring(0, 2), 16),
+          parseInt(hex.substring(2, 4), 16),
+          parseInt(hex.substring(4, 6), 16)
+        ];
+      }
+    }
+
+    const xrnc = generateXrnc(normalized);
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Content-Disposition', 'attachment; filename="my-theme.xrnc"');
+    res.send(xrnc);
+  } catch (err) {
+    console.error('XRNC generation error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===================== PAGES =====================
 
 app.get('/', (req, res) => {
@@ -264,15 +727,8 @@ app.get('/', (req, res) => {
 
   let themes, totalCount;
   if (searchQuery) {
-    const all = listThemes(filterTag, sort);
-    const q = searchQuery.toLowerCase();
-    const filtered = all.filter(t =>
-      t.name.toLowerCase().includes(q) ||
-      t.author.toLowerCase().includes(q) ||
-      t.tags.some(tag => tag.includes(q))
-    );
-    themes = filtered;
-    totalCount = filtered.length;
+    themes = searchThemes(searchQuery.toLowerCase(), filterTag, 0, PAGE_SIZE);
+    totalCount = countSearchThemes(searchQuery.toLowerCase(), filterTag);
   } else {
     themes = listThemesPage(filterTag, sort, 0, PAGE_SIZE);
     totalCount = countThemes(filterTag);
@@ -401,10 +857,18 @@ app.post('/upload', requireAuth, csrfProtection,
 );
 
 app.get('/theme/:slug', (req, res) => {
-  const theme = getThemeBySlug(req.params.slug);
-  if (!theme) return res.status(404).send('Theme not found');
-  const comments = getThemeComments(theme.id);
-  res.render('detail', { theme, comments });
+  try {
+    const theme = getThemeBySlug(req.params.slug);
+    if (!theme) return res.status(404).send('Theme not found');
+    const comments = getThemeComments(theme.id);
+    const ogImage = theme.previewSlug && theme.previewViews && theme.previewViews.includes('pattern')
+      ? `${req.protocol}://${req.get('host')}/uploads/previews/${theme.previewSlug}/pattern.png?t=${Date.parse(theme.uploaded_at) || Date.now()}`
+      : null;
+    res.render('detail', { theme, comments, ogImage });
+  } catch (err) {
+    console.error('Detail page error:', err);
+    res.status(500).send('Internal server error');
+  }
 });
 
 app.get('/download/:slug', downloadLimiter, (req, res) => {
@@ -417,15 +881,15 @@ app.get('/download/:slug', downloadLimiter, (req, res) => {
 
 // ===================== API =====================
 
-app.post('/api/themes/:id/like', (req, res) => {
+app.post('/api/themes/:id/like', likeLimiter, csrfProtection, (req, res) => {
   res.json({ likes: likeTheme(Number(req.params.id)) });
 });
 
-app.post('/api/themes/:id/unlike', (req, res) => {
+app.post('/api/themes/:id/unlike', likeLimiter, csrfProtection, (req, res) => {
   res.json({ likes: unlikeTheme(Number(req.params.id)) });
 });
 
-app.post('/theme/:slug/comment', requireAuth, csrfProtection, (req, res) => {
+app.post('/theme/:slug/comment', requireAuth, commentLimiter, csrfProtection, (req, res) => {
   const theme = getThemeBySlug(req.params.slug);
   if (!theme) return res.status(404).send('Theme not found');
   const { message } = req.body;
@@ -489,6 +953,51 @@ app.get('/health', (req, res) => {
     status: healthy ? 'healthy' : 'unhealthy',
     checks,
   });
+});
+
+// ── Periodic cleanup: old creator preview dirs ─────────
+function cleanupOldCreatorPreviews() {
+  const previewsDir = path.join(__dirname, 'public/uploads/previews');
+  if (!fs.existsSync(previewsDir)) return;
+  const cutoff = Date.now() - 2 * 60 * 60 * 1000; // 2 hours
+  let cleaned = 0;
+  for (const entry of fs.readdirSync(previewsDir)) {
+    if (!entry.startsWith('creator-')) continue;
+    const fullPath = path.join(previewsDir, entry);
+    try {
+      const stat = fs.statSync(fullPath);
+      if (stat.mtimeMs < cutoff) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+        cleaned++;
+      }
+    } catch (e) { /* ignore */ }
+  }
+  if (cleaned) console.log(`🧹 Cleaned ${cleaned} old creator preview dir(s)`);
+}
+setInterval(cleanupOldCreatorPreviews, 30 * 60 * 1000); // every 30 min
+cleanupOldCreatorPreviews(); // run once at startup
+
+// ── Deploy webhook ─────────────────────────────────────
+app.post('/deploy', express.json(), async (req, res) => {
+  const secret = process.env.DEPLOY_SECRET;
+  if (!secret) {
+    return res.status(503).json({ error: 'Deploy not configured' });
+  }
+  const auth = req.headers['x-deploy-secret'];
+  if (!auth || auth !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  console.log('🚀 Deploy webhook triggered');
+  res.json({ success: true, message: 'Deploy triggered' });
+
+  // Run deploy in background so response returns immediately
+  const { spawn } = await import('child_process');
+  const deploy = spawn('bash', ['/var/www/renoisethemes/ops/deploy.sh'], {
+    detached: true,
+    stdio: 'inherit'
+  });
+  deploy.unref();
 });
 
 // ── Start server ───────────────────────────────────────
