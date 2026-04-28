@@ -362,10 +362,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('paletteRandom').addEventListener('click', () => {
-    const { hue, anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
-    // vibe=1 = full variation, but anchor + scheme + light/dark stay locked
-    const palette = generatePalette(hue, scheme, isLight, 1);
-    // Override the anchor element with the exact user-chosen color
+    const { anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
+    // Randomize base hue while keeping anchor + scheme + light/dark locked
+    const randomHue = Math.floor(Math.random() * 360);
+    const palette = generatePalette(randomHue, scheme, isLight, 1);
+    // Override the anchor element back to the exact user-chosen color
     palette[anchorEl] = anchorHex;
     applyPalette(palette);
   });
