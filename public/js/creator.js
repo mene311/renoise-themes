@@ -191,76 +191,83 @@ document.addEventListener('DOMContentLoaded', () => {
     return textHex;
   }
 
-  function generatePalette(baseHue, scheme, isLight) {
+  function generatePalette(baseHue, scheme, isLight, vibe = 0.5) {
     const p = {};
+
+    // vibe adds random variation (0 = conservative, 1 = wild)
+    const v = (min, max) => {
+      const spread = (max - min) * vibe;
+      return min + Math.random() * spread;
+    };
+    const vInt = (min, max) => Math.round(v(min, max));
 
     let accentHue, accent2Hue;
     switch (scheme) {
       case 'complementary':
         accentHue = (baseHue + 180) % 360;
-        accent2Hue = accentHue;
+        accent2Hue = (baseHue + v(170, 190)) % 360; // slight shift for variety
         break;
       case 'triadic':
         accentHue = (baseHue + 120) % 360;
         accent2Hue = (baseHue + 240) % 360;
         break;
       case 'analogous':
-        accentHue = (baseHue + 30) % 360;
-        accent2Hue = (baseHue - 30 + 360) % 360;
+        accentHue = (baseHue + v(20, 40)) % 360;
+        accent2Hue = (baseHue - v(20, 40) + 360) % 360;
         break;
       case 'split-complementary':
-        accentHue = (baseHue + 150) % 360;
-        accent2Hue = (baseHue + 210) % 360;
+        accentHue = (baseHue + v(140, 160)) % 360;
+        accent2Hue = (baseHue + v(200, 220)) % 360;
         break;
       default: // monochrome
         accentHue = baseHue;
         accent2Hue = baseHue;
     }
 
-    const bgS = isLight ? 5 : 8;
-    const bgL = isLight ? 94 : 10;
+    const bgS = isLight ? v(3, 8) : v(5, 12);
+    const bgL = isLight ? v(90, 96) : v(6, 14);
 
     // Backgrounds
     p.Main_Back = hslHex(baseHue, bgS, bgL);
-    p.Body_Back = hslHex(baseHue, bgS + 2, isLight ? bgL - 6 : bgL + 6);
-    p.Button_Back = hslHex(baseHue, bgS + 4, isLight ? bgL - 14 : bgL + 14);
-    p.ValueBox_Back = hslHex(baseHue, bgS + 3, isLight ? bgL - 10 : bgL + 10);
-    p.Pattern_Default_Back = hslHex(baseHue, bgS, isLight ? bgL - 3 : bgL + 3);
-    p.Pattern_Highlighted_Back = hslHex(baseHue, bgS + 1, isLight ? bgL - 7 : bgL + 7);
-    p.Pattern_CenterBar_Back = hslHex(baseHue, bgS + 2, isLight ? bgL - 18 : bgL + 18);
-    p.Pattern_CenterBar_Back_StandBy = hslHex(baseHue, bgS + 2, isLight ? bgL - 22 : bgL + 22);
-    p.Alternate_Main_Back = hslHex(baseHue, bgS, isLight ? bgL - 10 : bgL + 10);
+    p.Body_Back = hslHex(baseHue, bgS, isLight ? bgL - v(4, 8) : bgL + v(4, 8));
+    p.Button_Back = hslHex(baseHue, bgS + v(2, 4), isLight ? bgL - v(10, 16) : bgL + v(10, 16));
+    p.ValueBox_Back = hslHex(baseHue, bgS + v(2, 4), isLight ? bgL - v(6, 12) : bgL + v(6, 12));
+    p.Pattern_Default_Back = hslHex(baseHue, bgS, isLight ? bgL - v(2, 5) : bgL + v(2, 5));
+    p.Pattern_Highlighted_Back = hslHex(baseHue, bgS, isLight ? bgL - v(5, 9) : bgL + v(5, 9));
+    p.Pattern_CenterBar_Back = hslHex(baseHue, bgS + v(1, 3), isLight ? bgL - v(14, 20) : bgL + v(14, 20));
+    p.Pattern_CenterBar_Back_StandBy = hslHex(baseHue, bgS + v(1, 3), isLight ? bgL - v(18, 24) : bgL + v(18, 24));
+    p.Alternate_Main_Back = hslHex(baseHue, bgS, isLight ? bgL - v(8, 12) : bgL + v(8, 12));
     p.ToolTip_Back = p.Button_Back;
 
     // Accents
-    const accS = 75;
-    const accL = isLight ? 48 : 58;
+    const accS = vInt(65, 85);
+    const accL = isLight ? vInt(40, 55) : vInt(50, 65);
     p.Selection_Back = hslHex(accentHue, accS, accL);
     p.Selected_Button_Back = hslHex(accent2Hue, accS, accL);
     p.Slider = hslHex(accentHue, accS, accL);
-    p.Button_Highlight_Font = hslHex(accentHue, accS, accL + 8);
-    p.Automation_Line_Edge = hslHex(accentHue, accS - 10, accL);
-    p.Automation_Line_Fill = hslHex(accentHue, accS - 20, accL - 8);
-    p.Automation_Marker_Play = hslHex(accentHue, accS, accL + 5);
-    p.Automation_Marker_Single = hslHex(accent2Hue, accS, accL + 5);
-    p.Automation_Marker_Pair = hslHex((baseHue + 180) % 360, accS, accL + 5);
-    p.Automation_Marker_Diamond = hslHex(accentHue, accS, accL + 10);
-    p.Automation_Point = hslHex(accentHue, accS - 30, isLight ? accL + 18 : accL + 12);
-    p.Pattern_PlayPosition_Back = hslHex(accentHue, accS - 10, isLight ? accL - 15 : accL + 12);
-    p.Pattern_Selection = hslHex(accentHue, accS, isLight ? accL - 10 : accL + 8);
-    p.Folder = hslHex(accentHue, accS - 15, accL);
+    p.Button_Highlight_Font = hslHex(accentHue, accS, accL + v(4, 10));
+    p.Automation_Line_Edge = hslHex(accentHue, accS - v(8, 12), accL);
+    p.Automation_Line_Fill = hslHex(accentHue, accS - v(15, 25), accL - v(4, 10));
+    p.Automation_Marker_Play = hslHex(accentHue, accS, accL + v(2, 6));
+    p.Automation_Marker_Single = hslHex(accent2Hue, accS, accL + v(2, 6));
+    p.Automation_Marker_Pair = hslHex((baseHue + 180) % 360, accS, accL + v(2, 6));
+    p.Automation_Marker_Diamond = hslHex(accentHue, accS, accL + v(6, 12));
+    p.Automation_Point = hslHex(accentHue, accS - v(20, 35), isLight ? accL + v(14, 20) : accL + v(8, 14));
+    p.Pattern_PlayPosition_Back = hslHex(accentHue, accS - v(8, 12), isLight ? accL - v(12, 18) : accL + v(8, 14));
+    p.Pattern_Selection = hslHex(accentHue, accS, isLight ? accL - v(6, 12) : accL + v(6, 10));
+    p.Folder = hslHex(accentHue, accS - v(10, 18), accL);
 
     // UI chrome
-    p.Scrollbar = hslHex(baseHue, bgS + 6, isLight ? bgL - 22 : bgL + 22);
-    p.Automation_Grid = hslHex(baseHue, bgS + 3, isLight ? bgL - 10 : bgL + 10);
-    p.Pattern_Mute_State = hslHex(baseHue, bgS + 10, isLight ? bgL - 25 : bgL + 25);
-    p.Pattern_StandBy_Selection = hslHex(baseHue, bgS + 5, isLight ? bgL - 20 : bgL + 20);
-    p.StandBy_Selection_Back = hslHex(baseHue, bgS + 8, isLight ? bgL - 16 : bgL + 16);
-    p.Midi_Mapping_Back = hslHex(accent2Hue, accS - 25, isLight ? accL + 18 : accL - 12);
-    p.VuMeter_Back_Normal = hslHex(baseHue, bgS, isLight ? bgL - 8 : bgL + 8);
-    p.VuMeter_Back_Clipped = hslHex(0, 85, isLight ? 55 : 70);
+    p.Scrollbar = hslHex(baseHue, bgS + v(4, 8), isLight ? bgL - v(18, 26) : bgL + v(18, 26));
+    p.Automation_Grid = hslHex(baseHue, bgS + v(2, 4), isLight ? bgL - v(6, 12) : bgL + v(6, 12));
+    p.Pattern_Mute_State = hslHex(baseHue, bgS + v(6, 12), isLight ? bgL - v(20, 28) : bgL + v(20, 28));
+    p.Pattern_StandBy_Selection = hslHex(baseHue, bgS + v(3, 6), isLight ? bgL - v(16, 22) : bgL + v(16, 22));
+    p.StandBy_Selection_Back = hslHex(baseHue, bgS + v(6, 10), isLight ? bgL - v(12, 18) : bgL + v(12, 18));
+    p.Midi_Mapping_Back = hslHex(accent2Hue, accS - v(20, 28), isLight ? accL + v(14, 20) : accL - v(8, 14));
+    p.VuMeter_Back_Normal = hslHex(baseHue, bgS, isLight ? bgL - v(4, 10) : bgL + v(4, 10));
+    p.VuMeter_Back_Clipped = hslHex(0, vInt(80, 90), isLight ? vInt(50, 60) : vInt(65, 75));
 
-    // Text (high-contrast, slight accent tint)
+    // Text (high-contrast, slight accent tint) — same logic, maintains readability
     p.Main_Font = makeTextColor(p.Main_Back, accentHue, isLight);
     p.Body_Font = makeTextColor(p.Body_Back, accentHue, isLight);
     p.Strong_Body_Font = makeTextColor(p.Body_Back, accentHue, isLight, true);
@@ -279,10 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
     p.Midi_Mapping_Font = makeTextColor(p.Midi_Mapping_Back, accentHue, isLight);
     p.Alternate_Main_Font = makeTextColor(p.Alternate_Main_Back, accentHue, isLight);
 
-    // Tracker columns (fixed semantic hues, adapted L/S)
-    const tS = isLight ? 55 : 70;
-    const tL = isLight ? 32 : 75;
-    const tLHi = tL + (isLight ? 6 : -6);
+    // Tracker columns (fixed semantic hues, adapted L/S with variation)
+    const tS = isLight ? vInt(45, 65) : vInt(60, 80);
+    const tL = isLight ? vInt(28, 36) : vInt(70, 80);
+    const tLHi = tL + (isLight ? v(4, 8) : v(-8, -4));
 
     const trackerCols = [
       ['Volume', 120],
@@ -296,24 +303,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (const [name, hue] of trackerCols) {
       p[`Pattern_Default_Font_${name}`] = hslHex(hue, tS, tL);
-      p[`Pattern_Highlighted_Font_${name}`] = hslHex(hue, tS - 8, tLHi);
+      p[`Pattern_Highlighted_Font_${name}`] = hslHex(hue, tS - v(6, 10), tLHi);
     }
 
-    p.Pattern_Default_Font_Unused = hslHex(baseHue, bgS, isLight ? bgL - 28 : bgL + 28);
-    p.Pattern_Highlighted_Font_Unused = hslHex(baseHue, bgS, isLight ? bgL - 24 : bgL + 24);
+    p.Pattern_Default_Font_Unused = hslHex(baseHue, bgS, isLight ? bgL - v(24, 30) : bgL + v(24, 30));
+    p.Pattern_Highlighted_Font_Unused = hslHex(baseHue, bgS, isLight ? bgL - v(20, 26) : bgL + v(20, 26));
 
     // VU Meters
-    p.VuMeter_Meter = hslHex(baseHue, bgS, isLight ? bgL - 30 : bgL + 30);
-    p.VuMeter_Meter_Low = hslHex(140, 75, isLight ? 42 : 55);
-    p.VuMeter_Meter_Middle = hslHex(50, 85, isLight ? 48 : 60);
-    p.VuMeter_Meter_High = hslHex(0, 90, isLight ? 52 : 65);
-    p.VuMeter_Peak = hslHex(10, 90, isLight ? 52 : 65);
+    p.VuMeter_Meter = hslHex(baseHue, bgS + v(4, 8), isLight ? bgL - v(26, 34) : bgL + v(26, 34));
+    p.VuMeter_Meter_Low = hslHex(140, vInt(70, 80), isLight ? vInt(38, 45) : vInt(50, 58));
+    p.VuMeter_Meter_Middle = hslHex(50, vInt(78, 88), isLight ? vInt(44, 52) : vInt(56, 64));
+    p.VuMeter_Meter_High = hslHex(0, vInt(85, 95), isLight ? vInt(48, 56) : vInt(60, 68));
+    p.VuMeter_Peak = hslHex(10, vInt(85, 95), isLight ? vInt(48, 56) : vInt(60, 68));
 
     // Default palette slots
     for (let i = 1; i <= 14; i++) {
       const n = String(i).padStart(2, '0');
-      const h = (baseHue + (i - 1) * (360 / 14)) % 360;
-      p[`Default_Color_${n}`] = hslHex(h, 55, isLight ? 45 : 60);
+      const h = (baseHue + (i - 1) * (360 / 14) + v(-10, 10)) % 360;
+      p[`Default_Color_${n}`] = hslHex(h, vInt(45, 60), isLight ? vInt(40, 50) : vInt(55, 65));
     }
 
     return p;
@@ -335,21 +342,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const [h] = rgbToHsl(r, g, b);
     const scheme = document.getElementById('paletteScheme').value;
     const isLight = document.getElementById('paletteLight').checked;
-    const palette = generatePalette(h, scheme, isLight);
+    // vibe=0 means no randomness — clean palette from fixed params
+    const palette = generatePalette(h, scheme, isLight, 0);
     applyPalette(palette);
   });
 
   document.getElementById('paletteRandom').addEventListener('click', () => {
-    // Read base color from picker
+    // Lock base color and scheme, randomize everything else
     const baseHex = document.getElementById('paletteBase').value;
     const [r, g, b] = hexToRgb(baseHex);
     const [h] = rgbToHsl(r, g, b);
-    // Read fixed scheme from dropdown
     const scheme = document.getElementById('paletteScheme').value;
-    // Randomize light/dark
     const isLight = Math.random() < 0.25;
-    const palette = generatePalette(h, scheme, isLight);
-    // Sync only the light/dark toggle — base + scheme stay locked
+    // vibe=1 means full variation — different palette every click
+    const palette = generatePalette(h, scheme, isLight, 1);
+    // Sync controls — only light/dark changes, base + scheme stay locked
     document.getElementById('paletteLight').checked = isLight;
     applyPalette(palette);
   });
