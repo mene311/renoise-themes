@@ -40,7 +40,7 @@
           <span class="nav-sep" aria-hidden="true"></span>
           <div class="user-menu" aria-label="User menu">
             <span class="user-avatar" aria-hidden="true"><%= user.username.charAt(0).toUpperCase() %></span>
-            <span class="user-name"><%= user.username %></span>
+            <a href="/backstage" class="user-name"><%= user.username %></a>
           </div>
           <a href="/logout">Logout</a>
         <% } else { %>

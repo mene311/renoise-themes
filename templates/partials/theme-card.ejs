@@ -23,7 +23,7 @@
   <div class="card-info">
     <div class="card-title" title="<%= theme.name %>"><%= theme.name %></div>
     <div class="card-meta">
-      <span class="card-author"><%= theme.author %></span>
+      <a href="/backstage/<%= theme.author %>" class="card-author" onclick="event.stopPropagation()"><%= theme.author %></a>
       <span class="card-likes" aria-label="<%= theme.likes %> likes">♥ <%= theme.likes %></span>
     </div>
   </div>

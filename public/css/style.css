@@ -495,6 +495,32 @@ main.container {
   font-size: 13px;
   color: var(--chrome-text-dim);
 }
+.card-author {
+  color: var(--chrome-text-dim) !important;
+  text-decoration: none !important;
+  font-size: 13px;
+}
+.card-author:hover {
+  color: var(--accent) !important;
+}
+
+.detail-author {
+  color: var(--chrome-text);
+  text-decoration: none;
+}
+.detail-author:hover {
+  color: var(--accent);
+}
+
+.comment-author {
+  color: var(--chrome-text-bright);
+  text-decoration: none;
+  font-size: 11px;
+}
+.comment-author:hover {
+  color: var(--accent);
+}
+
 .card-likes {
   color: var(--chrome-text-dim);
   white-space: nowrap;

@@ -26,7 +26,7 @@
 
     <div class="panel-section">
       <h1 class="detail-title"><%= theme.name %></h1>
-      <p class="detail-meta">by <strong><%= theme.author %></strong></p>
+      <p class="detail-meta">by <a href="/backstage/<%= theme.author %>" class="detail-author"><strong><%= theme.author %></strong></a></p>
       <p class="detail-meta"><%= new Date(theme.uploaded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
 
       <div class="detail-actions">
@@ -186,7 +186,7 @@
             <% comments.forEach(c => { %>
               <article class="comment">
                 <div class="comment-head">
-                  <strong><%= c.author %></strong>
+                  <a href="/backstage/<%= c.author %>" class="comment-author"><strong><%= c.author %></strong></a>
                   <time datetime="<%= c.created_at %>"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></time>
                 </div>
                 <p><%= c.message %></p>

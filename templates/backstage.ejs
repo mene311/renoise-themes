@@ -82,7 +82,7 @@
         <% comments.forEach(c => { %>
           <article class="comment">
             <div class="comment-head">
-              <strong><%= c.author %></strong>
+              <a href="/backstage/<%= c.author %>" class="comment-author"><strong><%= c.author %></strong></a>
               <% if (c.authorTitle) { %><span class="flair"><%= c.authorTitle %></span><% } %>
               <time datetime="<%= c.created_at %>"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></time>
               <% if (isOwner) { %>
