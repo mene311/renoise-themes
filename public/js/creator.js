@@ -340,16 +340,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('paletteRandom').addEventListener('click', () => {
-    const schemes = ['monochrome', 'complementary', 'triadic', 'analogous', 'split-complementary'];
-    const scheme = schemes[Math.floor(Math.random() * schemes.length)];
-    const baseHue = Math.floor(Math.random() * 360);
+    // Read base color from picker
+    const baseHex = document.getElementById('paletteBase').value;
+    const [r, g, b] = hexToRgb(baseHex);
+    const [h] = rgbToHsl(r, g, b);
+    // Read fixed scheme from dropdown
+    const scheme = document.getElementById('paletteScheme').value;
+    // Randomize light/dark
     const isLight = Math.random() < 0.25;
-    const palette = generatePalette(baseHue, scheme, isLight);
-    // Sync controls
-    document.getElementById('paletteScheme').value = scheme;
+    const palette = generatePalette(h, scheme, isLight);
+    // Sync only the light/dark toggle — base + scheme stay locked
     document.getElementById('paletteLight').checked = isLight;
-    const baseRgb = hslToRgb(baseHue, 70, 50);
-    document.getElementById('paletteBase').value = rgbToHex(...baseRgb);
     applyPalette(palette);
   });
 
