@@ -180,11 +180,25 @@ function invalidateMarquee() {
   marqueeCache.ts = 0;
 }
 
+// Cache the CSS file in memory for inlining
+let _cssCache = null;
+function getInlineCss() {
+  if (!_cssCache) {
+    try {
+      _cssCache = fs.readFileSync(path.join(__dirname, 'public/css/style.css'), 'utf-8');
+    } catch (e) {
+      _cssCache = '/* css unavailable */';
+    }
+  }
+  return _cssCache;
+}
+
 app.use((req, res, next) => {
   res.locals.uiTheme = req.cookies.theme === 'light' ? 'light' : 'dark';
   res.locals.marquee = getMarquee();
   res.locals.user = req.session.user || null;
   res.locals.csrfToken = generateCsrfToken(req);
+  res.locals._css = getInlineCss();
   next();
 });
 
