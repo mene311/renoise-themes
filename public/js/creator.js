@@ -348,16 +348,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('paletteRandom').addEventListener('click', () => {
-    // Lock base color and scheme, randomize everything else
+    // Lock base color, scheme, and light/dark — randomize everything else
     const baseHex = document.getElementById('paletteBase').value;
     const [r, g, b] = hexToRgb(baseHex);
     const [h] = rgbToHsl(r, g, b);
     const scheme = document.getElementById('paletteScheme').value;
-    const isLight = Math.random() < 0.25;
+    const isLight = document.getElementById('paletteLight').checked;
     // vibe=1 means full variation — different palette every click
     const palette = generatePalette(h, scheme, isLight, 1);
-    // Sync controls — only light/dark changes, base + scheme stay locked
-    document.getElementById('paletteLight').checked = isLight;
     applyPalette(palette);
   });
 
