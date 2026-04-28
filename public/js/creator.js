@@ -209,22 +209,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const vInt = (min, max) => Math.round(v(min, max));
 
     let accentHue, accent2Hue;
+    // Scheme hues are mathematically exact — no vibe noise.
+    // Only saturation/lightness varies below.
     switch (scheme) {
       case 'complementary':
         accentHue = (baseHue + 180) % 360;
-        accent2Hue = (baseHue + v(170, 190)) % 360; // slight shift for variety
+        accent2Hue = accentHue;
         break;
       case 'triadic':
         accentHue = (baseHue + 120) % 360;
         accent2Hue = (baseHue + 240) % 360;
         break;
       case 'analogous':
-        accentHue = (baseHue + v(20, 40)) % 360;
-        accent2Hue = (baseHue - v(20, 40) + 360) % 360;
+        accentHue = (baseHue + 30) % 360;
+        accent2Hue = (baseHue - 30 + 360) % 360;
         break;
       case 'split-complementary':
-        accentHue = (baseHue + v(140, 160)) % 360;
-        accent2Hue = (baseHue + v(200, 220)) % 360;
+        accentHue = (baseHue + 150) % 360;
+        accent2Hue = (baseHue + 210) % 360;
         break;
       default: // monochrome
         accentHue = baseHue;
@@ -363,9 +365,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('paletteRandom').addEventListener('click', () => {
     const { anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
-    // Randomize base hue while keeping anchor + scheme + light/dark locked
+    // Vary base hue for visually different palettes each click.
+    // vibe=0.4 for subtle saturation/lightness variation without drowning scheme relationships.
     const randomHue = Math.floor(Math.random() * 360);
-    const palette = generatePalette(randomHue, scheme, isLight, 1);
+    const palette = generatePalette(randomHue, scheme, isLight, 0.4);
     // Override the anchor element back to the exact user-chosen color
     palette[anchorEl] = anchorHex;
     applyPalette(palette);
