@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ elementColorMap: getElementColorMap() })
       });
 
+      if (!res.ok) {
+        const errText = await res.text().catch(() => 'Unknown error');
+        throw new Error(res.status === 429 ? 'Rate limited — wait a moment' : `Server error: ${errText.slice(0, 100)}`);
+      }
+
       const data = await res.json();
       if (!data.success) {
         previewLoading.textContent = '⚠️ ' + (data.error || 'Render failed');
