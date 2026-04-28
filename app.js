@@ -24,6 +24,8 @@ import {
   createPasswordResetToken, validateResetToken, consumeResetToken,
   searchThemes, countSearchThemes,
   getThemesByAuthor, updateThemeDescription, updateTheme, deleteTheme,
+  getProfileComments, addProfileComment, deleteProfileComment,
+  getUserStats,
   db
 } from './lib/database.js';
 
@@ -261,7 +263,7 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
       return res.render('register', { error: result.error, success: null });
     }
 
-    req.session.user = { id: result.userId, username, email };
+    req.session.user = { id: result.userId, username, email, title: result.title || null };
     sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
     res.redirect('/');
   } catch (err) {
@@ -640,6 +642,41 @@ function getDefaultColors() {
     return {};
   }
 }
+
+// ── Backstage (user profile) ───────────────────────────
+
+app.get('/backstage/:username', (req, res) => {
+  const stats = getUserStats(req.params.username);
+  if (!stats) return res.status(404).send('User not found');
+  const themes = getThemesByAuthor(req.params.username);
+  const comments = getProfileComments(req.params.username);
+  const isOwner = req.session.user && req.session.user.username === req.params.username;
+  res.render('backstage', { stats, themes, comments, isOwner });
+});
+
+app.post('/backstage/:username/comment', requireAuth, csrfProtection, (req, res) => {
+  const { message } = req.body;
+  if (!message || !message.trim()) return res.status(400).send('Message is required');
+  addProfileComment(req.params.username, req.session.user.username, message.trim().substring(0, 1000));
+  res.redirect(`/backstage/${req.params.username}`);
+});
+
+app.post('/backstage/:username/comment/:id/delete', requireAuth, csrfProtection, (req, res) => {
+  if (req.session.user.username !== req.params.username) return res.status(403).send('Not authorized');
+  deleteProfileComment(req.params.id);
+  res.redirect(`/backstage/${req.params.username}`);
+});
+
+// Redirect /dashboard to /backstage for backward compat
+app.get('/dashboard', (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  res.redirect('/backstage');
+});
+
+app.get('/backstage', (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  res.redirect(`/backstage/${req.session.user.username}`);
+});
 
 app.get('/create', (req, res) => {
   res.render('create', { defaults: getDefaultColors(), ELEMENT_COVERAGE, COVERAGE_ZERO, ALL_ELEMENTS_ORDERED, COVERAGE_MAP });

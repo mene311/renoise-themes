@@ -1,0 +1,114 @@
+<%- include('partials/header', { pageTitle: stats.username + ' — Renoise Theme Share' }) %>
+
+<div class="backstage-page">
+  <!-- Profile Header -->
+  <div class="backstage-header">
+    <div class="backstage-avatar"><%= stats.username.charAt(0).toUpperCase() %></div>
+    <div class="backstage-id">
+      <h1 class="backstage-username"><%= stats.username %></h1>
+      <% if (stats.title) { %><span class="backstage-title"><%= stats.title %></span><% } %>
+      <span class="backstage-joined">joined <%= new Date(stats.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) %></span>
+    </div>
+    <div class="backstage-actions">
+      <% if (isOwner) { %>
+        <a href="/theme/<%= encodeURIComponent(stats.username) %>/upload" class="btn-nav-upload" style="height:28px;padding:0 12px;font-size:11px;">Upload</a>
+        <a href="/create" class="btn-preset" style="height:28px;padding:0 12px;font-size:11px;">Create</a>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="backstage-stats">
+    <div class="stat-cell"><span class="stat-value"><%= stats.themeCount %></span><span class="stat-label">Themes</span></div>
+    <div class="stat-cell"><span class="stat-value"><%= stats.totalLikes %></span><span class="stat-label">Likes</span></div>
+    <div class="stat-cell"><span class="stat-value"><%= stats.totalDownloads %></span><span class="stat-label">Downloads</span></div>
+  </div>
+
+  <!-- Theme Grid -->
+  <div class="backstage-section">
+    <h3>Themes by <%= stats.username %></h3>
+    <% if (themes.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <p>No themes yet.</p>
+      </div>
+    <% } else { %>
+      <div class="theme-grid">
+        <% themes.forEach(theme => { %>
+          <% if (isOwner) { %>
+            <div class="theme-card" style="position: relative;">
+              <a href="/theme/<%= theme.slug %>" style="text-decoration: none; color: inherit;">
+                <% const hasPreview = theme.previewSlug && theme.previewViews && theme.previewViews.includes('pattern'); %>
+                <div class="card-preview" aria-hidden="true">
+                  <% if (hasPreview) { %>
+                    <img src="/uploads/previews/<%= theme.previewSlug %>/pattern.png" alt="">
+                  <% } else { %>
+                    <div class="card-preview-empty"><span>◈</span></div>
+                  <% } %>
+                </div>
+                <div class="card-info">
+                  <div class="card-title"><%= theme.name %></div>
+                  <div class="card-meta">
+                    <span>♥ <%= theme.likes %></span>
+                    <span>⬇ <%= theme.downloads %></span>
+                  </div>
+                </div>
+              </a>
+              <div style="display: flex; gap: 4px; padding: 0 12px 12px;">
+                <a href="/theme/<%= theme.slug %>/edit" class="btn-submit" style="flex:1;height:28px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Edit</a>
+                <a href="/theme/<%= theme.slug %>/edit-colors" class="btn-submit" style="flex:1;height:28px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--accent);border-color:var(--accent);color:#111;">🎨 Colors</a>
+                <form action="/theme/<%= theme.slug %>/delete" method="POST" style="flex:1;" onsubmit="return confirm('Delete this theme permanently?')">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn-submit" style="width:100%;height:28px;font-size:11px;background:var(--chrome-danger);border-color:var(--chrome-danger);">Delete</button>
+                </form>
+              </div>
+            </div>
+          <% } else { %>
+            <%- include('partials/theme-card', { theme }) %>
+          <% } %>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Guestbook -->
+  <div class="backstage-section">
+    <h3>💬 Guestbook</h3>
+
+    <% if (comments.length === 0) { %>
+      <p class="no-comments">No messages yet — leave one!</p>
+    <% } else { %>
+      <div class="comment-list">
+        <% comments.forEach(c => { %>
+          <article class="comment">
+            <div class="comment-head">
+              <strong><%= c.author %></strong>
+              <% if (c.authorTitle) { %><span class="flair"><%= c.authorTitle %></span><% } %>
+              <time datetime="<%= c.created_at %>"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></time>
+              <% if (isOwner) { %>
+                <form action="/backstage/<%= stats.username %>/comment/<%= c.id %>/delete" method="POST" style="margin-left:auto;" onsubmit="return confirm('Delete this comment?')">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn-link-danger" aria-label="Delete comment">✕</button>
+                </form>
+              <% } %>
+            </div>
+            <p><%= c.message %></p>
+          </article>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <% if (user) { %>
+      <form action="/backstage/<%= stats.username %>/comment" method="POST" class="comment-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label for="guestbookMessage" class="sr-only">Leave a message</label>
+        <textarea id="guestbookMessage" name="message" placeholder="Leave a message for <%= stats.username %>…" required maxlength="1000" rows="2"></textarea>
+        <button type="submit">Post Message</button>
+      </form>
+    <% } else { %>
+      <p class="no-comments"><a href="/login">Log in</a> to leave a message.</p>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
