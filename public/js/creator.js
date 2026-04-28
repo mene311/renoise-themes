@@ -336,13 +336,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function applyPalette(palette) {
-    form.querySelectorAll('input[type="color"]').forEach(input => {
-      const el = input.dataset.element;
-      if (palette[el]) {
-        input.value = palette[el];
-      }
+    // Batch all color changes before triggering preview
+    requestAnimationFrame(() => {
+      form.querySelectorAll('input[type="color"]').forEach(input => {
+        const el = input.dataset.element;
+        if (palette[el]) {
+          input.value = palette[el];
+        }
+      });
+      // Small delay so the browser can settle input updates before rendering
+      setTimeout(renderPreview, 50);
     });
-    renderPreview();
   }
 
   function getAnchorParams() {
