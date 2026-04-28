@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     defaultColors[input.dataset.element] = input.value;
   });
 
+  // Sync anchor color picker with Main_Back's initial value
+  const mainBackInput = form.querySelector('input[data-element="Main_Back"]');
+  const anchorPicker = document.getElementById('paletteAnchor');
+  if (mainBackInput && anchorPicker) {
+    anchorPicker.value = mainBackInput.value;
+  }
+
   // ── Helpers ──────────────────────────────────
 
   function setPreviewState(state) {
@@ -336,26 +343,30 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPreview();
   }
 
-  document.getElementById('paletteApply').addEventListener('click', () => {
-    const baseHex = document.getElementById('paletteBase').value;
-    const [r, g, b] = hexToRgb(baseHex);
+  function getAnchorParams() {
+    const anchorHex = document.getElementById('paletteAnchor').value;
+    const anchorEl = document.getElementById('paletteAnchorElement').value;
+    const [r, g, b] = hexToRgb(anchorHex);
     const [h] = rgbToHsl(r, g, b);
     const scheme = document.getElementById('paletteScheme').value;
     const isLight = document.getElementById('paletteLight').checked;
-    // vibe=0 means no randomness — clean palette from fixed params
-    const palette = generatePalette(h, scheme, isLight, 0);
+    return { hue: h, anchorEl, scheme, isLight, anchorHex };
+  }
+
+  document.getElementById('paletteApply').addEventListener('click', () => {
+    const { hue, anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
+    const palette = generatePalette(hue, scheme, isLight, 0);
+    // Override the anchor element with the exact user-chosen color
+    palette[anchorEl] = anchorHex;
     applyPalette(palette);
   });
 
   document.getElementById('paletteRandom').addEventListener('click', () => {
-    // Lock base color, scheme, and light/dark — randomize everything else
-    const baseHex = document.getElementById('paletteBase').value;
-    const [r, g, b] = hexToRgb(baseHex);
-    const [h] = rgbToHsl(r, g, b);
-    const scheme = document.getElementById('paletteScheme').value;
-    const isLight = document.getElementById('paletteLight').checked;
-    // vibe=1 means full variation — different palette every click
-    const palette = generatePalette(h, scheme, isLight, 1);
+    const { hue, anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
+    // vibe=1 = full variation, but anchor + scheme + light/dark stay locked
+    const palette = generatePalette(hue, scheme, isLight, 1);
+    // Override the anchor element with the exact user-chosen color
+    palette[anchorEl] = anchorHex;
     applyPalette(palette);
   });
 

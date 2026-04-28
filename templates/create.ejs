@@ -32,8 +32,14 @@
           <button type="button" class="btn-preset" id="presetWhite">⚪ Full White</button>
         </div>
         <div class="palette-gen">
-          <label class="palette-label">Base</label>
-          <input type="color" id="paletteBase" value="#6b9f40" title="Base color">
+          <label class="palette-label">Anchor</label>
+          <input type="color" id="paletteAnchor" value="#161618" title="Anchor color">
+          <select id="paletteAnchorElement" title="Element this color anchors">
+            <option value="Main_Back">Main Back</option>
+            <option value="Body_Back">Body Back</option>
+            <option value="Selection_Back">Selection Back</option>
+            <option value="Main_Font">Main Font</option>
+          </select>
           <select id="paletteScheme" title="Color scheme">
             <option value="monochrome">Monochrome</option>
             <option value="complementary">Complementary</option>
