@@ -1,0 +1,237 @@
+% =============================================================================
+% Vibe Coding Sandbox - Tool Documentation Template
+% =============================================================================
+% Usage:
+%   1. Copy this file to your tool's docs directory
+%   2. Fill in the sections below
+%   3. Compile with: pdflatex document.tex
+%   4. Or use pandoc: pandoc README.md -o document.pdf
+% =============================================================================
+
+\documentclass[11pt,a4paper]{report}
+
+% ── Packages ────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% ── Code Highlighting ───────────────────────────────────────────────────────
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeborder}{RGB}{221,221,221}
+\definecolor{comment}{RGB}{0,128,0}
+\definecolor{keyword}{RGB}{0,0,255}
+\definecolor{string}{RGB}{163,21,21}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeborder},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    showstringspaces=false,
+    commentstyle=\color{comment},
+    keywordstyle=\color{keyword}\bfseries,
+    stringstyle=\color{string},
+    language=bash,
+    tabsize=2,
+    xleftmargin=2em,
+    framexleftmargin=1.5em
+}
+
+% ── Hyperlinks ──────────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={Tool Documentation},
+    pdfauthor={Vibe Coding Sandbox}
+}
+
+% ── Header/Footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Section Formatting ──────────────────────────────────────────────────────
+\titleformat{\chapter}[display]
+    {\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+    {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+% =============================================================================
+% DOCUMENT START
+% =============================================================================
+\begin{document}
+
+% ── Title Page ──────────────────────────────────────────────────────────────
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries Tool Name\\[0.5cm]}
+    {\Large Technical Documentation\\[2cm]}
+    {\large\itshape Vibe Coding Sandbox\\[0.3cm]}
+    {\large Renoise Themes Project\\[3cm]}
+    \vfill
+    {\large Generated: \today}
+\end{titlepage}
+
+% ── Table of Contents ───────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% =============================================================================
+% CHAPTER 1: OVERVIEW
+% =============================================================================
+\chapter{Overview}
+
+\section{What This Tool Does}
+\textit{[Write a 2-3 sentence summary of the tool's purpose and value proposition.]}
+
+\section{Problem Statement}
+\textit{[Describe the problem this tool solves. Why did you build it?]}
+
+\section{Key Features}
+\begin{itemize}[leftmargin=2em]
+    \item \textit{[Feature 1]}
+    \item \textit{[Feature 2]}
+    \item \textit{[Feature 3]}
+\end{itemize}
+
+% =============================================================================
+% CHAPTER 2: ARCHITECTURE
+% =============================================================================
+\chapter{Architecture}
+
+\section{System Diagram}
+\textit{[Include an ASCII diagram or reference an image file.]}
+
+\begin{lstlisting}[language=bash,caption=High-level command]
+$ tool-name --input file.txt --output result.json
+\end{lstlisting}
+
+\section{Component Breakdown}
+\textit{[Describe each module/file and its responsibility.]}
+
+\begin{longtable}{@{}llp{8cm}@{}}
+\toprule
+\textbf{File} & \textbf{Type} & \textbf{Purpose} \\
+\midrule
+\endhead
+\texttt{lib/parser.js} & Module & Parses input files \\
+\texttt{tools/build.sh} & Script & Automation pipeline \\
+\texttt{app.js} & Entry & Main application \\
+\bottomrule
+\end{longtable}
+
+% =============================================================================
+% CHAPTER 3: USAGE
+% =============================================================================
+\chapter{Usage}
+
+\section{Installation}
+\begin{lstlisting}[language=bash,caption=Install dependencies]
+$ npm install
+# or
+$ pip install -r requirements.txt
+\end{lstlisting}
+
+\section{Running the Tool}
+\begin{lstlisting}[language=bash,caption=Basic usage]
+$ node tool-name.js [options] <input>
+\end{lstlisting}
+
+\section{Configuration}
+\textit{[Document environment variables, config files, etc.]}
+
+\begin{longtable}{@{}llp{6cm}@{}}
+\toprule
+\textbf{Variable} & \textbf{Default} & \textbf{Description} \\
+\midrule
+\texttt{PORT} & 3000 & Server port \\
+\texttt{NODE\_ENV} & development & Runtime environment \\
+\bottomrule
+\end{longtable}
+
+% =============================================================================
+% CHAPTER 4: API / INTERFACE
+% =============================================================================
+\chapter{API / Interface}
+
+\section{Endpoints / Commands}
+\textit{[Document each API endpoint or CLI command.]}
+
+\subsection{Command: \texttt{generate}}
+\begin{lstlisting}[language=bash]
+$ tool-name generate --format json --output out/
+\end{lstlisting}
+
+\textbf{Parameters:}
+\begin{itemize}[leftmargin=2em]
+    \item \texttt{-f, --format} — Output format (json, xml, csv)
+    \item \texttt{-o, --output} — Output directory
+\end{itemize}
+
+% =============================================================================
+% CHAPTER 5: IMPLEMENTATION DETAILS
+% =============================================================================
+\chapter{Implementation Details}
+
+\section{Algorithms}
+\textit{[Describe any non-trivial algorithms or data structures.]}
+
+\section{Performance Characteristics}
+\textit{[Time/space complexity, benchmarks, etc.]}
+
+\section{Known Limitations}
+\textit{[Be honest about edge cases, TODOs, and future work.]}
+
+% =============================================================================
+% CHAPTER 6: EXAMPLES
+% =============================================================================
+\chapter{Examples}
+
+\section{Example 1: Basic Workflow}
+\textit{[Step-by-step example with expected output.]}
+
+\section{Example 2: Advanced Usage}
+\textit{[Show off power-user features.]}
+
+% =============================================================================
+% REFERENCES
+% =============================================================================
+\chapter{References}
+
+\section{File Index}
+\begin{longtable}{@{}lp{10cm}@{}}
+\toprule
+\textbf{File} & \textbf{Description} \\
+\midrule
+\texttt{README.md} & Main project readme \\
+\texttt{CLAUDE.md} & AI assistant context \\
+\bottomrule
+\end{longtable}
+
+\section{Related Documentation}
+\begin{itemize}[leftmargin=2em]
+    \item \textit{[Link to related tool docs]}
+    \item \textit{[Link to external references]}
+\end{itemize}
+
+\end{document}

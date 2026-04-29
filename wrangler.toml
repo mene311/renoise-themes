@@ -1,0 +1,14 @@
+# Cloudflare Pages Configuration
+# Build command: none (static site)
+# Publish directory: docs
+
+[build]
+  command = "echo 'No build needed - serving static site from docs/'"
+  publish = "docs"
+
+[[plugins]]
+  package = "@cloudflare/pages-plugin-static-site"
+
+[deploy]
+  # Enable preview deployments for branches
+  preview = true

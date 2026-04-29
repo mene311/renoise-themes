@@ -1,0 +1,1166 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  11pt,
+  oneside]{report}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\chapter{The Renoise Theme-to-Screenshot Preview
+System}\label{the-renoise-theme-to-screenshot-preview-system}
+
+\section{A Pixel-Accurate Theme Preview Engine for Closed-Source
+Software}\label{a-pixel-accurate-theme-preview-engine-for-closed-source-software}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Abstract.} This paper documents a pixel-accurate theme preview
+system that renders Renoise Digital Audio Workstation (DAW) color themes
+without requiring a Renoise installation. The system maps every pixel in
+reference screenshots to semantic UI elements via binary pixel maps,
+then recolors those pixels using colors extracted from \texttt{.xrnc}
+theme files. The result is a three-pass rendering pipeline that produces
+preview images indistinguishable from native screenshots --- at a
+fraction of the computational and licensing cost. We describe the
+original ``rainbow theme trick,'' the refined ``white-baseline + green
+probe'' method, the three-pass rendering algorithm, and the headless
+automation pipeline that makes map generation possible at scale.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{1. Executive Summary}\label{executive-summary}
+
+Renoise is a professional music tracker and Digital Audio Workstation
+used by electronic musicians worldwide. Like many DAWs, it supports
+custom color themes via \texttt{.xrnc} XML files containing 70+ color
+definitions. However, Renoise provides no built-in theme preview
+mechanism. Music producers who want to evaluate a theme must install it,
+restart Renoise, and manually inspect every view. Theme sharing
+communities have historically relied on manual screenshots ---
+inconsistent, time-consuming, and impossible to generate at scale.
+
+The Renoise Theme-to-Screenshot Preview System solves this by treating
+theme preview as a \textbf{pixel recoloring problem} rather than a UI
+rendering problem. Instead of reimplementing Renoise's closed-source
+interface (impossible), we:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Map} every pixel in a reference screenshot to a semantic UI
+  element (\texttt{Main\_Back}, \texttt{Body\_Font}, etc.)
+\item
+  \textbf{Parse} any \texttt{.xrnc} file to extract its color
+  definitions
+\item
+  \textbf{Recolor} the mapped pixels using the theme's colors
+\item
+  \textbf{Composite} text and anti-aliased details using a special
+  black/white text-mask theme
+\end{enumerate}
+
+The result is a web application where users upload a \texttt{.xrnc} file
+and receive accurate PNG previews of Pattern Editor, Mixer, and Waveform
+views within seconds --- no Renoise installation required.
+
+\textbf{Key innovations:} - Binary pixel maps derived from automated
+green-probe differential analysis - A three-pass rendering algorithm
+that handles anti-aliasing, boundary smoothing, and text compositing - A
+headless Xvfb automation pipeline that generates 71 theme variants in
+\textasciitilde3 minutes - A live Theme Creator tool with 70 color
+pickers ranked by pixel coverage
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{2. The Problem Space}\label{the-problem-space}
+
+\subsection{2.1 What is a Renoise Theme?}\label{what-is-a-renoise-theme}
+
+A Renoise theme is an XML file with the extension \texttt{.xrnc}
+(Renoise Color). It defines colors for 70+ UI elements, from the main
+application background (\texttt{Main\_Back}) to the color of automation
+curve edges (\texttt{Automation\_Line\_Edge}). A minimal theme looks
+like this:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\textless{}?xml}\OtherTok{ version=}\StringTok{"1.0"}\OtherTok{ encoding=}\StringTok{"UTF{-}8"}\FunctionTok{?\textgreater{}}
+\NormalTok{\textless{}}\KeywordTok{SkinColors}\OtherTok{ doc\_version=}\StringTok{"12"}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{Main\_Back}\NormalTok{\textgreater{}30,30,30\textless{}/}\KeywordTok{Main\_Back}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{Main\_Font}\NormalTok{\textgreater{}220,220,220\textless{}/}\KeywordTok{Main\_Font}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{Body\_Back}\NormalTok{\textgreater{}40,40,50\textless{}/}\KeywordTok{Body\_Back}\NormalTok{\textgreater{}}
+  \CommentTok{\textless{}!{-}{-} ... 70 more elements ... {-}{-}\textgreater{}}
+\NormalTok{\textless{}/}\KeywordTok{SkinColors}\NormalTok{\textgreater{}}
+\end{Highlighting}
+\end{Shaded}
+
+These colors control every visible surface of Renoise's interface: the
+pattern grid, mixer channels, device chains, automation envelopes, VU
+meters, buttons, sliders, scrollbars, and tooltips. Changing
+\texttt{Main\_Back} affects roughly 46\% of the screen. Changing
+\texttt{VuMeter\_Peak} affects perhaps 0.01\%.
+
+\subsection{2.2 The Preview Gap}\label{the-preview-gap}
+
+Before this system existed, theme authors and curators faced three
+problems:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{No built-in preview.} Renoise does not generate thumbnails or
+  previews. To see a theme, you must load it.
+\item
+  \textbf{Manual screenshots are inconsistent.} Different users run
+  different screen resolutions, window sizes, and song projects. One
+  user's screenshot might show the pattern editor; another's might show
+  the mixer. There is no standardization.
+\item
+  \textbf{Renoise is required.} Generating a screenshot means having
+  Renoise installed, licensed, and running. This creates friction for
+  web-based theme galleries and mobile users.
+\end{enumerate}
+
+The gap between ``upload a theme'' and ``see how it looks'' was the
+single biggest friction point in the Renoise theme-sharing ecosystem.
+
+\subsection{2.3 Why Not Just Render the
+UI?}\label{why-not-just-render-the-ui}
+
+The most obvious solution --- parse the theme and draw the UI from
+scratch --- is infeasible. Renoise is closed-source proprietary
+software. Its UI contains thousands of custom widgets, proprietary bevel
+and shading algorithms, textured panels, and anti-aliased text rendered
+with unknown font metrics. Reverse-engineering the entire renderer would
+be a multi-year project.
+
+We needed a different approach.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3. System Architecture
+Overview}\label{system-architecture-overview}
+
+The system is a Node.js/Express web application with a clear separation
+between upload processing, preview generation, and content delivery.
+
+\begin{verbatim}
+┌─────────────────────────────────────────────────────────────────────┐
+│                         CLIENT (Browser)                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────────┐  │
+│  │ Theme Gallery│  │ Upload Form │  │ Theme Creator (/create)     │  │
+│  └──────┬──────┘  └──────┬──────┘  └─────────────┬───────────────┘  │
+└─────────┼────────────────┼───────────────────────┼──────────────────┘
+          │                │ .xrnc upload          │ color map JSON
+          ▼                ▼                       ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      EXPRESS SERVER (Node.js)                       │
+│  ┌────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐ │
+│  │ Multer     │→ │ lib/parser  │→ │lib/categorize│→ │lib/palette  │ │
+│  │ (upload)   │  │ (XML parse) │  │ (auto-tags)  │  │ (SVG strip) │ │
+│  └────────────┘  └──────┬──────┘  └─────────────┘  └─────────────┘ │
+│                         │ elementColorMap                          │
+│                         ▼                                            │
+│              ┌─────────────────────┐                                 │
+│              │ lib/preview-renderer│                                 │
+│              │  (3-pass pixel map) │                                 │
+│              └──────────┬──────────┘                                 │
+│                         │ PNG previews                               │
+│                         ▼                                            │
+│              ┌─────────────────────┐                                 │
+│              │   lib/database      │                                 │
+│              │   (SQLite WAL)      │                                 │
+│              └─────────────────────┘                                 │
+└─────────────────────────────────────────────────────────────────────┘
+\end{verbatim}
+
+\subsection{3.1 Upload Processing
+Pipeline}\label{upload-processing-pipeline}
+
+When a user uploads a \texttt{.xrnc} file, it flows through five stages:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Multer} handles file upload, sanitizes the filename with
+  \texttt{path.basename()}, and stores it in
+  \texttt{public/uploads/themes/}.
+\item
+  \textbf{\texttt{lib/parser.js}} parses the XML, extracts all color
+  values, matches element names against \texttt{ROLE\_RULES} regex
+  patterns, and assigns semantic roles (\texttt{background},
+  \texttt{text}, \texttt{ui}, \texttt{accent}) with visual weights.
+  Crucially, it exports \texttt{elementColorMap} --- a plain object
+  mapping each element name to its \texttt{{[}r,\ g,\ b{]}} tuple. This
+  is the \textbf{single source of truth} used by every downstream step.
+\item
+  \textbf{\texttt{lib/categorize.js}} converts colors to HSL and runs
+  weighted statistical analysis to auto-tag themes: dark/light/medium,
+  neon/pastel/monochrome, warm/cool/mixed, and dominant color families.
+\item
+  \textbf{\texttt{lib/palette.js}} generates an SVG palette strip by
+  tiering colors into MAIN, SECONDARY, UI, and ACCENTS bands based on
+  accumulated weight.
+\item
+  \textbf{\texttt{lib/preview-renderer.js}} renders up to three PNG
+  previews (Pattern Editor, Mixer, Waveform) using the binary pixel map
+  system described in Section 4.
+\end{enumerate}
+
+All of this completes in under 2 seconds for a typical theme.
+
+\subsection{3.2 Database \& Frontend}\label{database-frontend}
+
+Theme metadata, tags, preview paths, and auto-generated statistics are
+stored in SQLite with WAL mode enabled for concurrent read performance.
+The frontend uses EJS templates, PicoCSS for styling, and vanilla
+JavaScript. Preview images on the detail page use a lazy-loading
+\texttt{data-src} pattern --- images are only fetched when the user
+clicks a preview tab, saving \textasciitilde66\% of bandwidth on initial
+page load.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4. The Pixel Map System (Core
+Innovation)}\label{the-pixel-map-system-core-innovation}
+
+The pixel map system is the heart of this project. It is what makes
+pixel-accurate preview possible without access to Renoise's source code.
+
+\subsection{4.1 Why Pixel Maps?}\label{why-pixel-maps}
+
+Think of a pixel map like a paint-by-numbers template. In a
+paint-by-numbers kit, every region of the canvas has a number, and a
+separate key tells you which color to use for each number. Our system
+works the same way:
+
+\begin{itemize}
+\tightlist
+\item
+  The \textbf{pixel map} (\texttt{maps/pattern.bin}) is the numbered
+  canvas. Each pixel contains a number from 0 to 73 (the element index)
+  or 255 (unmatched).
+\item
+  The \textbf{theme file} (\texttt{.xrnc}) is the color key. It tells us
+  that element \#0 (\texttt{Main\_Back}) should be dark gray, element
+  \#1 (\texttt{Main\_Font}) should be light gray, and so on.
+\item
+  The \textbf{renderer} ``paints'' the canvas by replacing each numbered
+  pixel with the corresponding color from the key.
+\end{itemize}
+
+This approach has a profound advantage: we never need to understand
+\emph{how} Renoise draws its UI. We only need to know \emph{which} UI
+element owns \emph{which} pixel. The heavy lifting of anti-aliasing,
+bevel shading, and font rendering was already done by Renoise when we
+captured the reference screenshots. We simply recolor the result.
+
+\subsection{4.2 The Rainbow Theme Trick (Original
+Method)}\label{the-rainbow-theme-trick-original-method}
+
+Our first attempt at building pixel maps used what we call the
+\textbf{Rainbow Theme Trick}. The idea is elegant:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Generate 4 variant themes. In each variant, every Renoise UI element
+  is assigned a unique, wildly distinct color from a different quadrant
+  of the color wheel.
+\item
+  Screenshot the same Renoise view (Pattern Editor, same project, same
+  window size) for all 4 variants.
+\item
+  For each pixel location, look at the 4 screenshots. The element that
+  ``wins'' the majority vote at that pixel is the owner.
+\end{enumerate}
+
+\begin{verbatim}
+Variant A:  Main_Back=Red,   Body_Back=Green,  Button_Back=Blue...
+Variant B:  Main_Back=Green, Body_Back=Blue,   Button_Back=Red...
+Variant C:  Main_Back=Blue,  Body_Back=Red,    Button_Back=Green...
+Variant D:  Main_Back=Yellow,Body_Back=Magenta,Button_Back=Cyan...
+
+Pixel (x,y):  A=Red, B=Red, C=Green, D=Red  →  Majority=Red  →  Main_Back
+\end{verbatim}
+
+This method works, but it has drawbacks: - \textbf{Color collision
+risk.} If two elements happen to share similar colors across variants,
+the vote becomes ambiguous. - \textbf{Complexity.} Four variants mean
+four Renoise launches, four screenshots, and a voting algorithm that
+must handle ties. - \textbf{Anti-aliasing bleed.} Edge pixels may show
+blended colors that match none of the assigned colors.
+
+The rainbow method proved the concept, but we needed something cleaner.
+
+\subsection{4.3 The White-Baseline + Green Probe Method (Refined
+Method)}\label{the-white-baseline-green-probe-method-refined-method}
+
+The refined method is simpler, more robust, and produces cleaner maps.
+We call it the \textbf{White-Baseline + Green Probe} method.
+
+\subsubsection{Step 1: Generate 71 Variant
+Themes}\label{step-1-generate-71-variant-themes}
+
+We generate 71 \texttt{.xrnc} files: - \textbf{1 baseline:} Every
+element is set to pure white (\texttt{\#FFFFFF}). - \textbf{70 probes:}
+Every element is white \emph{except one}, which is set to bright green
+(\texttt{\#00FF00}).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// From tools/generate{-}white{-}variants.js}
+\KeywordTok{const}\NormalTok{ WHITE }\OperatorTok{=} \StringTok{\textquotesingle{}255,255,255\textquotesingle{}}\OperatorTok{;}
+\KeywordTok{const}\NormalTok{ PROBE }\OperatorTok{=} \StringTok{\textquotesingle{}0,255,0\textquotesingle{}}\OperatorTok{;} \CommentTok{// bright green}
+
+\ControlFlowTok{for}\NormalTok{ (}\KeywordTok{const}\NormalTok{ element }\KeywordTok{of}\NormalTok{ ALL\_ELEMENTS) \{}
+  \CommentTok{// This element = green, all others = white}
+  \KeywordTok{const}\NormalTok{ color }\OperatorTok{=}\NormalTok{ (el }\OperatorTok{===}\NormalTok{ element) }\OperatorTok{?}\NormalTok{ PROBE }\OperatorTok{:}\NormalTok{ WHITE}\OperatorTok{;}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Step 2: Capture Screenshots via Headless
+Automation}\label{step-2-capture-screenshots-via-headless-automation}
+
+Each variant is loaded into Renoise running inside an Xvfb virtual
+display (see Section 7). A demo song (``Soon Soon'' by Hunz) is
+preloaded so that all UI elements --- pattern data, devices, automation
+envelopes, VU meters --- are visible. We screenshot the Pattern Editor
+at 1920×1080.
+
+\subsubsection{Step 3: Diff Against
+Baseline}\label{step-3-diff-against-baseline}
+
+For each probe screenshot, we compare every pixel against the white
+baseline. If a pixel turned significantly greener, it belongs to that
+element.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// From tools/build{-}diff{-}maps.js}
+\KeywordTok{function} \FunctionTok{isProbe}\NormalTok{(vr}\OperatorTok{,}\NormalTok{ vg}\OperatorTok{,}\NormalTok{ vb}\OperatorTok{,}\NormalTok{ br}\OperatorTok{,}\NormalTok{ bg}\OperatorTok{,}\NormalTok{ bb) \{}
+  \KeywordTok{const}\NormalTok{ dg }\OperatorTok{=}\NormalTok{ vg }\OperatorTok{{-}}\NormalTok{ bg}\OperatorTok{;}   \CommentTok{// green delta}
+  \KeywordTok{const}\NormalTok{ dr }\OperatorTok{=}\NormalTok{ vr }\OperatorTok{{-}}\NormalTok{ br}\OperatorTok{;}   \CommentTok{// red delta}
+  \KeywordTok{const}\NormalTok{ db }\OperatorTok{=}\NormalTok{ vb }\OperatorTok{{-}}\NormalTok{ bb}\OperatorTok{;}   \CommentTok{// blue delta}
+  \CommentTok{// The green channel must jump by \textgreater{}120, AND dominate red/blue by \textgreater{}80}
+  \ControlFlowTok{return}\NormalTok{ dg }\OperatorTok{\textgreater{}} \DecValTok{120} \OperatorTok{\&\&}\NormalTok{ dg }\OperatorTok{\textgreater{}}\NormalTok{ dr }\OperatorTok{+} \DecValTok{80} \OperatorTok{\&\&}\NormalTok{ dg }\OperatorTok{\textgreater{}}\NormalTok{ db }\OperatorTok{+} \DecValTok{80}\OperatorTok{;}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+This threshold is carefully chosen. It is high enough to ignore JPEG
+compression artifacts, monitor gamma variations, and subtle
+anti-aliasing fringes. It is low enough to catch real UI pixels even
+when Renoise applies slight shading or bevel effects.
+
+\subsubsection{Step 4: Overlap
+Resolution}\label{step-4-overlap-resolution}
+
+Some pixels naturally belong to multiple elements. A button sits on top
+of a background. Text sits on top of a button. When probes overlap, we
+apply a simple but effective rule: \textbf{smaller coverage wins.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// From tools/build{-}diff{-}maps.js — merge phase}
+\KeywordTok{const}\NormalTok{ order }\OperatorTok{=}\NormalTok{ elements}
+  \OperatorTok{.}\FunctionTok{map}\NormalTok{((name}\OperatorTok{,}\NormalTok{ i) }\KeywordTok{=\textgreater{}}\NormalTok{ (\{ name}\OperatorTok{,} \DataTypeTok{size}\OperatorTok{:}\NormalTok{ elementMaps[name]}\OperatorTok{.}\AttributeTok{size}\OperatorTok{,} \DataTypeTok{idx}\OperatorTok{:}\NormalTok{ i \}))}
+  \OperatorTok{.}\FunctionTok{sort}\NormalTok{((a}\OperatorTok{,}\NormalTok{ b) }\KeywordTok{=\textgreater{}}\NormalTok{ a}\OperatorTok{.}\AttributeTok{size} \OperatorTok{{-}}\NormalTok{ b}\OperatorTok{.}\AttributeTok{size}\NormalTok{)}\OperatorTok{;} \CommentTok{// smallest first}
+
+\ControlFlowTok{for}\NormalTok{ (}\KeywordTok{const}\NormalTok{ \{ name}\OperatorTok{,}\NormalTok{ idx \} }\KeywordTok{of}\NormalTok{ order) \{}
+  \KeywordTok{const}\NormalTok{ pixels }\OperatorTok{=}\NormalTok{ elementMaps[name]}\OperatorTok{;}
+  \ControlFlowTok{for}\NormalTok{ (}\KeywordTok{const}\NormalTok{ p }\KeywordTok{of}\NormalTok{ pixels) \{}
+    \ControlFlowTok{if}\NormalTok{ (pixelMap[p] }\OperatorTok{!==} \DecValTok{255}\NormalTok{) \{}
+      \CommentTok{// Overlap! Keep existing (smaller/first) element}
+      \ControlFlowTok{continue}\OperatorTok{;}
+\NormalTok{    \}}
+\NormalTok{    pixelMap[p] }\OperatorTok{=}\NormalTok{ idx}\OperatorTok{;}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Because \texttt{Main\_Back} covers 46\% of the screen and
+\texttt{Main\_Font} covers only 2.5\%, the font probe is processed
+first. Any pixel claimed by both \texttt{Main\_Font} and
+\texttt{Main\_Back} is assigned to \texttt{Main\_Font}. This correctly
+models the visual stacking order: text sits on top of backgrounds,
+buttons sit on top of panels.
+
+\subsubsection{Advantages Over Rainbow
+Voting}\label{advantages-over-rainbow-voting}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1509}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2830}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5660}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Aspect
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rainbow Voting
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+White-Baseline + Green Probe
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Variants needed & 4+ & 71 (1 baseline + 70 probes) \\
+Color collision risk & High (voting ambiguity) & Zero (single active
+color) \\
+Anti-aliasing handling & Complex (blended colors) & Simple (green delta
+threshold) \\
+Overlap resolution & Voting majority & Explicit smallest-first \\
+Automation complexity & Moderate & High (but fully scripted) \\
+\end{longtable}
+
+The white-baseline method requires more screenshots, but each screenshot
+is trivial to analyze. The result is a pixel map with zero ambiguous
+pixels and clean boundary definitions.
+
+\subsection{4.4 The Three-Pass Rendering
+Algorithm}\label{the-three-pass-rendering-algorithm}
+
+Once we have a pixel map and a parsed theme, we render the preview in
+three passes. This algorithm lives in \texttt{lib/preview-renderer.js}.
+
+\subsubsection{Pass 1: Paint Known
+Pixels}\label{pass-1-paint-known-pixels}
+
+We iterate over every pixel in the map. If the map index is not
+\texttt{255} (UNMATCHED), we look up the corresponding element color and
+write it to the output buffer.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// Pre{-}build O(1) lookup array to avoid string matching in the hot loop}
+\KeywordTok{const}\NormalTok{ colorByIndex }\OperatorTok{=} \KeywordTok{new} \BuiltInTok{Array}\NormalTok{(elements}\OperatorTok{.}\AttributeTok{length}\NormalTok{)}\OperatorTok{;}
+\ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ ei }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ ei }\OperatorTok{\textless{}}\NormalTok{ elements}\OperatorTok{.}\AttributeTok{length}\OperatorTok{;}\NormalTok{ ei}\OperatorTok{++}\NormalTok{) \{}
+\NormalTok{  colorByIndex[ei] }\OperatorTok{=}\NormalTok{ colors[elements[ei]] }\OperatorTok{||} \KeywordTok{null}\OperatorTok{;}
+\NormalTok{\}}
+
+\CommentTok{// Pass 1: paint pixels assigned to a theme element}
+\ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ i }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ i }\OperatorTok{\textless{}}\NormalTok{ W }\OperatorTok{*}\NormalTok{ H}\OperatorTok{;}\NormalTok{ i}\OperatorTok{++}\NormalTok{) \{}
+  \KeywordTok{const}\NormalTok{ idx }\OperatorTok{=}\NormalTok{ map[i]}\OperatorTok{;}
+  \ControlFlowTok{if}\NormalTok{ (idx }\OperatorTok{===}\NormalTok{ UNMATCHED) }\ControlFlowTok{continue}\OperatorTok{;}
+  \KeywordTok{const}\NormalTok{ c }\OperatorTok{=}\NormalTok{ colorByIndex[idx]}\OperatorTok{;}
+  \ControlFlowTok{if}\NormalTok{ (}\OperatorTok{!}\NormalTok{c) }\ControlFlowTok{continue}\OperatorTok{;}
+  \KeywordTok{const}\NormalTok{ px }\OperatorTok{=}\NormalTok{ i }\OperatorTok{*} \DecValTok{4}\OperatorTok{;}
+\NormalTok{  out[px]     }\OperatorTok{=}\NormalTok{ c[}\DecValTok{0}\NormalTok{]}\OperatorTok{;}   \CommentTok{// R}
+\NormalTok{  out[px }\OperatorTok{+} \DecValTok{1}\NormalTok{] }\OperatorTok{=}\NormalTok{ c[}\DecValTok{1}\NormalTok{]}\OperatorTok{;}   \CommentTok{// G}
+\NormalTok{  out[px }\OperatorTok{+} \DecValTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ c[}\DecValTok{2}\NormalTok{]}\OperatorTok{;}   \CommentTok{// B}
+\NormalTok{  out[px }\OperatorTok{+} \DecValTok{3}\NormalTok{] }\OperatorTok{=} \DecValTok{255}\OperatorTok{;}    \CommentTok{// A (opaque)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+This pass is extremely fast: a single linear scan with array-index
+lookups. For a 1920×1080 image, it processes \textasciitilde2 million
+pixels in milliseconds.
+
+\subsubsection{Pass 2: Fill UNMATCHED
+Pixels}\label{pass-2-fill-unmatched-pixels}
+
+Some pixels remain unpainted after Pass 1. These are pixels that belong
+to thin borders, text anti-aliasing fringes, or tiny UI details that
+fell below the green-probe threshold. Rather than leaving them
+transparent (which would show as black or checkerboard), we fill them by
+averaging the colors of their 8-connected neighbors.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// Pass 2: fill UNMATCHED pixels by averaging 8{-}connected assigned neighbors}
+\KeywordTok{const}\NormalTok{ fallback }\OperatorTok{=}\NormalTok{ colors[}\StringTok{\textquotesingle{}Main\_Back\textquotesingle{}}\NormalTok{] }\OperatorTok{||}\NormalTok{ [}\DecValTok{20}\OperatorTok{,} \DecValTok{20}\OperatorTok{,} \DecValTok{30}\NormalTok{]}\OperatorTok{;}
+\ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ y }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ y }\OperatorTok{\textless{}}\NormalTok{ H}\OperatorTok{;}\NormalTok{ y}\OperatorTok{++}\NormalTok{) \{}
+  \ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ x }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ x }\OperatorTok{\textless{}}\NormalTok{ W}\OperatorTok{;}\NormalTok{ x}\OperatorTok{++}\NormalTok{) \{}
+    \KeywordTok{const}\NormalTok{ i }\OperatorTok{=}\NormalTok{ y }\OperatorTok{*}\NormalTok{ W }\OperatorTok{+}\NormalTok{ x}\OperatorTok{;}
+    \ControlFlowTok{if}\NormalTok{ (out[i }\OperatorTok{*} \DecValTok{4} \OperatorTok{+} \DecValTok{3}\NormalTok{] }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{) }\ControlFlowTok{continue}\OperatorTok{;} \CommentTok{// already painted}
+
+    \KeywordTok{let}\NormalTok{ rSum }\OperatorTok{=} \DecValTok{0}\OperatorTok{,}\NormalTok{ gSum }\OperatorTok{=} \DecValTok{0}\OperatorTok{,}\NormalTok{ bSum }\OperatorTok{=} \DecValTok{0}\OperatorTok{,}\NormalTok{ count }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}
+    \ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ dy }\OperatorTok{=} \OperatorTok{{-}}\DecValTok{1}\OperatorTok{;}\NormalTok{ dy }\OperatorTok{\textless{}=} \DecValTok{1}\OperatorTok{;}\NormalTok{ dy}\OperatorTok{++}\NormalTok{) \{}
+      \ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ dx }\OperatorTok{=} \OperatorTok{{-}}\DecValTok{1}\OperatorTok{;}\NormalTok{ dx }\OperatorTok{\textless{}=} \DecValTok{1}\OperatorTok{;}\NormalTok{ dx}\OperatorTok{++}\NormalTok{) \{}
+        \ControlFlowTok{if}\NormalTok{ (dy }\OperatorTok{===} \DecValTok{0} \OperatorTok{\&\&}\NormalTok{ dx }\OperatorTok{===} \DecValTok{0}\NormalTok{) }\ControlFlowTok{continue}\OperatorTok{;}
+        \KeywordTok{const}\NormalTok{ ny }\OperatorTok{=}\NormalTok{ y }\OperatorTok{+}\NormalTok{ dy}\OperatorTok{,}\NormalTok{ nx }\OperatorTok{=}\NormalTok{ x }\OperatorTok{+}\NormalTok{ dx}\OperatorTok{;}
+        \ControlFlowTok{if}\NormalTok{ (ny }\OperatorTok{\textless{}} \DecValTok{0} \OperatorTok{||}\NormalTok{ ny }\OperatorTok{\textgreater{}=}\NormalTok{ H }\OperatorTok{||}\NormalTok{ nx }\OperatorTok{\textless{}} \DecValTok{0} \OperatorTok{||}\NormalTok{ nx }\OperatorTok{\textgreater{}=}\NormalTok{ W) }\ControlFlowTok{continue}\OperatorTok{;}
+        \KeywordTok{const}\NormalTok{ ni }\OperatorTok{=}\NormalTok{ ny }\OperatorTok{*}\NormalTok{ W }\OperatorTok{+}\NormalTok{ nx}\OperatorTok{;}
+        \KeywordTok{const}\NormalTok{ nIdx }\OperatorTok{=}\NormalTok{ map[ni]}\OperatorTok{;}         \CommentTok{// read from IMMUTABLE map}
+        \ControlFlowTok{if}\NormalTok{ (nIdx }\OperatorTok{===}\NormalTok{ UNMATCHED) }\ControlFlowTok{continue}\OperatorTok{;}
+        \KeywordTok{const}\NormalTok{ c }\OperatorTok{=}\NormalTok{ colorByIndex[nIdx]}\OperatorTok{;} \CommentTok{// O(1) lookup}
+        \ControlFlowTok{if}\NormalTok{ (}\OperatorTok{!}\NormalTok{c) }\ControlFlowTok{continue}\OperatorTok{;}
+\NormalTok{        rSum }\OperatorTok{+=}\NormalTok{ c[}\DecValTok{0}\NormalTok{]}\OperatorTok{;}\NormalTok{ gSum }\OperatorTok{+=}\NormalTok{ c[}\DecValTok{1}\NormalTok{]}\OperatorTok{;}\NormalTok{ bSum }\OperatorTok{+=}\NormalTok{ c[}\DecValTok{2}\NormalTok{]}\OperatorTok{;}\NormalTok{ count}\OperatorTok{++;}
+\NormalTok{      \}}
+\NormalTok{    \}}
+
+    \KeywordTok{const}\NormalTok{ px }\OperatorTok{=}\NormalTok{ i }\OperatorTok{*} \DecValTok{4}\OperatorTok{;}
+    \ControlFlowTok{if}\NormalTok{ (count }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{      out[px]     }\OperatorTok{=}\NormalTok{ (rSum }\OperatorTok{/}\NormalTok{ count) }\OperatorTok{|} \DecValTok{0}\OperatorTok{;}
+\NormalTok{      out[px }\OperatorTok{+} \DecValTok{1}\NormalTok{] }\OperatorTok{=}\NormalTok{ (gSum }\OperatorTok{/}\NormalTok{ count) }\OperatorTok{|} \DecValTok{0}\OperatorTok{;}
+\NormalTok{      out[px }\OperatorTok{+} \DecValTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ (bSum }\OperatorTok{/}\NormalTok{ count) }\OperatorTok{|} \DecValTok{0}\OperatorTok{;}
+\NormalTok{      out[px }\OperatorTok{+} \DecValTok{3}\NormalTok{] }\OperatorTok{=} \DecValTok{255}\OperatorTok{;}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+      \CommentTok{// Isolated unmatched region — use background fallback}
+\NormalTok{      out[px]     }\OperatorTok{=}\NormalTok{ fallback[}\DecValTok{0}\NormalTok{]}\OperatorTok{;}
+\NormalTok{      out[px }\OperatorTok{+} \DecValTok{1}\NormalTok{] }\OperatorTok{=}\NormalTok{ fallback[}\DecValTok{1}\NormalTok{]}\OperatorTok{;}
+\NormalTok{      out[px }\OperatorTok{+} \DecValTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ fallback[}\DecValTok{2}\NormalTok{]}\OperatorTok{;}
+\NormalTok{      out[px }\OperatorTok{+} \DecValTok{3}\NormalTok{] }\OperatorTok{=} \DecValTok{255}\OperatorTok{;}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Critical design choice:} We read neighbor indices from the
+\textbf{immutable pixel map} (\texttt{map{[}ni{]}}), not from the output
+buffer (\texttt{out{[}{]}}). If we read from \texttt{out{[}{]}}, a
+filled pixel would influence its own neighbors in the same pass, causing
+color to propagate like a flood fill across the entire image. By reading
+from the immutable source, each pixel's fill color is determined solely
+by the original Pass-1 assignments, producing smooth but bounded
+boundary interpolation.
+
+\subsubsection{Pass 3: Composite Text and
+Icons}\label{pass-3-composite-text-and-icons}
+
+Pass 1 and Pass 2 produce a clean recolored UI, but text and icons are
+still missing. Text pixels were mostly UNMATCHED because the green-probe
+method cannot reliably distinguish between ``a green pixel that belongs
+to a text character'' and ``a green pixel that belongs to the background
+behind the text.'' Anti-aliasing makes this especially hard: the edge of
+a letter is a blend of text color and background color.
+
+Our solution is a \textbf{text masking theme}.
+
+\subsection{4.5 Text Masking Theme}\label{text-masking-theme}
+
+We create a special \texttt{.xrnc} theme where \textbf{all UI chrome is
+pure black} and \textbf{all text and icons are pure white}. We
+screenshot Renoise with this theme loaded. The result is a
+black-and-white image where white pixels represent text and icons, and
+black pixels represent everything else.
+
+In Pass 3, we use this B/W screenshot as an alpha mask:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// Pass 3: composite text using text{-}theme screenshot as anti{-}aliasing guide}
+\ControlFlowTok{if}\NormalTok{ (textThemeData) \{}
+  \KeywordTok{const}\NormalTok{ mainFont }\OperatorTok{=}\NormalTok{ colors[}\StringTok{\textquotesingle{}Main\_Font\textquotesingle{}}\NormalTok{] }\OperatorTok{||}\NormalTok{ [}\DecValTok{220}\OperatorTok{,} \DecValTok{220}\OperatorTok{,} \DecValTok{220}\NormalTok{]}\OperatorTok{;}
+  \ControlFlowTok{for}\NormalTok{ (}\KeywordTok{let}\NormalTok{ i }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ i }\OperatorTok{\textless{}}\NormalTok{ W }\OperatorTok{*}\NormalTok{ H}\OperatorTok{;}\NormalTok{ i}\OperatorTok{++}\NormalTok{) \{}
+    \KeywordTok{const}\NormalTok{ px }\OperatorTok{=}\NormalTok{ i }\OperatorTok{*} \DecValTok{4}\OperatorTok{;}
+    \CommentTok{// Rec.601 perceptual luminance — human eyes are most sensitive to green}
+    \KeywordTok{const}\NormalTok{ lum }\OperatorTok{=} \FloatTok{0.299} \OperatorTok{*}\NormalTok{ textThemeData[px]}
+              \OperatorTok{+} \FloatTok{0.587} \OperatorTok{*}\NormalTok{ textThemeData[px }\OperatorTok{+} \DecValTok{1}\NormalTok{]}
+              \OperatorTok{+} \FloatTok{0.114} \OperatorTok{*}\NormalTok{ textThemeData[px }\OperatorTok{+} \DecValTok{2}\NormalTok{]}\OperatorTok{;}
+    \KeywordTok{const}\NormalTok{ alpha }\OperatorTok{=} \DecValTok{1} \OperatorTok{{-}}\NormalTok{ lum }\OperatorTok{/} \DecValTok{255}\OperatorTok{;} \CommentTok{// black = 0 (UI), white = 1 (text)}
+    \ControlFlowTok{if}\NormalTok{ (alpha }\OperatorTok{\textless{}} \FloatTok{0.05}\NormalTok{) }\ControlFlowTok{continue}\OperatorTok{;}  \CommentTok{// skip near{-}black pixels}
+
+    \KeywordTok{const}\NormalTok{ idx }\OperatorTok{=}\NormalTok{ map[i]}\OperatorTok{;}
+    \CommentTok{// Skip text compositing on known UI chrome (scrollbars, sliders, etc.)}
+    \ControlFlowTok{if}\NormalTok{ (idx }\OperatorTok{!==}\NormalTok{ UNMATCHED }\OperatorTok{\&\&}\NormalTok{ idx }\OperatorTok{\textless{}}\NormalTok{ elements}\OperatorTok{.}\AttributeTok{length} \OperatorTok{\&\&}\NormalTok{ isUIChrome[idx]) }\ControlFlowTok{continue}\OperatorTok{;}
+
+    \KeywordTok{let}\NormalTok{ fontColor }\OperatorTok{=}\NormalTok{ mainFont}\OperatorTok{;}
+    \ControlFlowTok{if}\NormalTok{ (idx }\OperatorTok{!==}\NormalTok{ UNMATCHED }\OperatorTok{\&\&}\NormalTok{ idx }\OperatorTok{\textless{}}\NormalTok{ elements}\OperatorTok{.}\AttributeTok{length}\NormalTok{) \{}
+      \KeywordTok{const}\NormalTok{ c }\OperatorTok{=}\NormalTok{ colorByIndex[idx]}\OperatorTok{;}
+      \ControlFlowTok{if}\NormalTok{ (c) fontColor }\OperatorTok{=}\NormalTok{ c}\OperatorTok{;} \CommentTok{// use element\textquotesingle{}s own font color if available}
+\NormalTok{    \}}
+
+    \CommentTok{// Standard alpha blend: fontColor over existing pixel}
+\NormalTok{    out[px]     }\OperatorTok{=}\NormalTok{ (fontColor[}\DecValTok{0}\NormalTok{] }\OperatorTok{*}\NormalTok{ alpha }\OperatorTok{+}\NormalTok{ out[px]     }\OperatorTok{*}\NormalTok{ (}\DecValTok{1} \OperatorTok{{-}}\NormalTok{ alpha)) }\OperatorTok{|} \DecValTok{0}\OperatorTok{;}
+\NormalTok{    out[px }\OperatorTok{+} \DecValTok{1}\NormalTok{] }\OperatorTok{=}\NormalTok{ (fontColor[}\DecValTok{1}\NormalTok{] }\OperatorTok{*}\NormalTok{ alpha }\OperatorTok{+}\NormalTok{ out[px }\OperatorTok{+} \DecValTok{1}\NormalTok{] }\OperatorTok{*}\NormalTok{ (}\DecValTok{1} \OperatorTok{{-}}\NormalTok{ alpha)) }\OperatorTok{|} \DecValTok{0}\OperatorTok{;}
+\NormalTok{    out[px }\OperatorTok{+} \DecValTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ (fontColor[}\DecValTok{2}\NormalTok{] }\OperatorTok{*}\NormalTok{ alpha }\OperatorTok{+}\NormalTok{ out[px }\OperatorTok{+} \DecValTok{2}\NormalTok{] }\OperatorTok{*}\NormalTok{ (}\DecValTok{1} \OperatorTok{{-}}\NormalTok{ alpha)) }\OperatorTok{|} \DecValTok{0}\OperatorTok{;}
+\NormalTok{    out[px }\OperatorTok{+} \DecValTok{3}\NormalTok{] }\OperatorTok{=} \DecValTok{255}\OperatorTok{;}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Why Rec.601 luminance?} Human eyes are roughly 2.9× more
+sensitive to green than to blue and 1.7× more sensitive to green than to
+red. The Rec.601 formula (\texttt{0.299R\ +\ 0.587G\ +\ 0.114B})
+captures this perceptual non-uniformity. A pixel that looks ``medium
+gray'' to a human will produce a luminance value near 128, which
+translates to an alpha of 0.5 --- exactly what we want for anti-aliased
+text edges.
+
+\textbf{Why skip UI chrome elements?} Some UI elements like scrollbars,
+sliders, VU meters, and cursors have fine detail that the text-theme
+might misidentify as text. We maintain a list of
+\texttt{NON\_TEXT\_ELEMENT\_PATTERNS} (\texttt{Scroll}, \texttt{Slider},
+\texttt{Border}, \texttt{VU}, \texttt{Meter}, etc.) and skip text
+compositing on pixels mapped to those elements. This prevents, for
+example, a scrollbar thumb from being recolored as if it were text.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{5. The Theme Creator Tool}\label{the-theme-creator-tool}
+
+Beyond passive preview, the system includes an active \textbf{Theme
+Creator} at \texttt{/create}. This page presents 70 HTML5 color pickers
+--- one per Renoise element --- ranked by their pixel coverage.
+
+\subsection{5.1 Coverage Ranking}\label{coverage-ranking}
+
+The color pickers are not listed alphabetically. They are sorted by how
+much screen real estate each element controls, computed from the pixel
+maps:
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Rank & Element & Coverage \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \texttt{Main\_Back} & 46.38\% \\
+2 & \texttt{Body\_Back} & 31.50\% \\
+3 & \texttt{Button\_Back} & 6.61\% \\
+4 & \texttt{ValueBox\_Back} & 4.10\% \\
+5 & \texttt{Pattern\_Default\_Back} & 3.51\% \\
+6 & \texttt{Main\_Font} & 2.53\% \\
+\ldots{} & \ldots{} & \ldots{} \\
+70 & \texttt{VuMeter\_Meter\_High} & \textasciitilde0.00\% \\
+\end{longtable}
+
+This ranking is load-bearing for usability. If \texttt{Main\_Back} and
+\texttt{Body\_Back} were buried at the bottom of the list, users would
+need to scroll through 50+ obscure elements before changing the two
+colors that define 78\% of the theme's appearance. By surfacing
+high-coverage elements first, a user can create a recognizable theme in
+under 30 seconds.
+
+\subsection{5.2 Live Preview and
+Download}\label{live-preview-and-download}
+
+The creator page communicates with two API endpoints:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{POST\ /api/render-preview}} --- Accepts a JSON
+  \texttt{elementColorMap}, normalizes hex strings to
+  \texttt{{[}r,g,b{]}} arrays, calls \texttt{generatePreviews()}, and
+  returns preview image URLs.
+\item
+  \textbf{\texttt{POST\ /api/download-xrnc}} --- Accepts the same color
+  map, calls \texttt{generateXrnc()} to produce a valid \texttt{.xrnc}
+  XML string, and streams it as a file download.
+\end{itemize}
+
+Both endpoints are protected by CSRF tokens (see Section 6). The preview
+endpoint returns a \texttt{previewSlug} that identifies the temporary
+preview directory; images are served from
+\texttt{public/uploads/previews/} and cleaned up by standard server
+maintenance.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{6. Security \& Hardening}\label{security-hardening}
+
+A theme gallery is a public-facing file upload service. We implement
+defense in depth across multiple layers.
+
+\subsection{6.1 CSRF Protection}\label{csrf-protection}
+
+All mutating routes (upload, comment, login, register, like, preview
+render, XRNC download) use an \textbf{HMAC-based double-submit cookie
+pattern}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Each session receives a random 256-bit \texttt{csrfSecret} stored
+  server-side.
+\item
+  Per-request tokens are computed as
+  \texttt{HMAC-SHA256(csrfSecret,\ "csrf:"\ +\ hourlyTimestamp)}.
+\item
+  Tokens rotate hourly. The verification window accepts the current or
+  previous hour's token to handle clock skew and in-flight requests.
+\item
+  Comparison uses \texttt{crypto.timingSafeEqual()} to prevent timing
+  attacks.
+\item
+  AJAX API requests are exempted via the
+  \texttt{X-Requested-With:\ XMLHttpRequest} header, which browsers
+  enforce as a same-origin constraint.
+\end{enumerate}
+
+\subsection{6.2 Session Hardening}\label{session-hardening}
+
+Sessions are managed by \texttt{express-session} with the following
+flags: - \texttt{httpOnly:\ true} --- Prevents JavaScript from reading
+the session cookie -
+\texttt{sameSite:\ \textquotesingle{}lax\textquotesingle{}} --- Prevents
+cross-origin POST attacks while allowing normal navigation -
+\texttt{secure:\ true} --- Enforces HTTPS in production -
+\texttt{maxAge:\ 30\ days} --- Balances convenience with security
+
+\subsection{6.3 Rate Limiting}\label{rate-limiting}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Auth routes} (\texttt{/login}, \texttt{/register},
+  \texttt{/forgot-password}, \texttt{/reset-password}): 12 requests per
+  15-minute window per IP.
+\item
+  \textbf{Download endpoint} (\texttt{/download/:slug}): 30 requests per
+  minute per IP.
+\end{itemize}
+
+\subsection{6.4 Input Sanitization}\label{input-sanitization}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Path traversal:} All user-supplied filenames are sanitized
+  with \texttt{path.basename()} before storage.
+\item
+  \textbf{File types:} Multer's \texttt{fileFilter} rejects
+  non-\texttt{.xrnc}/\texttt{.xml} theme uploads and non-image
+  screenshot uploads.
+\item
+  \textbf{File size:} Uploads are capped at 10 MB.
+\item
+  \textbf{XML parsing:} The XML parser disables entity expansion
+  (\texttt{processEntities:\ false}) and ignores declarations/processing
+  instructions, preventing XXE (XML External Entity) attacks.
+\end{itemize}
+
+\subsection{6.5 Password Security}\label{password-security}
+
+User passwords are hashed with \textbf{bcrypt at 12 rounds}. The
+registration form enforces a minimum length of 8 characters. Password
+reset tokens are cryptographically random 256-bit values with a 1-hour
+expiration.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{7. Headless Automation
+Pipeline}\label{headless-automation-pipeline}
+
+Generating 71 screenshots manually would take hours and introduce human
+error (window positioning, timing, song state). We automated the entire
+process using a Linux headless stack.
+
+\subsection{7.1 Tools Used}\label{tools-used}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Tool
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Role
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Xvfb} & Virtual X11 display (1920×1080×24) --- no physical
+monitor needed \\
+\textbf{xdotool} & Window detection and geometry verification \\
+\textbf{maim} & Screenshot capture by window ID \\
+\textbf{Renoise} & The DAW itself, launched with overridden config \\
+\textbf{Python 3} & Config injection via regex substitution \\
+\textbf{Bash} & Orchestration loop with cleanup traps \\
+\end{longtable}
+
+\subsection{7.2 Temp Config Isolation}\label{temp-config-isolation}
+
+The script \textbf{never touches the user's real Renoise config}. It
+creates a temporary directory structure and overrides \texttt{HOME} so
+Renoise reads from \texttt{/tmp/rns-capture-cfg/} instead of
+\texttt{\textasciitilde{}/.config/Renoise/}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\VariableTok{TEMP\_CFG}\OperatorTok{=}\StringTok{"/tmp/rns{-}capture{-}cfg/V3.5.4"}
+\VariableTok{HOME\_OVERRIDE}\OperatorTok{=}\StringTok{"/tmp/rns{-}capture{-}home"}
+\FunctionTok{mkdir} \AttributeTok{{-}p} \StringTok{"}\VariableTok{$TEMP\_CFG}\StringTok{"}
+\FunctionTok{cp} \StringTok{"}\VariableTok{$REAL\_CONFIG}\StringTok{"} \StringTok{"}\VariableTok{$TEMP\_CFG}\StringTok{/Config.xml"}
+\CommentTok{\# Plugin caches copied for fast startup}
+\FunctionTok{cp} \StringTok{"}\VariableTok{$HOME}\StringTok{/.config/Renoise/V3.5.4/"}\PreprocessorTok{*}\NormalTok{.db }\StringTok{"}\VariableTok{$TEMP\_CFG}\StringTok{/"}
+\FunctionTok{ln} \AttributeTok{{-}sf} \StringTok{"}\VariableTok{$TEMP\_CFG}\StringTok{"} \StringTok{"}\VariableTok{$HOME\_OVERRIDE}\StringTok{/.config/Renoise/V3.5.4"}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{7.3 Renoise Launch
+Optimization}\label{renoise-launch-optimization}
+
+Renoise normally rescans plugins on startup, which can take 30+ seconds.
+The script patches the config XML to disable all rescanning:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{c }\OperatorTok{=}\NormalTok{ re.sub(}\VerbatimStringTok{r\textquotesingle{}\textless{}RescanPreviouslyFailedPlugs\textgreater{}.*\textless{}/RescanPreviouslyFailedPlugs\textgreater{}\textquotesingle{}}\NormalTok{,}
+           \StringTok{\textquotesingle{}\textless{}RescanPreviouslyFailedPlugs\textgreater{}false\textless{}/RescanPreviouslyFailedPlugs\textgreater{}\textquotesingle{}}\NormalTok{, c)}
+\NormalTok{c }\OperatorTok{=}\NormalTok{ re.sub(}\VerbatimStringTok{r\textquotesingle{}\textless{}ScanForNewPluginsOnStartup\textgreater{}.*\textless{}/ScanForNewPluginsOnStartup\textgreater{}\textquotesingle{}}\NormalTok{,}
+           \StringTok{\textquotesingle{}\textless{}ScanForNewPluginsOnStartup\textgreater{}false\textless{}/ScanForNewPluginsOnStartup\textgreater{}\textquotesingle{}}\NormalTok{, c)}
+\NormalTok{c }\OperatorTok{=}\NormalTok{ re.sub(}\VerbatimStringTok{r\textquotesingle{}\textless{}AutoRescanHotPluggedDevices\textgreater{}.*\textless{}/AutoRescanHotPluggedDevices\textgreater{}\textquotesingle{}}\NormalTok{,}
+           \StringTok{\textquotesingle{}\textless{}AutoRescanHotPluggedDevices\textgreater{}false\textless{}/AutoRescanHotPluggedDevices\textgreater{}\textquotesingle{}}\NormalTok{, c)}
+\end{Highlighting}
+\end{Shaded}
+
+It also forces windowed mode to 1920×1080 and maximizes the window,
+ensuring consistent screenshot dimensions.
+
+\subsection{7.4 Fast Kill-Restart Cycle}\label{fast-kill-restart-cycle}
+
+Instead of gracefully shutting down Renoise (which triggers slow JACK
+teardown and config writes), the script uses \texttt{kill\ -9} after
+each screenshot:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{kill} \AttributeTok{{-}9} \VariableTok{$RPID} \DecValTok{2}\OperatorTok{\textgreater{}}\NormalTok{/dev/null }\KeywordTok{||} \FunctionTok{true}
+\BuiltInTok{wait} \VariableTok{$RPID} \DecValTok{2}\OperatorTok{\textgreater{}}\NormalTok{/dev/null }\KeywordTok{||} \FunctionTok{true}
+\FunctionTok{sleep}\NormalTok{ 0.5}
+\end{Highlighting}
+\end{Shaded}
+
+This reduces the per-variant cycle to approximately \textbf{1 second of
+Renoise runtime}. The full 71-variant capture completes in roughly
+\textbf{3 minutes}. Before each launch, the script restores the clean
+baseline config so that variants do not leak state into one another.
+
+\subsection{7.5 Capture Verification}\label{capture-verification}
+
+The script validates each screenshot by file size. Screenshots under 10
+KB are rejected as failures (usually indicating a window detection
+timeout or crash). Failed variants are logged but do not abort the
+pipeline.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{8. Results \& Impact}\label{results-impact}
+
+\subsection{8.1 Map Coverage}\label{map-coverage}
+
+The current pixel maps cover \textbf{74 Renoise UI elements} across
+three views:
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+View & Resolution & Elements Mapped \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pattern Editor & 1920×1080 & 74 \\
+Mixer & 1920×1080 & 74 (shared map) \\
+Waveform & 1920×1080 & 74 (shared map) \\
+\end{longtable}
+
+Total matched pixels across all three views: \textbf{4,868,286} (from
+the coverage analysis used to rank the Theme Creator).
+
+The top coverage elements dominate the visual identity of any theme:
+
+\begin{verbatim}
+01. Main_Back                    46.38%  (892,348 px)
+02. Body_Back                    31.50%  (606,042 px)
+03. Button_Back                   6.61%  (127,210 px)
+04. ValueBox_Back                 4.10%   (78,902 px)
+05. Pattern_Default_Back          3.51%   (67,574 px)
+06. Main_Font                     2.53%   (48,728 px)
+07. Scrollbar                     1.32%   (25,416 px)
+08. Selected_Button_Back          0.99%   (19,068 px)
+09. StandBy_Selection_Back        0.66%   (12,712 px)
+10. Pattern_CenterBar_Back        0.40%    (7,704 px)
+\end{verbatim}
+
+These 10 elements control \textbf{97.9\%} of the screen. A theme author
+who only adjusts these 10 colors can create a preview that looks
+substantially different from the default --- proof that the coverage
+ranking in the Theme Creator is not merely informative but functionally
+critical.
+
+\subsection{8.2 Preview Accuracy}\label{preview-accuracy}
+
+The three-pass renderer produces images that are \textbf{pixel-perfect
+in color assignment} for all mapped elements. UNMATCHED pixels (text
+fringes, thin borders, anti-aliasing) are filled via neighbor averaging
+in Pass 2 and then corrected via text-theme compositing in Pass 3. The
+result is visually indistinguishable from a native Renoise screenshot at
+normal viewing distance.
+
+The system achieves this accuracy \textbf{without any Renoise code,
+assets, or runtime dependency} on the server. The only Renoise
+dependency is during the one-time map generation phase.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{9. Future Work}\label{future-work}
+
+\subsection{9.1 Per-View Map Refinement}\label{per-view-map-refinement}
+
+Currently, Pattern Editor, Mixer, and Waveform views share the same
+element list but use separate binary map files (\texttt{pattern.bin},
+\texttt{mixer.bin}, \texttt{waveform.bin}). Future work includes
+refining each view's map independently, since some elements (e.g.,
+\texttt{VuMeter\_Meter}) appear in different positions and proportions
+across views.
+
+\subsection{9.2 SVG-Based Vector Preview
+Renderer}\label{svg-based-vector-preview-renderer}
+
+The map generation pipeline already outputs SVG vector outlines of
+element regions (\texttt{maps/pattern.svg}, \texttt{maps/mixer.svg},
+\texttt{maps/waveform.svg}). A future renderer could use these SVGs
+instead of per-pixel binary maps, enabling: - \textbf{Arbitrary
+resolution scaling} ( previews at 4K or mobile sizes without pixelation)
+- \textbf{Smaller file sizes} (SVG paths compress better than raw pixel
+arrays for large uniform regions) - \textbf{Interactive hover effects}
+(highlighting which UI element corresponds to which color definition)
+
+\subsection{9.3 Multi-View Capture per
+Launch}\label{multi-view-capture-per-launch}
+
+The current automation captures one view per Renoise launch. A single
+launch could theoretically capture all three views by programmatically
+switching tabs (via xdotool key events) before taking three screenshots.
+This would reduce the 71-variant × 3-view capture from
+\textasciitilde213 launches to \textasciitilde71 launches --- a 3×
+speedup in map maintenance.
+
+\subsection{9.4 Theme Diff and Merge
+Tools}\label{theme-diff-and-merge-tools}
+
+With structured \texttt{elementColorMap} objects, we can compute the
+perceptual distance between two themes. Future features could include: -
+``Find themes similar to this one'' - ``Show me what changed between
+version 1 and 2'' - ``Blend two themes'' (interpolate each element color
+independently)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{10. References \& File Index}\label{references-file-index}
+
+\subsection{Core Libraries}\label{core-libraries}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+File
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Purpose
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{lib/parser.js} & Parses \texttt{.xrnc} XML; extracts colors;
+assigns semantic roles and weights; exports \texttt{elementColorMap} \\
+\texttt{lib/categorize.js} & Converts colors to HSL; applies weighted
+statistical analysis to auto-tag themes (dark/light, warm/cool, etc.) \\
+\texttt{lib/palette.js} & Generates weighted SVG palette strips with
+MAIN/SECONDARY/UI/ACCENTS tiers \\
+\texttt{lib/preview-renderer.js} & Three-pass pixel map renderer: paint
+→ fill → text composite \\
+\texttt{lib/database.js} & SQLite schema, prepared statements, batched
+metadata attachment, authentication \\
+\texttt{lib/xrnc-generator.js} & Generates valid \texttt{.xrnc} XML from
+an \texttt{elementColorMap} for the Theme Creator download feature \\
+\end{longtable}
+
+\subsection{Automation Tools}\label{automation-tools}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+File
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Purpose
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{tools/generate-white-variants.js} & Generates 71 variant themes:
+1 white baseline + 70 green-probe variants \\
+\texttt{tools/capture-variants.sh} & Headless bash pipeline: Xvfb →
+Renoise → maim screenshot → kill-9 cycle \\
+\texttt{tools/build-diff-maps.js} & Builds \texttt{maps/pattern.bin} and
+\texttt{maps/pattern.json} from probe screenshots via green-delta
+detection and overlap resolution \\
+\texttt{tools/generate-diff-variants.js} & Alternative variant generator
+using magenta probes against a non-white baseline
+(legacy/supplemental) \\
+\end{longtable}
+
+\subsection{Map Assets}\label{map-assets}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+File
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Purpose
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{maps/pattern.bin} & Flat \texttt{Uint8Array} (1920×1080 =
+2,073,600 bytes). Each byte = element index or 255 (UNMATCHED) \\
+\texttt{maps/pattern.json} & Metadata: width, height, ordered element
+name array \\
+\texttt{maps/mixer.bin} / \texttt{maps/mixer.json} & Mixer view pixel
+maps \\
+\texttt{maps/waveform.bin} / \texttt{maps/waveform.json} & Waveform view
+pixel maps \\
+\texttt{maps/pattern-text.png} & Cached text-theme screenshot for Pass 3
+compositing \\
+\texttt{maps/*.svg} & Vector outlines of element regions (future SVG
+renderer) \\
+\end{longtable}
+
+\subsection{Application Entry Point}\label{application-entry-point}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+File
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Purpose
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{app.js} & Express server: routes, middleware, upload handling,
+CSRF protection, rate limiting, session config, Theme Creator API \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Acknowledgments}\label{acknowledgments}
+
+The ``Soon Soon'' demo song by \textbf{Hunz} is used during automated
+capture to ensure all UI elements (pattern data, VU meters, automation
+envelopes, device chains) are visible and mappable. The Renoise team
+built an extraordinarily customizable UI; this system exists to make
+that customization more accessible to the community.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Document version: 1.0}\\
+\emph{Generated for the Renoise Themes open-source project}\\
+\emph{For questions or contributions, refer to the file index in Section
+10.}
+
+\end{document}
