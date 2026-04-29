@@ -423,7 +423,9 @@ main.container {
 
 /* Theme card (gallery) */
 .theme-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  contain: content;
   background: var(--chrome-bg);
   border: 1px solid var(--chrome-border);
   color: var(--chrome-text);
@@ -496,12 +498,12 @@ main.container {
   color: var(--chrome-text-dim);
 }
 .card-author {
-  color: var(--chrome-text-dim) !important;
-  text-decoration: none !important;
+  color: var(--chrome-text-dim);
   font-size: 13px;
+  cursor: pointer;
 }
 .card-author:hover {
-  color: var(--accent) !important;
+  color: var(--accent);
 }
 
 .detail-author {

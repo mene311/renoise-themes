@@ -16,3 +16,8 @@ docs/
 session-*.md
 db/database.sqlite
 tools/*.xrns
+
+# Screenshots
+Screenshot_*
+Screenshots/
+dev/

@@ -102,8 +102,10 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "blob:"],
       fontSrc: ["'self'"],
       connectSrc: ["'self'"],
+      upgradeInsecureRequests: null,
     },
   },
+  hsts: false,
   crossOriginEmbedderPolicy: false,
 }));
 
@@ -180,7 +182,7 @@ function invalidateMarquee() {
   marqueeCache.ts = 0;
 }
 
-// Cache the CSS file in memory for inlining
+// Cache the CSS file in memory for inlining (mobile can't fetch external CSS)
 let _cssCache = null;
 function getInlineCss() {
   if (!_cssCache) {
@@ -491,7 +493,7 @@ app.post('/api/save-edited-theme', requireAuth, previewLimiter, csrfProtection, 
     // Previews
     const previewSlug = filename.replace('.xrnc', '');
     const previewDir = path.join(__dirname, 'public/uploads/previews', previewSlug);
-    const previews = await generatePreviews(filePath, previewDir);
+    const previews = await generatePreviews(parsed.elementColorMap, previewDir);
     const previewViews = Object.keys(previews);
 
     const topColors = parsed.weighted.slice(0, 6).map(c => ({
