@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon — Renoise Theme Share</title>
+    <meta name="description" content="Renoise theme browser and preview system - pixel-perfect theme previews and sharing platform.">
+    <link rel="stylesheet" href="./css/main-site-style.css">
+    <style>
+        /* Coming soon specific overrides */
+        .coming-soon-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--chrome-bg-deep);
+        }
+        
+        .coming-soon-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        .coming-soon-panel {
+            background: var(--chrome-bg);
+            border: 1px solid var(--chrome-border);
+            padding: 40px 32px;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .coming-soon-icon {
+            font-size: 48px;
+            color: var(--chrome-accent);
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .coming-soon-panel h1 {
+            font-size: 1.3rem;
+            color: var(--chrome-text-bright);
+            margin-bottom: 12px;
+        }
+        
+        .coming-soon-panel p {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--chrome-text);
+            margin-bottom: 24px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 30px 0;
+        }
+        
+        .feature-cell {
+            background: var(--chrome-bg-deep);
+            border: 1px solid var(--chrome-border);
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .feature-cell span {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--chrome-accent);
+        }
+        
+        .feature-cell h3 {
+            font-size: 12px;
+            color: var(--chrome-text-bright);
+            margin: 0 0 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        
+        .feature-cell p {
+            font-size: 11px;
+            color: var(--chrome-text-dim);
+            margin: 0;
+        }
+        
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 30px 0;
+        }
+        
+        .countdown-cell {
+            background: var(--chrome-bg-deep);
+            border: 1px solid var(--chrome-border);
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .countdown-cell span:first-child {
+            display: block;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--chrome-text-bright);
+            margin-bottom: 4px;
+        }
+        
+        .countdown-cell span:last-child {
+            display: block;
+            font-size: 10px;
+            color: var(--chrome-text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        
+        .progress-tracker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--chrome-text-faint);
+        }
+        
+        .progress-step::before {
+            content: '▶';
+            font-size: 8px;
+            color: var(--chrome-accent);
+        }
+        
+        .progress-step.active {
+            color: var(--chrome-accent);
+        }
+        
+        .progress-step.complete::before {
+            content: '✓';
+            color: var(--chrome-accent);
+        }
+        
+        .launch-date {
+            font-size: 12px;
+            color: var(--chrome-text-dim);
+            margin-top: 24px;
+        }
+        
+        .launch-date strong {
+            color: var(--chrome-text-bright);
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .coming-soon-panel {
+                padding: 24px 20px;
+                margin: 0 12px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .countdown-grid {
+                gap: 6px;
+            }
+            
+            .countdown-cell {
+                padding: 8px;
+            }
+            
+            .countdown-cell span:first-child {
+                font-size: 20px;
+            }
+        }
+        
+        /* Skip header spacing for coming soon */
+        .coming-soon-layout > .site-header {
+            margin-bottom: 0;
+        }
+        
+        .coming-soon-layout > main.container {
+            padding: 0;
+            min-height: auto;
+        }
+    </style>
+</head>
+<body data-accent="green">
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="coming-soon-layout">
+    
+    <!-- Site Header (exact copy from the real site) -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/" class="logo" aria-label="Renoise Theme Share home">
+                <span class="logo-icon" aria-hidden="true">◈</span>
+                <span class="logo-text">Renoise<strong>Themes</strong></span>
+            </a>
+
+            <nav class="header-nav" aria-label="Main navigation">
+                <a href="/">Browse</a>
+                <a href="/create">Create</a>
+                <a href="/login">Log in</a>
+                <a href="/register" class="btn-nav-upload">Sign up</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" id="main-content">
+        <div class="coming-soon-main">
+            <div class="coming-soon-panel">
+                <div class="coming-soon-icon" aria-hidden="true">⏳</div>
+                
+                <h1>Coming Soon — Renoise Theme Share</h1>
+                <p>We're building the ultimate platform for Renoise theme discovery and sharing. Get ready for pixel-perfect previews, intelligent search, and community-driven theme collections.</p>
+                
+                <!-- Feature Grid -->
+                <div class="feature-grid">
+                    <div class="feature-cell">
+                        <span>🎨</span>
+                        <h3>Pixel Perfect</h3>
+                        <p>Real UI previews from theme files</p>
+                    </div>
+                    <div class="feature-cell">
+                        <span>⚡</span>
+                        <h3>Instant Render</h3>
+                        <p>No Renoise installation needed</p>
+                    </div>
+                    <div class="feature-cell">
+                        <span>🔍</span>
+                        <h3>Smart Search</h3>
+                        <p>Find themes by color and style</p>
+                    </div>
+                </div>
+                
+                <!-- Progress Tracker -->
+                <div class="progress-tracker">
+                    <div class="progress-step complete">Planning</div>
+                    <div class="progress-step complete">Development</div>
+                    <div class="progress-step active">Testing</div>
+                    <div class="progress-step">Launch</div>
+                </div>
+                
+                <!-- Countdown -->
+                <div class="countdown-grid" id="countdown">
+                    <div class="countdown-cell">
+                        <span id="days">--</span>
+                        <span>Days</span>
+                    </div>
+                    <div class="countdown-cell">
+                        <span id="hours">--</span>
+                        <span>Hours</span>
+                    </div>
+                    <div class="countdown-cell">
+                        <span id="minutes">--</span>
+                        <span>Minutes</span>
+                    </div>
+                    <div class="countdown-cell">
+                        <span id="seconds">--</span>
+                        <span>Seconds</span>
+                    </div>
+                </div>
+                
+                <p class="launch-date">
+                    Launch scheduled for <strong>June 1, 2026</strong>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Site Footer (exact copy from the real site) -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Renoise Theme Share — Built with ♥ for the tracker community</p>
+    </footer>
+</div>
+
+<script>
+// Countdown Timer
+class ComingSoon {
+    constructor() {
+        this.launchDate = new Date('2026-06-01T00:00:00').getTime();
+        this.init();
+    }
+
+    init() {
+        this.startCountdown();
+    }
+
+    startCountdown() {
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = this.launchDate - now;
+
+            if (distance < 0) {
+                this.handleLaunch();
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            this.updateDisplay(days, hours, minutes, seconds);
+        };
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
+    updateDisplay(days, hours, minutes, seconds) {
+        const elements = {
+            days: document.getElementById('days'),
+            hours: document.getElementById('hours'),
+            minutes: document.getElementById('minutes'),
+            seconds: document.getElementById('seconds')
+        };
+
+        if (elements.days) elements.days.textContent = days.toString().padStart(2, '0');
+        if (elements.hours) elements.hours.textContent = hours.toString().padStart(2, '0');
+        if (elements.minutes) elements.minutes.textContent = minutes.toString().padStart(2, '0');
+        if (elements.seconds) elements.seconds.textContent = seconds.toString().padStart(2, '0');
+    }
+
+    handleLaunch() {
+        const countdownEl = document.getElementById('countdown');
+        if (countdownEl) {
+            countdownEl.innerHTML = '<div style="font-size:16px; color:var(--chrome-accent); font-weight:600; padding:20px;">We\'re Live! 🎉</div>';
+        }
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new ComingSoon();
+});
+</script>
+
+</body>
+</html>
