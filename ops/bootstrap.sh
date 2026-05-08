@@ -11,7 +11,7 @@ echo ""
 
 # ── Basics ────────────────────────────────────────────────────
 apt-get update
-apt-get install -y curl wget git vim htop ufw fail2ban certbot python3-certbot-nginx
+apt-get install -y curl wget git vim htop ufw fail2ban certbot python3-certbot-nginx sqlite3
 
 # ── Node.js 20 (LTS) ──────────────────────────────────────────
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -19,6 +19,9 @@ apt-get install -y nodejs
 
 # ── Build tools (for native deps: sharp, bcrypt, better-sqlite3)
 apt-get install -y build-essential python3 make g++
+
+# ── @napi-rs/canvas system deps ───────────────────────────────
+apt-get install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
 
 # ── PM2 (global) ──────────────────────────────────────────────
 npm install -g pm2
@@ -52,6 +55,8 @@ mkdir -p /backup/renoisethemes
 mkdir -p /backup/bacania
 chown -R deploy:deploy /var/www
 chown -R deploy:deploy /backup
+mkdir -p /var/log/pm2
+chown deploy:deploy /var/log/pm2
 
 # ── Git clone (placeholder — run as deploy user after adding SSH key) ──
 echo ""
@@ -60,7 +65,7 @@ echo ""
 echo "Next steps:"
 echo "  1. Add your SSH key:   echo 'your-pubkey' > /home/deploy/.ssh/authorized_keys"
 echo "  2. Switch to deploy:   su - deploy"
-echo "  3. Clone repos:        cd /var/www && git clone git@github.com:mene311/renoise-themes.git"
+echo "  3. Clone repos:        cd /var/www && git clone https://github.com/mene311/renoise-themes.git"
 echo "  4. Copy nginx config:  sudo cp renoise-themes/ops/nginx/* /etc/nginx/sites-enabled/"
 echo "  5. Get SSL:            sudo certbot --nginx -d renoisethemes.com -d www.renoisethemes.com -d bacania.cl -d www.bacania.cl"
 echo "  6. Start apps:         cd renoise-themes && npm install && pm2 start ops/pm2/ecosystem.config.cjs"

@@ -1,0 +1,16 @@
+{
+  "name": "renoise-themes-coming-soon",
+  "version": "1.0.0",
+  "description": "Coming soon website for Renoise Themes",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "echo 'No build process needed for static site'",
+    "deploy": "echo 'Use Cloudflare Pages dashboard or wrangler CLI to deploy'"
+  },
+  "keywords": ["coming-soon", "renoise", "themes", "cloudflare"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}

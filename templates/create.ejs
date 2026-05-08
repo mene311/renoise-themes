@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- RIGHT: Color Pickers — Ranked by screen coverage -->
+    <!-- RIGHT: Color Pickers — Grouped by UI category -->
     <div class="creator-pickers-col">
       <!-- Presets & Palette Generator -->
       <div class="creator-controls">
@@ -31,6 +31,7 @@
           <button type="button" class="btn-preset" id="presetDefault">⏪ Default</button>
           <button type="button" class="btn-preset" id="presetWhite">⚪ Full White</button>
         </div>
+        <% if (typeof showPaletteGen !== 'undefined' && showPaletteGen) { %>
         <div class="palette-gen">
           <label class="palette-label">Anchor</label>
           <input type="color" id="paletteAnchor" value="#161618" title="Anchor color">
@@ -54,6 +55,7 @@
           <button type="button" class="btn-palette" id="paletteApply">🎨 Apply</button>
           <button type="button" class="btn-preset" id="paletteRandom" title="Random palette">🎲 Random</button>
         </div>
+        <% } %>
       </div>
 
       <form id="creatorForm">
@@ -69,64 +71,48 @@
           <% } %>
         </div>
 
-        <!-- 🟢 Backgrounds (top 6 — cover 94% of screen) -->
-        <details class="creator-group" open>
-          <summary>🟢 Backgrounds <span class="group-pct">94.6% of screen</span></summary>
-          <div class="color-grid color-grid-large">
-            <% ELEMENT_COVERAGE.slice(0, 6).forEach(el => { %>
-              <label class="color-pick color-pick-large">
-                <input type="color" name="<%= el.name %>" value="#<%= (defaults && defaults[el.name]) ? defaults[el.name] : '808080' %>" data-element="<%= el.name %>">
-                <div class="color-pick-info">
-                  <span class="color-name"><%= el.name.replace(/_/g, ' ') %></span>
-                  <span class="color-pct"><%= el.pct %>%</span>
-                </div>
-              </label>
-            <% }); %>
-          </div>
-        </details>
-
-        <!-- 🟡 Controls & Fonts (coverage 0.01%-2%) -->
-        <details class="creator-group" open>
-          <summary>🟡 Controls & Details <span class="group-count"><%= ELEMENT_COVERAGE.slice(6, 27).length %></span></summary>
-          <div class="color-grid">
-            <% ELEMENT_COVERAGE.slice(6, 27).forEach(el => { %>
-              <label class="color-pick">
-                <input type="color" name="<%= el.name %>" value="#<%= (defaults && defaults[el.name]) ? defaults[el.name] : '808080' %>" data-element="<%= el.name %>">
-                <div class="color-pick-info">
-                  <span class="color-name"><%= el.name.replace(/_/g, ' ') %></span>
-                  <% if (el.pct > 0) { %><span class="color-pct"><%= el.pct %>%</span><% } %>
-                </div>
-              </label>
-            <% }); %>
-          </div>
-        </details>
-
-        <!-- ⚪ Fine Details (everything else — &lt;0.01% or zero) -->
-        <details class="creator-group">
-          <summary>⚪ Fine Details <span class="group-count"><%= ELEMENT_COVERAGE.length - 27 + COVERAGE_ZERO.length %></span></summary>
-          <div class="color-grid">
-            <% ELEMENT_COVERAGE.slice(27).forEach(el => { %>
-              <label class="color-pick">
-                <input type="color" name="<%= el.name %>" value="#<%= (defaults && defaults[el.name]) ? defaults[el.name] : '808080' %>" data-element="<%= el.name %>">
-                <div class="color-pick-info">
-                  <span class="color-name"><%= el.name.replace(/_/g, ' ') %></span>
-                </div>
-              </label>
-            <% }); %>
-            <% COVERAGE_ZERO.forEach(el => { %>
-              <label class="color-pick">
-                <input type="color" name="<%= el %>" value="#<%= (defaults && defaults[el]) ? defaults[el] : '808080' %>" data-element="<%= el %>">
-                <div class="color-pick-info">
-                  <span class="color-name"><%= el.replace(/_/g, ' ') %></span>
-                </div>
-              </label>
-            <% }); %>
-          </div>
-        </details>
+        <!-- Element Groups -->
+        <% ELEMENT_GROUPS.forEach(group => { %>
+          <details class="creator-group" <%= group.open ? 'open' : '' %>>
+            <summary>
+              <span class="group-icon"><%= group.icon %></span>
+              <span class="group-label"><%= group.label %></span>
+              <span class="group-count"><%= group.elements.length %></span>
+            </summary>
+            <div class="color-grid">
+              <% group.elements.forEach(elName => {
+                const defVal = (defaults && defaults[elName]) ? defaults[elName] : '808080';
+                const pctVal = COVERAGE_MAP[elName];
+              %>
+                <label class="color-pick">
+                  <div class="color-swatch"
+                       data-el="<%= elName %>"
+                       style="background-color: #<%= defVal %>"
+                       tabindex="0"
+                       role="button"
+                       aria-label="Pick color for <%= elName.replace(/_/g, ' ') %>">
+                  </div>
+                  <input type="hidden" name="<%= elName %>" value="#<%= defVal %>" data-element="<%= elName %>">
+                  <div class="color-pick-info">
+                    <span class="color-name"><%= elName.replace(/_/g, ' ') %></span>
+                    <% if (typeof pctVal !== 'undefined' && pctVal > 0) { %>
+                      <span class="color-pct"><%= pctVal %>%</span>
+                    <% } %>
+                  </div>
+                </label>
+              <% }); %>
+            </div>
+          </details>
+        <% }); %>
       </form>
     </div>
   </div>
 </section>
 
+<script src="/js/reinvented-color-wheel.js"></script>
+<script src="/js/color-wheel.js"></script>
 <script src="/js/creator.js"></script>
+<% if (typeof showPaletteGen !== 'undefined' && showPaletteGen) { %>
+<script src="/js/creator-palette.js"></script>
+<% } %>
 <%- include('partials/footer') %>

@@ -33,10 +33,13 @@
 
       <nav class="header-nav" aria-label="Main navigation">
         <a href="/">Browse</a>
-        <a href="/create">Create</a>
         <% if (user) { %>
+          <a href="/create">Create</a>
           <a href="/upload" class="btn-nav-upload">Upload</a>
           <a href="/backstage">Backstage</a>
+          <% if (user.rank_level >= 5) { %>
+            <a href="/studio">Studio</a>
+          <% } %>
           <span class="nav-sep" aria-hidden="true"></span>
           <div class="user-menu" aria-label="User menu">
             <span class="user-avatar" aria-hidden="true"><%= user.username.charAt(0).toUpperCase() %></span>

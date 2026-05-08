@@ -11,7 +11,7 @@
     </div>
     <div class="backstage-actions">
       <% if (isOwner) { %>
-        <a href="/theme/<%= encodeURIComponent(stats.username) %>/upload" class="btn-nav-upload" style="height:28px;padding:0 12px;font-size:11px;">Upload</a>
+        <a href="/upload" class="btn-nav-upload" style="height:28px;padding:0 12px;font-size:11px;">Upload</a>
         <a href="/create" class="btn-preset" style="height:28px;padding:0 12px;font-size:11px;">Create</a>
       <% } %>
     </div>
@@ -82,11 +82,11 @@
         <% comments.forEach(c => { %>
           <article class="comment">
             <div class="comment-head">
-              <a href="/backstage/<%= c.author %>" class="comment-author"><strong><%= c.author %></strong></a>
+              <a href="/backstage/<%= encodeURIComponent(c.author) %>" class="comment-author"><strong><%= c.author %></strong></a>
               <% if (c.authorTitle) { %><span class="flair"><%= c.authorTitle %></span><% } %>
               <time datetime="<%= c.created_at %>"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></time>
               <% if (isOwner) { %>
-                <form action="/backstage/<%= stats.username %>/comment/<%= c.id %>/delete" method="POST" style="margin-left:auto;" onsubmit="return confirm('Delete this comment?')">
+                <form action="/backstage/<%= encodeURIComponent(stats.username) %>/comment/<%= c.id %>/delete" method="POST" style="margin-left:auto;" onsubmit="return confirm('Delete this comment?')">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="btn-link-danger" aria-label="Delete comment">✕</button>
                 </form>
@@ -99,7 +99,7 @@
     <% } %>
 
     <% if (user) { %>
-      <form action="/backstage/<%= stats.username %>/comment" method="POST" class="comment-form">
+      <form action="/backstage/<%= encodeURIComponent(stats.username) %>/comment" method="POST" class="comment-form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label for="guestbookMessage" class="sr-only">Leave a message</label>
         <textarea id="guestbookMessage" name="message" placeholder="Leave a message for <%= stats.username %>…" required maxlength="1000" rows="2"></textarea>

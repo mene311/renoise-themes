@@ -25,7 +25,7 @@ npm install --production
 
 # ── Restart PM2 ───────────────────────────────────────────────
 echo "🔁 Restarting app..."
-pm2 reload ecosystem.config.cjs --update-env
+pm2 reload ops/pm2/ecosystem.config.cjs --update-env
 
 # ── Health check ──────────────────────────────────────────────
 echo "🏥 Health check..."

@@ -1,0 +1,11 @@
+{
+  "build": {
+    "command": "echo 'No build process needed for static site'",
+    "publish": "."
+  },
+  "deployment": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+# Redirect to main app when ready
+# RewriteEngine On
+# RewriteRule ^$ / [R=302,L]

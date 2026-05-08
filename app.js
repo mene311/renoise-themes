@@ -3,6 +3,7 @@ import express from 'express';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import SQLiteStore from 'connect-sqlite3';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import crypto from 'crypto';
@@ -15,6 +16,7 @@ import { generatePaletteSVG } from './lib/palette.js';
 import { generatePreviews } from './lib/preview-renderer.js';
 import { generateXrnc } from './lib/xrnc-generator.js';
 import { sendPasswordReset, sendWelcome } from './lib/email.js';
+import { GROUPS as ELEMENT_GROUPS } from './lib/element-groups.js';
 import {
   saveTheme, listThemes, listThemesPage, countThemes,
   getTheme, getThemeBySlug, listTags,
@@ -42,9 +44,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Rate limiting ──────────────────────────────────────
+
+// Skip all rate limits for user "MENE"
+function skipForMene(req) {
+  return !!(req.session && req.session.user && req.session.user.username === 'MENE');
+}
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 12,
+  skip: skipForMene,
   message: 'Too many attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -53,6 +62,7 @@ const authLimiter = rateLimit({
 const downloadLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30,
+  skip: skipForMene,
   message: 'Too many downloads, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -61,6 +71,7 @@ const downloadLimiter = rateLimit({
 const previewLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10,
+  skip: skipForMene,
   message: 'Too many preview requests, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -69,6 +80,7 @@ const previewLimiter = rateLimit({
 const likeLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 20,
+  skip: skipForMene,
   message: 'Too many likes, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -77,7 +89,26 @@ const likeLimiter = rateLimit({
 const commentLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10,
+  skip: skipForMene,
   message: 'Too many comments, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const resetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  skip: skipForMene,
+  message: 'Too many reset attempts, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  skip: skipForMene,
+  message: 'Too many uploads, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -109,11 +140,16 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// Session with hardened cookie flags
+// Session with hardened cookie flags + SQLite persistence (survives restarts)
+const SQLiteSessionStore = SQLiteStore(session);
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  store: new SQLiteSessionStore({
+    db: 'sessions.db',
+    dir: path.join(__dirname, 'db'),
+  }),
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     secure: process.env.NODE_ENV === 'production',
@@ -249,12 +285,22 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function requireBeta(req, res, next) {
+  if (!req.session.user || req.session.user.rank_level < 5) {
+    return res.status(403).send('Beta tester access required');
+  }
+  next();
+}
+
 // ===================== AUTHENTICATION =====================
 
 app.get('/register', (req, res) => {
   if (req.session.user) return res.redirect('/');
   res.render('register', { error: null, success: null });
 });
+
+const USERNAME_REGEX = /^[a-zA-Z0-9_-]{2,30}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 app.post('/register', authLimiter, csrfProtection, async (req, res) => {
   if (req.session.user) return res.redirect('/');
@@ -263,6 +309,14 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
 
   if (!username || !email || !password || !passwordConfirm) {
     return res.render('register', { error: 'All fields are required', success: null });
+  }
+
+  if (!USERNAME_REGEX.test(username)) {
+    return res.render('register', { error: 'Username must be 2-30 characters (letters, numbers, _ or -)', success: null });
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    return res.render('register', { error: 'Please enter a valid email address', success: null });
   }
 
   if (password !== passwordConfirm) {
@@ -279,9 +333,16 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
       return res.render('register', { error: result.error, success: null });
     }
 
-    req.session.user = { id: result.userId, username, email, title: result.title || null };
-    sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
-    res.redirect('/');
+    // Regenerate session to prevent session fixation
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.render('register', { error: 'Registration succeeded but session error occurred. Please log in.', success: null });
+      }
+      req.session.user = { id: result.userId, username, email, title: result.title || null };
+      sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
+      res.redirect('/');
+    });
   } catch (err) {
     console.error('Registration error:', err);
     res.render('register', { error: 'Registration failed. Please try again.', success: null });
@@ -308,8 +369,15 @@ app.post('/login', authLimiter, csrfProtection, async (req, res) => {
       return res.render('login', { error: result.error, success: null });
     }
 
-    req.session.user = result.user;
-    res.redirect('/');
+    // Regenerate session to prevent session fixation
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.render('login', { error: 'Login failed. Please try again.', success: null });
+      }
+      req.session.user = result.user;
+      res.redirect('/');
+    });
   } catch (err) {
     console.error('Login error:', err);
     res.render('login', { error: 'Login failed. Please try again.', success: null });
@@ -332,7 +400,7 @@ app.get('/forgot-password', (req, res) => {
   res.render('forgot-password', { error: null, success: null });
 });
 
-app.post('/forgot-password', authLimiter, csrfProtection, async (req, res) => {
+app.post('/forgot-password', resetLimiter, csrfProtection, async (req, res) => {
   const { email } = req.body;
   if (!email) {
     return res.render('forgot-password', { error: 'Please enter your email address', success: null });
@@ -364,7 +432,7 @@ app.get('/reset-password/:token', (req, res) => {
   res.render('reset-password', { error: null, token: req.params.token });
 });
 
-app.post('/reset-password/:token', authLimiter, csrfProtection, async (req, res) => {
+app.post('/reset-password/:token', resetLimiter, csrfProtection, async (req, res) => {
   const tokenRow = validateResetToken(req.params.token);
   if (!tokenRow) {
     return res.render('reset-password', { error: 'Invalid or expired reset link.', token: null });
@@ -440,7 +508,7 @@ app.get('/theme/:slug/edit-colors', requireAuth, (req, res) => {
 
   res.render('create', {
     defaults: editDefaults,
-    ELEMENT_COVERAGE, COVERAGE_ZERO, ALL_ELEMENTS_ORDERED, COVERAGE_MAP,
+    ELEMENT_GROUPS, COVERAGE_MAP,
     editSlug: theme.slug,
     editName: theme.name
   });
@@ -527,7 +595,7 @@ app.post('/api/save-edited-theme', requireAuth, previewLimiter, csrfProtection, 
     res.json({ success: true, slug });
   } catch (err) {
     console.error('Save edited theme error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
   }
 });
 
@@ -552,7 +620,7 @@ app.post('/admin/reload-maps', requireAdmin, async (req, res) => {
     res.json({ success: true, message: 'Preview maps reloaded successfully' });
   } catch (err) {
     console.error('Admin reload-maps error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
   }
 });
 
@@ -694,8 +762,14 @@ app.get('/backstage', (req, res) => {
   res.redirect(`/backstage/${req.session.user.username}`);
 });
 
-app.get('/create', (req, res) => {
-  res.render('create', { defaults: getDefaultColors(), ELEMENT_COVERAGE, COVERAGE_ZERO, ALL_ELEMENTS_ORDERED, COVERAGE_MAP });
+app.get('/create', requireAuth, (req, res) => {
+  res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP });
+});
+
+// ── Studio (admin-only advanced creator with palette generator) ──
+
+app.get('/studio', requireBeta, (req, res) => {
+  res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP, showPaletteGen: true });
 });
 
 app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res) => {
@@ -735,7 +809,7 @@ app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res)
     res.json({ success: true, previewSlug: slug, views, previews: previewUrls });
   } catch (err) {
     console.error('Preview render error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
   }
 });
 
@@ -767,7 +841,7 @@ app.post('/api/download-xrnc', downloadLimiter, csrfProtection, (req, res) => {
     res.send(xrnc);
   } catch (err) {
     console.error('XRNC generation error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
   }
 });
 
@@ -826,7 +900,7 @@ app.get('/upload', requireAuth, (req, res) => {
   res.render('upload', { error: null, success: null });
 });
 
-app.post('/upload', requireAuth, csrfProtection,
+app.post('/upload', requireAuth, uploadLimiter, csrfProtection,
   upload.fields([
     { name: 'theme', maxCount: 1 },
     { name: 'screenshots', maxCount: 5 }
@@ -838,8 +912,8 @@ app.post('/upload', requireAuth, csrfProtection,
 
     const themeFile = req.files.theme[0];
     const screenshotFiles = req.files.screenshots || [];
-    const author = req.body.author || 'Anonymous';
-    const description = req.body.description || '';
+    const author = (req.body.author || 'Anonymous').trim().substring(0, 50) || 'Anonymous';
+    const description = (req.body.description || '').trim().substring(0, 2000);
     // Sanitize display name from original filename
     const safeOriginal = path.basename(themeFile.originalname);
     const displayName = path.basename(safeOriginal, path.extname(safeOriginal));
@@ -934,11 +1008,11 @@ app.get('/download/:slug', downloadLimiter, (req, res) => {
 
 // ===================== API =====================
 
-app.post('/api/themes/:id/like', likeLimiter, csrfProtection, (req, res) => {
+app.post('/api/themes/:id/like', requireAuth, likeLimiter, csrfProtection, (req, res) => {
   res.json({ likes: likeTheme(Number(req.params.id)) });
 });
 
-app.post('/api/themes/:id/unlike', likeLimiter, csrfProtection, (req, res) => {
+app.post('/api/themes/:id/unlike', requireAuth, likeLimiter, csrfProtection, (req, res) => {
   res.json({ likes: unlikeTheme(Number(req.params.id)) });
 });
 
@@ -1031,13 +1105,22 @@ setInterval(cleanupOldCreatorPreviews, 30 * 60 * 1000); // every 30 min
 cleanupOldCreatorPreviews(); // run once at startup
 
 // ── Deploy webhook ─────────────────────────────────────
-app.post('/deploy', express.json(), async (req, res) => {
+const deployLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: 'Too many deploy requests',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.post('/deploy', deployLimiter, express.json(), async (req, res) => {
   const secret = process.env.DEPLOY_SECRET;
   if (!secret) {
     return res.status(503).json({ error: 'Deploy not configured' });
   }
   const auth = req.headers['x-deploy-secret'];
-  if (!auth || auth !== secret) {
+  // Timing-safe comparison to prevent brute-force timing attacks
+  if (!auth || auth.length !== secret.length || !crypto.timingSafeEqual(Buffer.from(auth), Buffer.from(secret))) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
