@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /**
- * Builds refined pixel maps from diff-variant screenshots.
+ * Builds refined pixel maps from element-probe screenshots.
  *
- * For each element variant, compares its screenshot against the white baseline.
+ * For each element variant screenshot, compares it against the white baseline.
  * Pixels that turned green (#00FF00) belong to that element.
  * Merges all per-element maps into final .bin + .json files.
  *
  * Usage:
- *   node tools/build-diff-maps.js tools/diff-variants/
+ *   node tools/build-diff-maps.js tools/screenshots/
  *
- * Expects:
- *   diff-variants/00_baseline/baseline.png
- *   diff-variants/01_Main_Back/Main_Back.png
- *   diff-variants/02_Main_Font/Main_Font.png
+ * Expects flat directory with:
+ *   white_baseline.png
+ *   Main_Back.png
+ *   Main_Font.png
  *   ...
  *
  * Outputs:
@@ -290,8 +290,7 @@ async function processScreenshots(variantsDir) {
   console.log(`\n💾 ${manifestPath}`);
 
   console.log('\n✨ Done! New maps are at maps/pattern.json and maps/pattern.bin');
-  console.log('   Copy to maps/ for all views or re-run for mixer/waveform screenshots.');
 }
 
-const dir = process.argv[2] || path.join(__dirname, 'diff-variants');
+const dir = process.argv[2] || path.join(__dirname, 'screenshots');
 processScreenshots(dir);
