@@ -21,3 +21,9 @@ tools/*.xrns
 Screenshot_*
 Screenshots/
 dev/
+
+# Logs
+*.log
+
+# Editor workspace files
+*.code-workspace
