@@ -4,16 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const { form, renderPreview } = creator;
 
-  // Check for palette DOM elements
-  const anchorPicker = document.getElementById('paletteAnchor');
-  if (!anchorPicker) return; // No palette generator on this page
-
-  // Sync anchor color picker with Main_Back's initial value
-  const mainBackInput = form.querySelector('input[data-element="Main_Back"]');
-  if (mainBackInput) {
-    anchorPicker.value = mainBackInput.value;
-  }
-
   // ── Color Conversion Helpers ─────────────────
 
   function hexToRgb(hex) {
@@ -35,23 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const a = s * Math.min(l, 1 - l);
     const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
     return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
-  }
-
-  function rgbToHsl(r, g, b) {
-    r /= 255; g /= 255; b /= 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
-    if (max === min) { h = s = 0; }
-    else {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-        case g: h = ((b - r) / d + 2) / 6; break;
-        case b: h = ((r - g) / d + 4) / 6; break;
-      }
-    }
-    return [h * 360, s * 100, l * 100];
   }
 
   function hslHex(h, s, l) {
@@ -98,147 +71,170 @@ document.addEventListener('DOMContentLoaded', () => {
     return textHex;
   }
 
-  // ── Palette Generator ────────────────────────
+  // ── CHAOS: fully independent random per element, guided by boldness ──
+  // No binary dark/light flip. Each background element independently picks
+  // its own lightness zone. Boldness drives the spread:
+  //   0%   = tight cluster, cohesive, near-monochrome, professional
+  //   50%  = moderate spread, some dark/light contrast, colorful accents
+  //   100% = maximum variety — dark+mid+light surfaces coexist, neon accents
 
-  function generatePalette(baseHue, scheme, isLight, vibe = 0.5) {
+  function generateChaosPalette(boldness = 0.8) {
     const p = {};
+    const ri = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const rh = () => ri(0, 359);
+    const bold = Math.max(0.05, Math.min(1, boldness));
 
-    const v = (min, max) => {
-      const spread = (max - min) * vibe;
-      return min + Math.random() * spread;
-    };
-    const vInt = (min, max) => Math.round(v(min, max));
+    // ── Helpers ──────────────────────────────
 
-    let accentHue, accent2Hue;
-    switch (scheme) {
-      case 'complementary':
-        accentHue = (baseHue + 180) % 360;
-        accent2Hue = accentHue;
-        break;
-      case 'triadic':
-        accentHue = (baseHue + 120) % 360;
-        accent2Hue = (baseHue + 240) % 360;
-        break;
-      case 'analogous':
-        accentHue = (baseHue + 30) % 360;
-        accent2Hue = (baseHue - 30 + 360) % 360;
-        break;
-      case 'split-complementary':
-        accentHue = (baseHue + 150) % 360;
-        accent2Hue = (baseHue + 210) % 360;
-        break;
-      default:
-        accentHue = baseHue;
-        accent2Hue = baseHue;
+    // Each background surface independently decides its lightness
+    // At bold=0: always picks from the tight cluster zone
+    // At bold=1: randomly picks dark OR mid OR light zone
+    function pickBgLight() {
+      if (Math.random() < 1 - bold) return ri(16, 32);  // tight cluster
+      const z = ri(0, 2);
+      if (z === 0) return ri(3, 22);   // dark zone
+      if (z === 1) return ri(28, 55);  // mid zone
+      return ri(68, 92);               // light zone
     }
 
-    const bgS = isLight ? v(3, 8) : v(5, 12);
-    const bgL = isLight ? v(90, 96) : v(6, 14);
-
-    // Backgrounds
-    p.Main_Back = hslHex(baseHue, bgS, bgL);
-    p.Body_Back = hslHex(baseHue, bgS, isLight ? bgL - v(4, 8) : bgL + v(4, 8));
-    p.Button_Back = hslHex(baseHue, bgS + v(2, 4), isLight ? bgL - v(10, 16) : bgL + v(10, 16));
-    p.ValueBox_Back = hslHex(baseHue, bgS + v(2, 4), isLight ? bgL - v(6, 12) : bgL + v(6, 12));
-    p.Pattern_Default_Back = hslHex(baseHue, bgS, isLight ? bgL - v(2, 5) : bgL + v(2, 5));
-    p.Pattern_Highlighted_Back = hslHex(baseHue, bgS, isLight ? bgL - v(5, 9) : bgL + v(5, 9));
-    p.Pattern_CenterBar_Back = hslHex(baseHue, bgS + v(1, 3), isLight ? bgL - v(14, 20) : bgL + v(14, 20));
-    p.Pattern_CenterBar_Back_StandBy = hslHex(baseHue, bgS + v(1, 3), isLight ? bgL - v(18, 24) : bgL + v(18, 24));
-    p.Alternate_Main_Back = hslHex(baseHue, bgS, isLight ? bgL - v(8, 12) : bgL + v(8, 12));
-    p.ToolTip_Back = p.Button_Back;
-
-    // Accents
-    const accS = vInt(65, 85);
-    const accL = isLight ? vInt(40, 55) : vInt(50, 65);
-    p.Selection_Back = hslHex(accentHue, accS, accL);
-    p.Selected_Button_Back = hslHex(accent2Hue, accS, accL);
-    p.Slider = hslHex(accentHue, accS, accL);
-    p.Button_Highlight_Font = hslHex(accentHue, accS, accL + v(4, 10));
-    p.Automation_Line_Edge = hslHex(accentHue, accS - v(8, 12), accL);
-    p.Automation_Line_Fill = hslHex(accentHue, accS - v(15, 25), accL - v(4, 10));
-    p.Automation_Marker_Play = hslHex(accentHue, accS, accL + v(2, 6));
-    p.Automation_Marker_Single = hslHex(accent2Hue, accS, accL + v(2, 6));
-    p.Automation_Marker_Pair = hslHex((baseHue + 180) % 360, accS, accL + v(2, 6));
-    p.Automation_Marker_Diamond = hslHex(accentHue, accS, accL + v(6, 12));
-    p.Automation_Point = hslHex(accentHue, accS - v(20, 35), isLight ? accL + v(14, 20) : accL + v(8, 14));
-    p.Pattern_PlayPosition_Back = hslHex(accentHue, accS - v(8, 12), isLight ? accL - v(12, 18) : accL + v(8, 14));
-    p.Pattern_Selection = hslHex(accentHue, accS, isLight ? accL - v(6, 12) : accL + v(6, 10));
-    p.Folder = hslHex(accentHue, accS - v(10, 18), accL);
-
-    // UI chrome
-    p.Scrollbar = hslHex(baseHue, bgS + v(4, 8), isLight ? bgL - v(18, 26) : bgL + v(18, 26));
-    p.Automation_Grid = hslHex(baseHue, bgS + v(2, 4), isLight ? bgL - v(6, 12) : bgL + v(6, 12));
-    p.Pattern_Mute_State = hslHex(baseHue, bgS + v(6, 12), isLight ? bgL - v(20, 28) : bgL + v(20, 28));
-    p.Pattern_StandBy_Selection = hslHex(baseHue, bgS + v(3, 6), isLight ? bgL - v(16, 22) : bgL + v(16, 22));
-    p.StandBy_Selection_Back = hslHex(baseHue, bgS + v(6, 10), isLight ? bgL - v(12, 18) : bgL + v(12, 18));
-    p.Midi_Mapping_Back = hslHex(accent2Hue, accS - v(20, 28), isLight ? accL + v(14, 20) : accL - v(8, 14));
-    p.VuMeter_Back_Normal = hslHex(baseHue, bgS, isLight ? bgL - v(4, 10) : bgL + v(4, 10));
-    p.VuMeter_Back_Clipped = hslHex(0, vInt(80, 90), isLight ? vInt(50, 60) : vInt(65, 75));
-
-    // Text
-    p.Main_Font = makeTextColor(p.Main_Back, accentHue, isLight);
-    p.Body_Font = makeTextColor(p.Body_Back, accentHue, isLight);
-    p.Strong_Body_Font = makeTextColor(p.Body_Back, accentHue, isLight, true);
-    p.Button_Font = makeTextColor(p.Button_Back, accentHue, isLight);
-    p.Selected_Button_Font = makeTextColor(p.Selected_Button_Back, accentHue, isLight);
-    p.Selection_Font = makeTextColor(p.Selection_Back, accentHue, isLight);
-    p.StandBy_Selection_Font = makeTextColor(p.StandBy_Selection_Back, accentHue, isLight);
-    p.ValueBox_Font = makeTextColor(p.ValueBox_Back, accentHue, isLight);
-    p.ValueBox_Font_Icons = makeTextColor(p.ValueBox_Back, accentHue, isLight, false, true);
-    p.Pattern_Default_Font = makeTextColor(p.Pattern_Default_Back, accentHue, isLight);
-    p.Pattern_Highlighted_Font = makeTextColor(p.Pattern_Highlighted_Back, accentHue, isLight, true);
-    p.Pattern_CenterBar_Font = makeTextColor(p.Pattern_CenterBar_Back, accentHue, isLight, true);
-    p.Pattern_CenterBar_Font_StandBy = makeTextColor(p.Pattern_CenterBar_Back_StandBy, accentHue, isLight);
-    p.Pattern_PlayPosition_Font = makeTextColor(p.Pattern_PlayPosition_Back, accentHue, isLight, true);
-    p.ToolTip_Font = makeTextColor(p.ToolTip_Back, accentHue, isLight);
-    p.Midi_Mapping_Font = makeTextColor(p.Midi_Mapping_Back, accentHue, isLight);
-    p.Alternate_Main_Font = makeTextColor(p.Alternate_Main_Back, accentHue, isLight);
-
-    // Tracker columns
-    const tS = isLight ? vInt(45, 65) : vInt(60, 80);
-    const tL = isLight ? vInt(28, 36) : vInt(70, 80);
-    const tLHi = tL + (isLight ? v(4, 8) : v(-8, -4));
-
-    const trackerCols = [
-      ['Volume', 120],
-      ['Panning', 210],
-      ['Pitch', 50],
-      ['Delay', 280],
-      ['Global', 30],
-      ['Other', 300],
-      ['DspFx', 20],
-    ];
-
-    for (const [name, hue] of trackerCols) {
-      p[`Pattern_Default_Font_${name}`] = hslHex(hue, tS, tL);
-      p[`Pattern_Highlighted_Font_${name}`] = hslHex(hue, tS - v(6, 10), tLHi);
+    // Hue drift from base scales with boldness
+    function driftHue(base, maxDrift) {
+      return ((base + ri(-maxDrift, maxDrift)) % 360 + 360) % 360;
     }
 
-    p.Pattern_Default_Font_Unused = hslHex(baseHue, bgS, isLight ? bgL - v(24, 30) : bgL + v(24, 30));
-    p.Pattern_Highlighted_Font_Unused = hslHex(baseHue, bgS, isLight ? bgL - v(20, 26) : bgL + v(20, 26));
+    // Saturation range expands with boldness
+    function pickSat(minBase, maxBase, satBoldScale) {
+      const maxSat = Math.min(100, Math.round(maxBase + bold * satBoldScale));
+      const minSat = Math.min(maxSat, Math.round(minBase + bold * (satBoldScale * 0.3)));
+      return ri(minSat, maxSat);
+    }
 
-    // VU Meters
-    p.VuMeter_Meter = hslHex(baseHue, bgS + v(4, 8), isLight ? bgL - v(26, 34) : bgL + v(26, 34));
-    p.VuMeter_Meter_Low = hslHex(140, vInt(70, 80), isLight ? vInt(38, 45) : vInt(50, 58));
-    p.VuMeter_Meter_Middle = hslHex(50, vInt(78, 88), isLight ? vInt(44, 52) : vInt(56, 64));
-    p.VuMeter_Meter_High = hslHex(0, vInt(85, 95), isLight ? vInt(48, 56) : vInt(60, 68));
-    p.VuMeter_Peak = hslHex(10, vInt(85, 95), isLight ? vInt(48, 56) : vInt(60, 68));
+    // ── Base hue — shared starting point ─────
+    const baseHue = rh();
 
-    // Default palette slots
+    // ── 1. Backgrounds & Surfaces ────────────
+    // Each one independently picks its own lightness zone
+    // Hue drifts from base by ±bold*60°
+    const bDrift = Math.round(bold * 60);
+    const bSat = pickSat(0, 6, 20);
+
+    function bgColor() { return hslHex(driftHue(baseHue, bDrift), bSat, pickBgLight()); }
+
+    p.Main_Back                 = bgColor();
+    p.Body_Back                 = bgColor();
+    p.Alternate_Main_Back       = bgColor();
+    p.Pattern_Default_Back      = bgColor();
+    p.Pattern_Highlighted_Back  = bgColor();
+    p.Pattern_CenterBar_Back    = bgColor();
+    p.Pattern_CenterBar_Back_StandBy = bgColor();
+    p.Button_Back               = bgColor();
+    p.ValueBox_Back             = bgColor();
+    p.Midi_Mapping_Back         = bgColor();
+    p.ToolTip_Back              = p.Button_Back;
+
+    // ── 2. UI chrome — subtle contrast from bgs ──
+    const uiDrift = Math.round(bold * 40);
+    const uiSat = pickSat(8, 18, 40);
+    const uiLight = bold < 0.5 ? ri(20, 40) : ri(15, 70);
+    const uiHue = driftHue(baseHue, uiDrift);
+
+    function uiColor() { return hslHex(uiHue, uiSat, uiLight + ri(-6, 6)); }
+
+    p.Scrollbar            = uiColor();
+    p.Automation_Grid      = uiColor();
+    p.Pattern_Mute_State   = uiColor();
+    p.Pattern_StandBy_Selection = uiColor();
+    p.StandBy_Selection_Back = uiColor();
+
+    // ── 3. Accents — pop with hue/sat ───────────
+    const accDrift = Math.round(60 + bold * 120);  // 60→180
+    const accSat = pickSat(40, 60, 40);
+    const accLight = bold < 0.5 ? ri(35, 55) : ri(30, 72);
+    const accHue = driftHue(baseHue, 180); // always independent from bg
+
+    function accColor() { return hslHex(accHue, accSat, accLight + ri(-8, 8)); }
+
+    p.Selected_Button_Back   = accColor();
+    p.Selection_Back         = accColor();
+    p.Slider                 = accColor();
+    p.Button_Highlight_Font  = accColor();
+    p.Automation_Line_Edge   = accColor();
+    p.Automation_Line_Fill   = accColor();
+    p.Automation_Marker_Play = accColor();
+    p.Automation_Marker_Single = accColor();
+    p.Automation_Marker_Pair = accColor();
+    p.Automation_Marker_Diamond = accColor();
+    p.Automation_Point       = accColor();
+    p.Pattern_PlayPosition_Back = accColor();
+    p.Pattern_Selection      = accColor();
+    p.Folder                 = accColor();
+
+    // ── 4. Text — high contrast via makeTextColor ──
+    p.Main_Font = makeTextColor(p.Main_Back, baseHue, false);
+    p.Body_Font = makeTextColor(p.Body_Back, baseHue, false);
+    p.Strong_Body_Font = makeTextColor(p.Body_Back, baseHue, false, true);
+    p.Alternate_Main_Font = makeTextColor(p.Alternate_Main_Back, baseHue, false);
+    p.Button_Font = makeTextColor(p.Button_Back, baseHue, false);
+    p.Selected_Button_Font = makeTextColor(p.Selected_Button_Back, accHue, false);
+    p.Selection_Font = makeTextColor(p.Selection_Back, accHue, false);
+    p.StandBy_Selection_Font = makeTextColor(p.StandBy_Selection_Back, baseHue, false);
+    p.ValueBox_Font = makeTextColor(p.ValueBox_Back, baseHue, false);
+    p.ValueBox_Font_Icons = makeTextColor(p.ValueBox_Back, baseHue, false, false, true);
+    p.Pattern_Default_Font = makeTextColor(p.Pattern_Default_Back, baseHue, false);
+    p.Pattern_Highlighted_Font = makeTextColor(p.Pattern_Highlighted_Back, baseHue, false, true);
+    p.Pattern_CenterBar_Font = makeTextColor(p.Pattern_CenterBar_Back, baseHue, false, true);
+    p.Pattern_CenterBar_Font_StandBy = makeTextColor(p.Pattern_CenterBar_Back_StandBy, baseHue, false);
+    p.Pattern_PlayPosition_Font = makeTextColor(p.Pattern_PlayPosition_Back, accHue, false, true);
+    p.ToolTip_Font = makeTextColor(p.ToolTip_Back, baseHue, false);
+    p.Midi_Mapping_Font = makeTextColor(p.Midi_Mapping_Back, baseHue, false);
+
+    // ── 5. Tracker columns — hue-shifted from base ──
+    const trackerNames = ['Volume','Panning','Pitch','Delay','Global','Other','DspFx','Unused'];
+    for (let i = 0; i < trackerNames.length; i++) {
+      const colHue = (baseHue + Math.round(i * (360 / trackerNames.length)) + ri(-10, 10)) % 360;
+      const colSat = ri(25 + Math.round(bold * 30), 50 + Math.round(bold * 50));
+      const colLight = bold < 0.5 ? ri(45, 60) : ri(35, 78);
+      p[`Pattern_Default_Font_${trackerNames[i]}`] = hslHex(colHue, colSat, colLight);
+      p[`Pattern_Highlighted_Font_${trackerNames[i]}`] = hslHex(colHue, colSat + ri(5, 15), colLight + ri(5, 12));
+    }
+
+    // ── 6. VU Meters — pick a random preset ──────
+    const vuPresets = window.__VU_PRESETS || [];
+    if (vuPresets.length > 0) {
+      const preset = vuPresets[ri(0, vuPresets.length - 1)];
+      for (const [key, hex] of Object.entries(preset.colors)) {
+        p[key] = hex;
+      }
+    } else {
+      p.VuMeter_Meter = '#50fa7b';
+      p.VuMeter_Meter_Low = '#50fa7b';
+      p.VuMeter_Meter_Middle = '#f1fa8c';
+      p.VuMeter_Meter_High = '#ffb86c';
+      p.VuMeter_Peak = '#ff5555';
+    }
+    // VU back colors — from base hue, subtle
+    p.VuMeter_Back_Normal  = hslHex(baseHue, ri(5, 15), ri(10, 25));
+    p.VuMeter_Back_Clipped = hslHex(baseHue, ri(10, 22), ri(14, 30));
+
+    // ── 7. Track palette slots — rainbow ────────
     for (let i = 1; i <= 14; i++) {
       const n = String(i).padStart(2, '0');
-      const h = (baseHue + (i - 1) * (360 / 14) + v(-10, 10)) % 360;
-      p[`Default_Color_${n}`] = hslHex(h, vInt(45, 60), isLight ? vInt(40, 50) : vInt(55, 65));
+      const hue = (i - 1) * (360 / 14);
+      p[`Default_Color_${n}`] = hslHex(hue, 85, 55);
     }
 
     return p;
+  }
+
+  function isLocked(el) {
+    return creator.lockedElements && creator.lockedElements.has(el);
   }
 
   function applyPalette(palette) {
     requestAnimationFrame(() => {
       form.querySelectorAll('input[data-element]').forEach(input => {
         const el = input.dataset.element;
-        if (palette[el]) {
+        if (palette[el] && !isLocked(el)) {
           input.value = palette[el];
         }
       });
@@ -251,35 +247,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function getAnchorParams() {
-    const anchorHex = document.getElementById('paletteAnchor').value;
-    const anchorEl = document.getElementById('paletteAnchorElement').value;
-    const [r, g, b] = hexToRgb(anchorHex);
-    const [h] = rgbToHsl(r, g, b);
-    const scheme = document.getElementById('paletteScheme').value;
-    const isLight = document.getElementById('paletteLight').checked;
-    return { hue: h, anchorEl, scheme, isLight, anchorHex };
+  // ── Affinity slider live readout ─────────────
+
+  const modeSelect = document.getElementById('paletteMode');
+  const affinitySlider = document.getElementById('paletteAffinity');
+  const affinityValue = document.getElementById('affinityValue');
+
+  if (affinitySlider && affinityValue) {
+    affinitySlider.addEventListener('input', () => {
+      affinityValue.textContent = affinitySlider.value + '%';
+    });
   }
 
   // ── Event Handlers ───────────────────────────
 
-  const applyBtn = document.getElementById('paletteApply');
-  if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-      const { hue, anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
-      const palette = generatePalette(hue, scheme, isLight, 0);
-      palette[anchorEl] = anchorHex;
-      applyPalette(palette);
-    });
-  }
-
   const randomBtn = document.getElementById('paletteRandom');
   if (randomBtn) {
     randomBtn.addEventListener('click', () => {
-      const { anchorEl, scheme, isLight, anchorHex } = getAnchorParams();
-      const randomHue = Math.floor(Math.random() * 360);
-      const palette = generatePalette(randomHue, scheme, isLight, 0.4);
-      palette[anchorEl] = anchorHex;
+      // Cooldown guard — 200ms between clicks
+      if (randomBtn.dataset.cooldown) return;
+      randomBtn.dataset.cooldown = '1';
+      setTimeout(() => { delete randomBtn.dataset.cooldown; }, 200);
+
+      const mode = modeSelect ? modeSelect.value : 'truly-random';
+      // Boldness: slider right = more bold/varied. Invert for archetype affinity.
+      const boldness = affinitySlider ? parseInt(affinitySlider.value) / 100 : 0.8;
+      const affinity = 1 - boldness; // archetype engine uses affinity (0=wild, 1=tight)
+
+      let palette;
+      if (mode === 'truly-random') {
+        palette = generateChaosPalette(boldness);
+      } else if (typeof generateArchetypePalette === 'function') {
+        palette = generateArchetypePalette(mode, affinity, creator.lockedElements);
+      } else {
+        palette = generateChaosPalette(boldness); // fallback
+      }
+
       applyPalette(palette);
     });
   }

@@ -47,7 +47,12 @@
                   <% } %>
                 </div>
                 <div class="card-info">
-                  <div class="card-title"><%= theme.name %></div>
+                  <div class="card-title">
+                    <%= theme.name %>
+                    <% if (theme.status === 'draft') { %>
+                      <span class="tag tag-draft" style="background:var(--chrome-warning);color:#111;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:4px;white-space:nowrap;">Draft</span>
+                    <% } %>
+                  </div>
                   <div class="card-meta">
                     <span>♥ <%= theme.likes %></span>
                     <span>⬇ <%= theme.downloads %></span>
@@ -57,6 +62,17 @@
               <div style="display: flex; gap: 4px; padding: 0 12px 12px;">
                 <a href="/theme/<%= theme.slug %>/edit" class="btn-submit" style="flex:1;height:28px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Edit</a>
                 <a href="/theme/<%= theme.slug %>/edit-colors" class="btn-submit" style="flex:1;height:28px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--accent);border-color:var(--accent);color:#111;">🎨 Colors</a>
+                <% if (theme.status === 'draft') { %>
+                  <form action="/theme/<%= theme.slug %>/publish" method="POST" style="flex:1;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn-submit" style="width:100%;height:28px;font-size:11px;background:var(--chrome-success);border-color:var(--chrome-success);color:#111;">Publish</button>
+                  </form>
+                <% } else { %>
+                  <form action="/theme/<%= theme.slug %>/unpublish" method="POST" style="flex:1;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn-submit" style="width:100%;height:28px;font-size:11px;background:var(--chrome-warning);border-color:var(--chrome-warning);color:#111;">Unpublish</button>
+                  </form>
+                <% } %>
                 <form action="/theme/<%= theme.slug %>/delete" method="POST" style="flex:1;" onsubmit="return confirm('Delete this theme permanently?')">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="btn-submit" style="width:100%;height:28px;font-size:11px;background:var(--chrome-danger);border-color:var(--chrome-danger);">Delete</button>

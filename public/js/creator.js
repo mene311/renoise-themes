@@ -29,12 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getElementColorMap() {
     const map = {};
+    const filter = window.__hslFilter;
     form.querySelectorAll('input[data-element]').forEach(input => {
       const el = input.dataset.element;
       const hex = input.value.replace('#', '');
-      const r = parseInt(hex.substring(0, 2), 16);
-      const g = parseInt(hex.substring(2, 4), 16);
-      const b = parseInt(hex.substring(4, 6), 16);
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+      if (filter) [r, g, b] = filter.rgb(r, g, b);
       map[el] = [r, g, b];
     });
     return map;
@@ -100,10 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Swatch sync helper ───────────────────────
 
   function syncAllSwatches() {
+    const filter = window.__hslFilter;
     form.querySelectorAll('input[data-element]').forEach(input => {
       const swatch = document.querySelector(`.color-swatch[data-el="${CSS.escape(input.dataset.element)}"]`);
       if (swatch) {
-        swatch.style.backgroundColor = input.value;
+        swatch.style.backgroundColor = filter ? filter.hex(input.value) : input.value;
       }
     });
   }
@@ -111,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Presets ──────────────────────────────────
 
   document.getElementById('presetDefault').addEventListener('click', () => {
+    if (window.__creator.clearAllLocks) window.__creator.clearAllLocks();
     form.querySelectorAll('input[data-element]').forEach(input => {
       const el = input.dataset.element;
       if (defaultColors[el]) input.value = defaultColors[el];
@@ -120,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('presetWhite').addEventListener('click', () => {
+    if (window.__creator.clearAllLocks) window.__creator.clearAllLocks();
     form.querySelectorAll('input[data-element]').forEach(input => {
       input.value = '#FFFFFF';
     });
@@ -127,13 +132,17 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPreview();
   });
 
-  // Expose shared API for palette generator (creator-palette.js)
-  // and color wheel (color-wheel.js)
+  // ── Lock state — shared with creator-locks.js ──
+  const lockedElements = new Set();
+
+  // Expose shared API for palette generator (creator-palette.js),
+  // color wheel (color-wheel.js), and lock system (creator-locks.js)
   window.__creator = {
     form,
     renderPreview,
     getElementColorMap,
-    syncAllSwatches
+    syncAllSwatches,
+    lockedElements
   };
 
   // ── Download ─────────────────────────────────
@@ -171,6 +180,46 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Download failed: ' + err.message);
         downloadBtn.disabled = false;
         downloadBtn.textContent = '⬇ Download .xrnc';
+      }
+    });
+  }
+
+  // ── Save Theme to Profile ────────────────────
+
+  const saveToProfileBtn = document.getElementById('saveToProfileBtn');
+  const themeNameInput = document.getElementById('themeName');
+  if (saveToProfileBtn) {
+    saveToProfileBtn.addEventListener('click', async () => {
+      try {
+        const name = themeNameInput ? themeNameInput.value.trim() : '';
+        if (!name) {
+          themeNameInput?.focus();
+          themeNameInput?.classList.add('input-error');
+          setTimeout(() => themeNameInput?.classList.remove('input-error'), 2000);
+          alert('Please enter a theme name');
+          return;
+        }
+
+        saveToProfileBtn.disabled = true;
+        saveToProfileBtn.textContent = '⏳ Saving...';
+
+        const res = await fetch('/api/save-theme', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({ name, elementColorMap: getElementColorMap() })
+        });
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Save failed');
+
+        window.location.href = `/theme/${data.slug}`;
+      } catch (err) {
+        alert('Save failed: ' + err.message);
+        saveToProfileBtn.disabled = false;
+        saveToProfileBtn.textContent = '💾 Save to Profile';
       }
     });
   }

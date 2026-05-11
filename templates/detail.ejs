@@ -29,18 +29,41 @@
       <p class="detail-meta">by <a href="/backstage/<%= encodeURIComponent(theme.author) %>" class="detail-author"><strong><%= theme.author %></strong></a></p>
       <p class="detail-meta"><%= new Date(theme.uploaded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
 
-      <div class="detail-actions">
-        <button class="btn-like" id="likeBtn" data-id="<%= theme.id %>" aria-label="Like this theme">
-          <span id="likeIcon" aria-hidden="true">♥</span>
-          <span id="likeCount"><%= theme.likes %></span>
-        </button>
-        <button class="btn-share" id="shareBtn" aria-label="Share theme link">
-          Share
-        </button>
-        <a href="/download/<%= theme.slug %>" class="btn-primary" aria-label="Download theme file">
-          ⬇ Download
-        </a>
-      </div>
+      <% if (user && user.username === theme.author) { %>
+        <div style="margin: 4px 0 8px 0; display:flex;align-items:center;gap:8px;">
+          <% if (theme.status === 'draft') { %>
+            <span class="tag tag-draft" style="background:var(--chrome-warning);color:#111;font-weight:600;">Draft</span>
+            <form action="/theme/<%= theme.slug %>/publish" method="POST" style="margin:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn-submit" style="height:24px;font-size:10px;padding:0 8px;">Publish</button>
+            </form>
+          <% } else { %>
+            <span class="tag tag-published" style="background:var(--chrome-success);color:#111;font-weight:600;">Published</span>
+            <form action="/theme/<%= theme.slug %>/unpublish" method="POST" style="margin:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn-submit" style="height:24px;font-size:10px;padding:0 8px;background:var(--chrome-warning);border-color:var(--chrome-warning);color:#111;">Unpublish</button>
+            </form>
+          <% } %>
+        </div>
+      <% } %>
+
+       <div class="detail-actions">
+          <button class="btn-like" id="likeBtn" data-id="<%= theme.id %>" aria-label="Like this theme">
+            <span id="likeIcon" aria-hidden="true">♥</span>
+            <span id="likeCount"><%= theme.likes %></span>
+          </button>
+          <button class="btn-share" id="shareBtn" aria-label="Share theme link">
+            Share
+          </button>
+          <% if (user) { %>
+            <a href="/theme/<%= theme.slug %>/remix" class="btn-remix" aria-label="Remix this theme">
+              ♻ Remix
+            </a>
+          <% } %>
+          <a href="/download/<%= theme.slug %>" class="btn-primary btn-download" aria-label="Download theme file">
+            ⬇ Download
+          </a>
+       </div>
     </div>
 
     <div class="panel-section">

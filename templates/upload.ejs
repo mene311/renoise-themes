@@ -47,6 +47,13 @@
         <input type="text" id="author" name="author" placeholder="e.g. meneses">
       </label>
 
+      <!-- Publish toggle -->
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin:8px 0;cursor:pointer;">
+        <input type="checkbox" id="publish" name="publish" checked>
+        <span>Publish at once — make this theme visible to everyone</span>
+      </label>
+      <small class="field-hint" style="display:block;margin:-4px 0 12px 0;">Unchecked: saved as draft, only you can see it. You can publish later from the detail page.</small>
+
       <button type="submit" class="btn-submit" id="submitBtn">🚀 Upload & Analyze</button>
 
       <!-- Staged progress indicator (shown during submission) -->

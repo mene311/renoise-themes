@@ -17,6 +17,7 @@ import { generatePreviews } from './lib/preview-renderer.js';
 import { generateXrnc } from './lib/xrnc-generator.js';
 import { sendPasswordReset, sendWelcome } from './lib/email.js';
 import { GROUPS as ELEMENT_GROUPS } from './lib/element-groups.js';
+import { CLUSTERS, VU_METER_PRESETS, buildSlaveMap } from './lib/element-clusters.js';
 import {
   saveTheme, listThemes, listThemesPage, countThemes,
   getTheme, getThemeBySlug, listTags,
@@ -25,9 +26,9 @@ import {
   getPopularThemes, registerUser, authenticateUser, getUserById,
   createPasswordResetToken, validateResetToken, consumeResetToken,
   searchThemes, countSearchThemes,
-  getThemesByAuthor, updateThemeDescription, updateTheme, deleteTheme,
+  getThemesByAuthor, getThemesByAuthorPublic, updateThemeDescription, updateTheme, deleteTheme,
   getProfileComments, addProfileComment, deleteProfileComment,
-  getUserStats,
+  getUserStats, publishTheme, unpublishTheme,
   db
 } from './lib/database.js';
 
@@ -218,12 +219,14 @@ function invalidateMarquee() {
   marqueeCache.ts = 0;
 }
 
-// Cache the CSS file in memory for inlining (mobile can't fetch external CSS)
+// Cache the CSS files in memory for inlining (mobile can't fetch external CSS)
 let _cssCache = null;
 function getInlineCss() {
   if (!_cssCache) {
     try {
-      _cssCache = fs.readFileSync(path.join(__dirname, 'public/css/style.css'), 'utf-8');
+      const main = fs.readFileSync(path.join(__dirname, 'public/css/style.css'), 'utf-8');
+      const wheel = fs.readFileSync(path.join(__dirname, 'public/css/reinvented-color-wheel.css'), 'utf-8');
+      _cssCache = main + '\n' + wheel;
     } catch (e) {
       _cssCache = '/* css unavailable */';
     }
@@ -281,13 +284,6 @@ function requireAuth(req, res, next) {
 function requireAdmin(req, res, next) {
   if (!req.session.user || req.session.user.rank_level < 10) {
     return res.status(403).send('Admin access required');
-  }
-  next();
-}
-
-function requireBeta(req, res, next) {
-  if (!req.session.user || req.session.user.rank_level < 5) {
-    return res.status(403).send('Beta tester access required');
   }
   next();
 }
@@ -506,9 +502,10 @@ app.get('/theme/:slug/edit-colors', requireAuth, (req, res) => {
     console.error('Failed to parse theme for editing:', e);
   }
 
+  const SLAVE_MAP = buildSlaveMap();
   res.render('create', {
     defaults: editDefaults,
-    ELEMENT_GROUPS, COVERAGE_MAP,
+    ELEMENT_GROUPS, COVERAGE_MAP, CLUSTERS, VU_METER_PRESETS, SLAVE_MAP,
     editSlug: theme.slug,
     editName: theme.name
   });
@@ -599,6 +596,31 @@ app.post('/api/save-edited-theme', requireAuth, previewLimiter, csrfProtection, 
   }
 });
 
+// ── Remix Theme ───────────────────────────────────────
+
+app.get('/theme/:slug/remix', requireAuth, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+
+  const filePath = path.join(__dirname, 'public/uploads/themes', theme.filename);
+  let remixDefaults = {};
+  try {
+    const parsed = parseThemeFile(filePath);
+    for (const [name, rgb] of Object.entries(parsed.elementColorMap)) {
+      remixDefaults[name] = rgb[0].toString(16).padStart(2, '0') + rgb[1].toString(16).padStart(2, '0') + rgb[2].toString(16).padStart(2, '0');
+    }
+  } catch (e) {
+    console.error('Failed to parse theme for remix:', e);
+  }
+
+  const SLAVE_MAP = buildSlaveMap();
+  res.render('create', {
+    defaults: remixDefaults,
+    ELEMENT_GROUPS, COVERAGE_MAP, CLUSTERS, VU_METER_PRESETS, SLAVE_MAP,
+    showPaletteGen: true
+  });
+});
+
 app.post('/theme/:slug/delete', requireAuth, csrfProtection, (req, res) => {
   const theme = getThemeBySlug(req.params.slug);
   if (!theme) return res.status(404).send('Theme not found');
@@ -608,6 +630,30 @@ app.post('/theme/:slug/delete', requireAuth, csrfProtection, (req, res) => {
 
   deleteTheme(theme.id);
   res.redirect('/dashboard');
+});
+
+// ── Publish / Unpublish ──────────────────────────────
+
+app.post('/theme/:slug/publish', requireAuth, csrfProtection, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+  if (theme.author !== req.session.user.username) {
+    return res.status(403).send('You can only publish your own themes');
+  }
+  publishTheme(theme.id);
+  invalidateMarquee();
+  res.redirect(`/theme/${theme.slug}`);
+});
+
+app.post('/theme/:slug/unpublish', requireAuth, csrfProtection, (req, res) => {
+  const theme = getThemeBySlug(req.params.slug);
+  if (!theme) return res.status(404).send('Theme not found');
+  if (theme.author !== req.session.user.username) {
+    return res.status(403).send('You can only unpublish your own themes');
+  }
+  unpublishTheme(theme.id);
+  invalidateMarquee();
+  res.redirect(`/theme/${theme.slug}`);
 });
 
 // ── Admin ──────────────────────────────────────────────
@@ -732,9 +778,9 @@ function getDefaultColors() {
 app.get('/backstage/:username', (req, res) => {
   const stats = getUserStats(req.params.username);
   if (!stats) return res.status(404).send('User not found');
-  const themes = getThemesByAuthor(req.params.username);
-  const comments = getProfileComments(req.params.username);
   const isOwner = req.session.user && req.session.user.username === req.params.username;
+  const themes = isOwner ? getThemesByAuthor(req.params.username) : getThemesByAuthorPublic(req.params.username);
+  const comments = getProfileComments(req.params.username);
   res.render('backstage', { stats, themes, comments, isOwner });
 });
 
@@ -763,13 +809,8 @@ app.get('/backstage', (req, res) => {
 });
 
 app.get('/create', requireAuth, (req, res) => {
-  res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP });
-});
-
-// ── Studio (admin-only advanced creator with palette generator) ──
-
-app.get('/studio', requireBeta, (req, res) => {
-  res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP, showPaletteGen: true });
+  const SLAVE_MAP = buildSlaveMap();
+  res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP, CLUSTERS, VU_METER_PRESETS, SLAVE_MAP });
 });
 
 app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res) => {
@@ -842,6 +883,96 @@ app.post('/api/download-xrnc', downloadLimiter, csrfProtection, (req, res) => {
   } catch (err) {
     console.error('XRNC generation error:', err);
     res.status(500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
+  }
+});
+
+// ── Save Theme (from creator, saves to user's profile) ──────────
+
+app.post('/api/save-theme', requireAuth, previewLimiter, csrfProtection, async (req, res) => {
+  try {
+    const { name, elementColorMap } = req.body;
+    if (!elementColorMap || Object.keys(elementColorMap).length === 0) {
+      return res.status(400).json({ success: false, error: 'No colors provided' });
+    }
+
+    const displayName = (name || '').trim().substring(0, 100) || 'Untitled Theme';
+    const author = req.session.user.username;
+
+    // Normalize colors
+    const normalized = {};
+    for (const [name, val] of Object.entries(elementColorMap)) {
+      if (Array.isArray(val) && val.length === 3) {
+        normalized[name] = val;
+      } else if (typeof val === 'string') {
+        const hex = val.replace('#', '');
+        normalized[name] = [
+          parseInt(hex.substring(0, 2), 16),
+          parseInt(hex.substring(2, 4), 16),
+          parseInt(hex.substring(4, 6), 16)
+        ];
+      }
+    }
+
+    // Generate XRNC file
+    const xrnc = generateXrnc(normalized);
+    const ts = Date.now();
+    const filename = `${ts}-${author}.xrnc`;
+    const themesDir = path.join(__dirname, 'public/uploads/themes');
+    const filePath = path.join(themesDir, filename);
+    fs.writeFileSync(filePath, xrnc);
+
+    // Parse for metadata
+    const parsed = parseThemeFile(filePath);
+    const { tags, stats } = categorizeColors(parsed.weighted);
+
+    // Palette SVG
+    const palettesDir = path.join(__dirname, 'public/uploads/palettes');
+    const paletteName = filename.replace('.xrnc', '.svg');
+    generatePaletteSVG(parsed.weighted, path.join(palettesDir, paletteName));
+
+    // Previews
+    const previewSlug = filename.replace('.xrnc', '');
+    const previewDir = path.join(__dirname, 'public/uploads/previews', previewSlug);
+    let previewViews = [];
+    let previewError = null;
+    try {
+      const previews = await generatePreviews(parsed.elementColorMap, previewDir);
+      previewViews = Object.keys(previews);
+      if (previewViews.length < 3) {
+        previewError = `Partial render: ${previewViews.length}/3 views succeeded`;
+      }
+    } catch (err) {
+      previewError = err.message;
+    }
+
+    const topColors = parsed.weighted.slice(0, 6).map(c => ({
+      hex: c.hex, weight: c.weight, roles: c.roles
+    }));
+
+    const themeId = saveTheme({
+      name: displayName,
+      filename,
+      originalName: `${author}-theme.xrnc`,
+      author,
+      description: '',
+      screenshots: [],
+      paletteSVG: `/uploads/palettes/${paletteName}`,
+      previewSlug,
+      previewViews,
+      previewError,
+      totalColorEntries: parsed.totalColors,
+      stats, tags, topColors,
+      status: 'draft'
+    });
+
+    // Retrieve the saved theme to get its slug
+    const savedTheme = getTheme(themeId);
+    invalidateMarquee();
+
+    res.json({ success: true, slug: savedTheme.slug, id: themeId });
+  } catch (err) {
+    console.error('Save theme error:', err);
+    res.status(500).json({ success: false, error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
   }
 });
 
@@ -959,6 +1090,7 @@ app.post('/upload', requireAuth, uploadLimiter, csrfProtection,
 
       const screenshots = screenshotFiles.map(f => f.filename);
 
+      const publishNow = req.body.publish === 'on';
       const themeId = saveTheme({
         name: displayName,
         filename: themeFile.filename,
@@ -969,7 +1101,8 @@ app.post('/upload', requireAuth, uploadLimiter, csrfProtection,
         previewViews,
         previewError,
         totalColorEntries: parsed.totalColors,
-        stats, tags, topColors
+        stats, tags, topColors,
+        status: publishNow ? 'published' : 'draft'
       });
 
       invalidateMarquee();
@@ -987,6 +1120,14 @@ app.get('/theme/:slug', (req, res) => {
   try {
     const theme = getThemeBySlug(req.params.slug);
     if (!theme) return res.status(404).send('Theme not found');
+
+    // Only the author and admins can view draft/unpublished themes
+    const isAuthor = req.session.user && req.session.user.username === theme.author;
+    const isAdmin = req.session.user && req.session.user.rank_level >= 10;
+    if (theme.status === 'draft' && !isAuthor && !isAdmin) {
+      return res.status(404).send('Theme not found');
+    }
+
     const comments = getThemeComments(theme.id);
     const ogImage = theme.previewSlug && theme.previewViews && theme.previewViews.includes('pattern')
       ? `${req.protocol}://${req.get('host')}/uploads/previews/${theme.previewSlug}/pattern.png?t=${Date.parse(theme.uploaded_at) || Date.now()}`
@@ -1001,6 +1142,12 @@ app.get('/theme/:slug', (req, res) => {
 app.get('/download/:slug', downloadLimiter, (req, res) => {
   const theme = getThemeBySlug(req.params.slug);
   if (!theme) return res.status(404).send('Theme not found');
+  // Only allow download of published themes, unless you're the author or admin
+  const isAuthor = req.session.user && req.session.user.username === theme.author;
+  const isAdmin = req.session.user && req.session.user.rank_level >= 10;
+  if (theme.status === 'draft' && !isAuthor && !isAdmin) {
+    return res.status(404).send('Theme not found');
+  }
   trackDownload(theme.id);
   const filePath = path.join(__dirname, 'public/uploads/themes', theme.filename);
   res.download(filePath, theme.original_name);

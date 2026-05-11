@@ -2,8 +2,10 @@
  * Color Wheel Panel for Renoise Theme Creator.
  * Replaces browser native <input type="color"> with a canvas HSV color wheel.
  *
- * Uses ReinventedColorWheel (IIFE, pre-loaded via <script> tag).
- * Creates a single floating panel that docks to the viewport bottom-right.
+ * - Centered modal overlay (not bottom-right docked)
+ * - Last picked color persists across swatch switches
+ * - ESC discards changes and restores original value
+ * - Right-click to copy/paste hex between swatches
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,11 +13,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const firstSwatch = document.querySelector('.color-swatch[data-el]');
   if (!firstSwatch || typeof ReinventedColorWheel === 'undefined') return;
 
-  let activeEl = null;       // Currently selected element name
-  let wheel = null;          // ReinventedColorWheel instance
-  let syncInProgress = false; // Prevent change→change loops
+  let activeEl = null;            // Currently selected element name
+  let wheel = null;               // ReinventedColorWheel instance
+  let syncInProgress = false;     // Prevent change→change loops
+  let lastHex = null;             // Last color actively picked from wheel
+  let originalValue = null;       // Swatch value when panel opened (for ESC revert)
+  let copiedHex = null;           // Hex copied via right-click
+  let copiedFromEl = null;        // Element the hex was copied from
 
-  // ── Build the wheel panel DOM ─────────────────
+  // ── Build the overlay + panel DOM ─────────────
+
+  const overlay = document.createElement('div');
+  overlay.className = 'wheel-overlay';
+  document.body.appendChild(overlay);
 
   const panel = document.createElement('div');
   panel.className = 'wheel-panel';
@@ -23,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   panel.innerHTML = `
     <div class="wheel-panel-header">
       <span class="wheel-panel-title" id="wheelActiveLabel">Pick a color</span>
-      <button class="wheel-close" aria-label="Close color wheel" title="Close">&times;</button>
+      <button class="wheel-close" aria-label="Close color wheel" title="Close (Esc)">&times;</button>
     </div>
     <div class="wheel-canvas-wrap" id="wheelCanvasWrap"></div>
     <div class="wheel-hex-row">
@@ -38,6 +48,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const hexInput = panel.querySelector('#wheelHexInput');
   const activeLabel = panel.querySelector('#wheelActiveLabel');
   const hexElement = panel.querySelector('#wheelHexElement');
+
+  // ── Copy/paste toast ──────────────────────────
+
+  const toast = document.createElement('div');
+  toast.className = 'color-copied-toast';
+  toast.textContent = '📋 Copied';
+  document.body.appendChild(toast);
+  let toastTimer = null;
+
+  function showToast(msg, duration = 1200) {
+    toast.textContent = msg;
+    toast.classList.add('color-copied-toast--visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('color-copied-toast--visible');
+    }, duration);
+  }
 
   // ── Initialize color wheel ────────────────────
 
@@ -62,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const hex = wheel.hex;
     hexInput.value = hex.replace('#', '');
 
+    // Track the last color the user actively picked
+    lastHex = hex;
+
     // Update the hidden input
     const input = document.querySelector(`input[data-element="${CSS.escape(activeEl)}"]`);
     if (input) {
@@ -85,10 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
       syncInProgress = true;
       wheel.hex = '#' + val;
       syncInProgress = false;
+      // Also track last picked color from typed input
+      lastHex = '#' + val;
     }
   });
 
-  // Also sync on Enter/blur if partial
   hexInput.addEventListener('change', () => {
     if (!wheel || syncInProgress) return;
     let val = hexInput.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
@@ -96,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       syncInProgress = true;
       wheel.hex = '#' + val;
       syncInProgress = false;
+      lastHex = '#' + val;
       onWheelChange();
     }
   });
@@ -110,12 +142,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const swatch = document.querySelector(`.color-swatch[data-el="${CSS.escape(elName)}"]`);
     if (swatch) swatch.classList.add('active');
 
-    // Show panel
+    // Store original value for ESC revert
+    const input = document.querySelector(`input[data-element="${CSS.escape(elName)}"]`);
+    originalValue = input ? input.value : '#808080';
+
+    // Auto-unlock if this element is pinned (editing manually overrides lock)
+    const creator = window.__creator;
+    if (creator && creator.isLocked && creator.isLocked(elName)) {
+      creator.toggleLock(elName); // toggles off, syncs UI, updates random btn
+      showToast('🔓 Unpinned — editing directly');
+    }
+
+    // Show overlay + panel
+    overlay.classList.add('wheel-overlay--visible');
     panel.classList.add('wheel-panel--visible');
 
-    // Update wheel
-    const input = document.querySelector(`input[data-element="${CSS.escape(elName)}"]`);
-    const hex = input ? input.value : '#808080';
+    // Initialize wheel with the LAST picked color (or the swatch's value on first open)
+    const hex = lastHex || originalValue;
     syncInProgress = true;
     if (wheel) {
       wheel.hex = hex;
@@ -134,30 +177,122 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function closePanel() {
+  function closePanel(discard = false) {
+    // If discarding, restore the original value
+    if (discard && activeEl && originalValue) {
+      const input = document.querySelector(`input[data-element="${CSS.escape(activeEl)}"]`);
+      if (input) {
+        input.value = originalValue;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      updateSwatch(activeEl, originalValue);
+    }
+
     activeEl = null;
+    originalValue = null;
+    overlay.classList.remove('wheel-overlay--visible');
     panel.classList.remove('wheel-panel--visible');
     document.querySelectorAll('.color-swatch.active').forEach(s => s.classList.remove('active'));
   }
 
-  // ── Event delegation on swatches ──────────────
+  // ── Right-click copy/paste ────────────────────
+
+  function clearCopiedIndicator() {
+    document.querySelectorAll('.color-swatch.copied-from').forEach(s => s.classList.remove('copied-from'));
+  }
+
+  function handleRightClick(swatch, elName) {
+    const input = document.querySelector(`input[data-element="${CSS.escape(elName)}"]`);
+    if (!input) return;
+
+    const currentHex = input.value;
+
+    if (copiedHex && copiedFromEl !== elName) {
+      // Paste: another swatch was copied, apply it here
+      input.value = copiedHex;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      updateSwatch(elName, copiedHex);
+
+      // If wheel is open for this element, sync it
+      if (activeEl === elName && wheel) {
+        syncInProgress = true;
+        wheel.hex = copiedHex;
+        hexInput.value = copiedHex.replace('#', '');
+        lastHex = copiedHex;
+        syncInProgress = false;
+      }
+
+      showToast(`📋 Pasted ${copiedHex}`);
+      copiedHex = null;
+      clearCopiedIndicator();
+      // Remove paste cursor from all swatches
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('paste-target'));
+    } else if (copiedHex && copiedFromEl === elName) {
+      // Cancel: right-clicking the same swatch cancels the copy
+      showToast('✕ Cancelled');
+      copiedHex = null;
+      copiedFromEl = null;
+      clearCopiedIndicator();
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('paste-target'));
+    } else {
+      // Copy: store this swatch's hex
+      copiedHex = currentHex;
+      copiedFromEl = elName;
+      clearCopiedIndicator();
+      swatch.classList.add('copied-from');
+      // Show paste hint on other swatches
+      document.querySelectorAll('.color-swatch').forEach(s => {
+        if (s.dataset.el !== elName) s.classList.add('paste-target');
+      });
+      showToast(`📋 Copied ${currentHex}`);
+    }
+  }
+
+  // ── Event: Click swatch → open wheel ──────────
 
   document.addEventListener('click', (e) => {
     const swatch = e.target.closest('.color-swatch[data-el]');
-    if (swatch) {
-      e.preventDefault();
-      const elName = swatch.dataset.el;
-      // If clicking the same swatch, toggle close
-      if (activeEl === elName) {
-        closePanel();
-      } else {
-        selectField(elName);
-      }
+    if (!swatch) return;
+
+    e.preventDefault();
+    const elName = swatch.dataset.el;
+
+    // If clicking the same swatch, toggle close
+    if (activeEl === elName) {
+      closePanel(true); // ESC-style discard on re-click
+    } else {
+      selectField(elName);
     }
   });
 
-  // Keyboard support for swatches
+  // ── Event: Right-click swatch → copy/paste ────
+
+  document.addEventListener('contextmenu', (e) => {
+    const swatch = e.target.closest('.color-swatch[data-el]');
+    if (!swatch) return;
+
+    e.preventDefault();
+    handleRightClick(swatch, swatch.dataset.el);
+  });
+
+  // ── Event: Keyboard support ───────────────────
+
   document.addEventListener('keydown', (e) => {
+    // Enter → save + close
+    if (e.key === 'Enter' && panel.classList.contains('wheel-panel--visible')) {
+      e.preventDefault();
+      closePanel(false); // keep current color, close
+      return;
+    }
+
+    // ESC → close + discard
+    if (e.key === 'Escape' && panel.classList.contains('wheel-panel--visible')) {
+      e.preventDefault();
+      closePanel(true);
+      return;
+    }
+
+    // Enter / Space on a swatch → select it
     const swatch = e.target.closest('.color-swatch[data-el]');
     if (swatch && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
@@ -165,8 +300,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Close button
-  closeBtn.addEventListener('click', closePanel);
+  // ── Event: Click overlay → close + discard ────
+
+  overlay.addEventListener('click', () => {
+    closePanel(true);
+  });
+
+  // ── Close button ──────────────────────────────
+
+  closeBtn.addEventListener('click', () => closePanel(true));
 
   // ── Public API ────────────────────────────────
 
@@ -178,9 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSwatch(elName, hex) {
     const swatch = document.querySelector(`.color-swatch[data-el="${CSS.escape(elName)}"]`);
     if (swatch) {
-      swatch.style.backgroundColor = hex;
+      // Display filtered version; store base hex in lastHex
+      const displayHex = window.__hslFilter ? window.__hslFilter.hex(hex) : hex;
+      swatch.style.backgroundColor = displayHex;
     }
-    // If this is the active field, keep wheel in sync
+    // Track the BASE color (unfiltered) for next wheel open
+    lastHex = hex;
+    // If this is the active field, keep wheel in sync (show base in wheel)
     if (activeEl === elName && wheel && !syncInProgress) {
       syncInProgress = true;
       wheel.hex = hex;
@@ -191,11 +337,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Sync ALL swatches from hidden inputs (call after presets/palette apply).
+   * Sets lastHex to Main_Back as the most representative color.
    */
   function syncAllSwatches() {
     document.querySelectorAll('input[data-element]').forEach(input => {
       updateSwatch(input.dataset.element, input.value);
     });
+    // After bulk update, default lastHex to Main_Back (most representative)
+    const mainBack = document.querySelector('input[data-element="Main_Back"]');
+    if (mainBack) lastHex = mainBack.value;
   }
 
   // Expose for creator.js and creator-palette.js
@@ -203,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectField,
     updateSwatch,
     syncAllSwatches,
-    closePanel,
+    closePanel: () => closePanel(true),
     get activeEl() { return activeEl; },
   };
 });
