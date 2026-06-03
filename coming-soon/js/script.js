@@ -5,7 +5,7 @@
 // Simple countdown timer that matches Renoise style
 class ComingSoon {
     constructor() {
-        this.launchDate = new Date('2026-06-01T00:00:00').getTime();
+        this.launchDate = new Date('2026-07-01T00:00:00').getTime();
         this.init();
     }
 
