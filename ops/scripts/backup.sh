@@ -16,10 +16,18 @@ mkdir -p "$BACKUP_DIR"
 
 # SQLite dump
 cd "$PROJECT_DIR"
-sqlite3 db/themes.db ".backup '$BACKUP_DIR/themes_$DATE.db'"
+if [ -f db/themes.db ]; then
+  sqlite3 db/themes.db ".backup '$BACKUP_DIR/themes_$DATE.db'"
+else
+  echo "⚠️  db/themes.db not found, skipping database backup"
+fi
 
 # Uploads tar
-tar czf "$BACKUP_DIR/uploads_$DATE.tar.gz" -C public uploads
+if [ -d public/uploads ]; then
+  tar czf "$BACKUP_DIR/uploads_$DATE.tar.gz" -C public uploads
+else
+  echo "⚠️  public/uploads not found, skipping uploads backup"
+fi
 
 # Clean old backups
 find "$BACKUP_DIR" -name "themes_*.db" -mtime +$RETENTION_DAYS -delete

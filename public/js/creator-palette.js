@@ -269,10 +269,17 @@ document.addEventListener('DOMContentLoaded', () => {
       randomBtn.dataset.cooldown = '1';
       setTimeout(() => { delete randomBtn.dataset.cooldown; }, 200);
 
-      const mode = modeSelect ? modeSelect.value : 'truly-random';
+      let mode = modeSelect ? modeSelect.value : 'truly-random';
       // Boldness: slider right = more bold/varied. Invert for archetype affinity.
       const boldness = affinitySlider ? parseInt(affinitySlider.value) / 100 : 0.8;
       const affinity = 1 - boldness; // archetype engine uses affinity (0=wild, 1=tight)
+
+      // In guided Studio mode the visible Randomize button should stay cohesive,
+      // not dump the user into full-spectrum chaos. Pick a structured relation.
+      if (window.__STUDIO_MODE === 'studio' && mode === 'truly-random') {
+        const modes = ['same-hue', 'bi-opposite', 'triadic'];
+        mode = modes[Math.floor(Math.random() * modes.length)];
+      }
 
       let palette;
       if (mode === 'truly-random') {

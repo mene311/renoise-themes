@@ -23,6 +23,10 @@ git pull origin master
 echo "📦 Installing dependencies..."
 npm install --production
 
+# ── Preflight ─────────────────────────────────────────────────
+echo "🧪 Running preflight..."
+npm run preflight
+
 # ── Restart PM2 ───────────────────────────────────────────────
 echo "🔁 Restarting app..."
 pm2 reload ops/pm2/ecosystem.config.cjs --update-env

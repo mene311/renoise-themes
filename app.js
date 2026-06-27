@@ -18,6 +18,7 @@ import { generateXrnc } from './lib/xrnc-generator.js';
 import { sendPasswordReset, sendWelcome } from './lib/email.js';
 import { GROUPS as ELEMENT_GROUPS } from './lib/element-groups.js';
 import { CLUSTERS, VU_METER_PRESETS, buildSlaveMap } from './lib/element-clusters.js';
+import { ARCHETYPES, ARCHETYPE_LIST } from './lib/archetype-seeds.js';
 import {
   saveTheme, listThemes, listThemesPage, countThemes,
   getTheme, getThemeBySlug, listTags,
@@ -454,11 +455,10 @@ app.post('/reset-password/:token', resetLimiter, csrfProtection, async (req, res
   }
 });
 
-// ── Dashboard (My Themes) ──────────────────────────────
+// ── Dashboard / Backstage legacy redirect ───────────────
 
 app.get('/dashboard', requireAuth, (req, res) => {
-  const themes = getThemesByAuthor(req.session.user.username);
-  res.render('dashboard', { themes, error: null, success: null });
+  res.redirect('/backstage');
 });
 
 app.get('/theme/:slug/edit', requireAuth, (req, res) => {
@@ -797,12 +797,6 @@ app.post('/backstage/:username/comment/:id/delete', requireAuth, csrfProtection,
   res.redirect(`/backstage/${req.params.username}`);
 });
 
-// Redirect /dashboard to /backstage for backward compat
-app.get('/dashboard', (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
-  res.redirect('/backstage');
-});
-
 app.get('/backstage', (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   res.redirect(`/backstage/${req.session.user.username}`);
@@ -811,6 +805,21 @@ app.get('/backstage', (req, res) => {
 app.get('/create', requireAuth, (req, res) => {
   const SLAVE_MAP = buildSlaveMap();
   res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP, CLUSTERS, VU_METER_PRESETS, SLAVE_MAP });
+});
+
+app.get('/studio', requireAuth, (req, res) => {
+  const SLAVE_MAP = buildSlaveMap();
+  res.render('studio', {
+    mode: 'studio',
+    defaults: getDefaultColors(),
+    ELEMENT_GROUPS,
+    COVERAGE_MAP,
+    CLUSTERS,
+    VU_METER_PRESETS,
+    SLAVE_MAP,
+    ARCHETYPES,
+    ARCHETYPE_LIST
+  });
 });
 
 app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res) => {
@@ -1105,9 +1114,10 @@ app.post('/upload', requireAuth, uploadLimiter, csrfProtection,
         status: publishNow ? 'published' : 'draft'
       });
 
+      const savedTheme = getTheme(themeId);
       invalidateMarquee();
       console.log(`💾 Saved theme #${themeId} with ${screenshots.length} screenshot(s), ${previewViews.length} preview(s)`);
-      res.redirect(`/theme/${themeId}`);
+      res.redirect(`/theme/${savedTheme.slug || themeId}`);
 
     } catch (err) {
       console.error('❌ Parse error:', err);
@@ -1119,7 +1129,13 @@ app.post('/upload', requireAuth, uploadLimiter, csrfProtection,
 app.get('/theme/:slug', (req, res) => {
   try {
     const theme = getThemeBySlug(req.params.slug);
-    if (!theme) return res.status(404).send('Theme not found');
+    if (!theme) {
+      if (/^\d+$/.test(req.params.slug)) {
+        const legacyTheme = getTheme(Number(req.params.slug));
+        if (legacyTheme) return res.redirect(301, `/theme/${legacyTheme.slug || legacyTheme.id}`);
+      }
+      return res.status(404).send('Theme not found');
+    }
 
     // Only the author and admins can view draft/unpublished themes
     const isAuthor = req.session.user && req.session.user.username === theme.author;
@@ -1141,7 +1157,13 @@ app.get('/theme/:slug', (req, res) => {
 
 app.get('/download/:slug', downloadLimiter, (req, res) => {
   const theme = getThemeBySlug(req.params.slug);
-  if (!theme) return res.status(404).send('Theme not found');
+  if (!theme) {
+    if (/^\d+$/.test(req.params.slug)) {
+      const legacyTheme = getTheme(Number(req.params.slug));
+      if (legacyTheme) return res.redirect(301, `/download/${legacyTheme.slug || legacyTheme.id}`);
+    }
+    return res.status(404).send('Theme not found');
+  }
   // Only allow download of published themes, unless you're the author or admin
   const isAuthor = req.session.user && req.session.user.username === theme.author;
   const isAdmin = req.session.user && req.session.user.rank_level >= 10;

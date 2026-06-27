@@ -1,0 +1,237 @@
+<%- include('partials/header') %>
+
+<section class="studio-page" data-mode="<%= mode %>">
+  <h1 class="creator-title">
+    <% if (mode === 'studio') { %>
+      🎨 Theme Studio
+      <% if (typeof remixSlug !== 'undefined') { %>
+        <span class="remix-badge">Remixing: <%= remixName || remixSlug %></span>
+      <% } %>
+    <% } else { %>
+      🎨 Advanced Theme Editor
+      <a href="/studio" class="btn-preset" style="font-size:11px;margin-left:8px;vertical-align:middle;">← Guided Studio</a>
+    <% } %>
+  </h1>
+
+  <div class="creator-layout">
+    <!-- LEFT: Preview Column + Audit Panel -->
+    <div class="creator-preview-col">
+      <div class="creator-preview-sticky">
+        <div class="preview-viewport" id="previewViewport">
+          <div class="preview-loading" id="previewLoading" style="display:none;">🎨 Rendering…</div>
+          <div class="preview-empty" id="previewEmpty">Pick an archetype or edit colors to preview</div>
+          <div class="preview-render-wrap" id="previewRenderWrap" style="display:none;"></div>
+        </div>
+
+        <!-- Contrast Audit Panel -->
+        <div class="studio-audit" id="studioAudit">
+          <div class="studio-audit-header">📐 Contrast Audit</div>
+          <div class="studio-audit-summary" id="auditSummary">
+            <span class="audit-pass-count" id="auditPassCount">0</span> pass,
+            <span class="audit-warn-count" id="auditWarnCount">0</span> warn,
+            <span class="audit-fail-count" id="auditFailCount">0</span> fail
+          </div>
+          <div class="studio-audit-pairs" id="auditPairs"></div>
+        </div>
+
+        <!-- Trap Warnings -->
+        <div class="studio-traps" id="studioTraps" style="display:none;">
+          <div class="studio-traps-header">⚠️ Design Traps</div>
+          <div class="studio-traps-list" id="trapsList"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="creator-actions">
+          <button class="btn-preset" id="smartFillBtn" title="Algorithmically fill or re-derive colors for all unlocked elements">🎲 Smart Fill</button>
+          <% if (typeof saveAsEdit !== 'undefined' && saveAsEdit) { %>
+            <button class="btn-submit" id="saveBtn">💾 Save Changes</button>
+            <input type="hidden" id="editSlug" value="<%= saveAsEdit %>">
+          <% } else { %>
+            <label for="themeName" style="display:flex;flex-direction:column;gap:4px;width:100%;margin-bottom:8px;">
+              <span style="font-size:11px;color:var(--chrome-text-dim);">Theme Name</span>
+              <input type="text" id="themeName" name="themeName" placeholder="My Awesome Theme" maxlength="100"
+                     style="width:100%;padding:8px 10px;border:1px solid var(--chrome-border);border-radius:6px;background:var(--chrome-bg);color:var(--chrome-text);font-size:14px;">
+            </label>
+            <button class="btn-submit" id="saveToProfileBtn">💾 Save to Profile</button>
+          <% } %>
+          <button class="btn-preset" id="downloadBtn">⬇ Download .xrnc</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Color Pickers -->
+    <div class="creator-pickers-col">
+      <!-- Archetype Selector (studio mode only) -->
+      <div class="archetype-selector" id="archetypeSelector" style="display:<%= mode === 'studio' ? 'grid' : 'none' %>;">
+        <div class="archetype-selector-label">Choose a starting archetype:</div>
+        <% ARCHETYPE_LIST.forEach(a => { %>
+          <button type="button" class="archetype-card" data-archetype="<%= a.id %>" title="<%= a.description %>">
+            <div class="archetype-swatch" style="background: linear-gradient(135deg, #<%= a.swatchColors[0] %> 50%, #<%= a.swatchColors[1] %> 50%);"></div>
+            <span class="archetype-name"><%= a.name %></span>
+            <span class="archetype-desc"><%= a.description.substring(0, 50) %><%= a.description.length > 50 ? '…' : '' %></span>
+          </button>
+        <% }); %>
+      </div>
+
+      <!-- Presets & Palette Generator (advanced/create mode only) -->
+      <% if (mode === 'create') { %>
+      <div class="creator-controls">
+        <div class="preset-bar">
+          <button type="button" class="btn-preset" id="presetDefault">⏪ Default</button>
+          <button type="button" class="btn-preset" id="presetWhite">⚪ Full White</button>
+        </div>
+        <div class="palette-gen">
+          <select id="paletteMode" class="mode-select" title="Randomization mode">
+            <option value="truly-random">🎲 Truly Random</option>
+            <option value="same-hue">🔷 Same Hue</option>
+            <option value="bi-opposite">🔶 Bi Opposite</option>
+            <option value="triadic">🔺 Triadic</option>
+          </select>
+          <div class="affinity-group">
+            <label for="paletteAffinity" class="affinity-label">Boldness</label>
+            <input type="range" id="paletteAffinity" class="affinity-slider" min="0" max="100" value="80">
+            <span class="affinity-value" id="affinityValue">80%</span>
+          </div>
+          <button type="button" class="btn-palette" id="paletteRandom" title="Randomize palette">🎲 Randomize</button>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Global HSL Tweak — always visible, both modes -->
+      <div class="global-hsl-bar" style="margin:8px 0;">
+        <div class="global-hsl">
+          <span class="hsl-label">🌐</span>
+          <label class="hsl-slider-group">
+            <span class="hsl-slider-label">H</span>
+            <input type="range" id="hslHue" class="hsl-slider" min="-180" max="180" value="0">
+          </label>
+          <label class="hsl-slider-group">
+            <span class="hsl-slider-label">S</span>
+            <input type="range" id="hslSat" class="hsl-slider" min="0" max="300" value="100">
+          </label>
+          <label class="hsl-slider-group">
+            <span class="hsl-slider-label">L</span>
+            <input type="range" id="hslLight" class="hsl-slider" min="-100" max="100" value="0">
+          </label>
+          <span class="hsl-value" id="hslDisplay">+0° 100% +0%</span>
+          <button type="button" id="hslApply" class="btn-hsl-apply" title="Apply global HSL to all colors">✓</button>
+          <button type="button" id="hslReset" class="btn-preset" title="Reset global HSL">↺</button>
+        </div>
+      </div>
+
+      <!-- Studio Mode Controls (simplified) -->
+      <% if (mode === 'studio') { %>
+      <div class="studio-controls-simple" id="studioControlsSimple">
+        <button type="button" class="btn-preset" id="presetDefault">⏪ Default</button>
+        <button type="button" class="btn-preset" id="presetWhite">⚪ Full White</button>
+        <span style="flex:1;"></span>
+        <button type="button" class="btn-palette" id="paletteRandom" title="Randomize a cohesive palette">🎲 Randomize</button>
+      </div>
+      <% } %>
+
+      <!-- Advanced Editor Toggle (studio mode only) -->
+      <div class="advanced-toggle" id="advancedToggle" style="display:<%= mode === 'studio' ? 'block' : 'none' %>;">
+        <button type="button" class="btn-advanced" id="showAdvancedBtn">
+          ⚙️ Show Advanced Editor <span class="toggle-hint">(all 70+ color pickers)</span>
+        </button>
+      </div>
+
+      <form id="creatorForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <!-- Hidden default track palette colors -->
+        <div style="display:none;">
+          <% for (let i = 1; i <= 14; i++) { const n = String(i).padStart(2, '0'); %>
+            <input type="hidden" name="Default_Color_<%= n %>" value="#<%= (defaults && defaults['Default_Color_' + n]) ? defaults['Default_Color_' + n] : '808080' %>" data-element="Default_Color_<%= n %>">
+          <% } %>
+        </div>
+
+        <!-- Element Groups -->
+        <% ELEMENT_GROUPS.forEach((group, idx) => { %>
+          <% if (idx === 2) { %><div id="advancedGroups" style="display:none;"><% } %>
+          <details class="creator-group" data-group-id="<%= group.id %>" <%= group.open ? 'open' : '' %>>
+            <summary>
+              <span class="group-icon"><%= group.icon %></span>
+              <span class="group-label"><%= group.label %></span>
+              <span class="group-count"><%= group.elements.length %></span>
+              <button type="button" class="group-lock-btn" data-lock-group="<%= group.id %>" title="Lock all">🔓</button>
+            </summary>
+            <div class="color-grid">
+              <% group.elements.forEach(elName => {
+                const defVal = (defaults && defaults[elName]) ? defaults[elName] : '808080';
+                const pctVal = COVERAGE_MAP[elName];
+                const slaveInfo = SLAVE_MAP && SLAVE_MAP[elName];
+                const isMaster = CLUSTERS && CLUSTERS.some(c => c.master === elName);
+              %>
+                <!-- VU meter levels: show preset row instead of individual pickers -->
+                <% if (group.id === 'vumeters' && elName !== 'VuMeter_Back_Normal' && elName !== 'VuMeter_Back_Clipped') { %>
+                  <% if (elName === 'VuMeter_Meter') { %>
+                    <div class="vu-preset-row" style="grid-column:1/-1;padding:6px 0;border-top:1px solid var(--chrome-border);margin-top:4px;">
+                      <div style="font-size:10px;color:var(--chrome-text-dim);margin-bottom:6px;">VU Meter Levels — pick a preset</div>
+                      <div class="vu-presets" style="display:flex;gap:4px;flex-wrap:wrap;" data-targets='["VuMeter_Meter","VuMeter_Meter_Low","VuMeter_Meter_Middle","VuMeter_Meter_High","VuMeter_Peak"]'>
+                        <!-- Presets injected by JS from VU_METER_PRESETS -->
+                      </div>
+                    </div>
+                  <% } %>
+                <% } else { %>
+                  <label class="color-pick <%= slaveInfo ? 'color-pick--slave' : '' %> <%= isMaster ? 'color-pick--master' : '' %>"
+                         data-cluster-id="<%= slaveInfo ? slaveInfo.clusterId : '' %>"
+                         data-cluster-master="<%= slaveInfo ? slaveInfo.master : '' %>">
+                    <div class="color-swatch <%= slaveInfo ? 'swatch--linked' : '' %>"
+                         data-el="<%= elName %>"
+                         style="background-color: #<%= defVal %>"
+                         tabindex="0"
+                         role="button"
+                         aria-label="Pick color for <%= elName.replace(/_/g, ' ') %>">
+                    </div>
+                    <input type="hidden" name="<%= elName %>" value="#<%= defVal %>" data-element="<%= elName %>">
+                    <div class="color-pick-info">
+                      <span class="color-name">
+                        <%= elName.replace(/_/g, ' ') %>
+                        <% if (slaveInfo) { %> <span class="link-indicator" title="Linked to <%= slaveInfo.master.replace(/_/g, ' ') %>">⛓️</span><% } %>
+                        <% if (isMaster && CLUSTERS.find(c => c.master === elName).slaves.length > 0) { %> <span class="master-indicator" title="Master — controls <%= CLUSTERS.find(c => c.master === elName).slaves.length %> linked elements">👑</span><% } %>
+                      </span>
+                      <% if (typeof pctVal !== 'undefined' && pctVal > 0) { %>
+                        <span class="color-pct"><%= pctVal %>%</span>
+                      <% } %>
+                    </div>
+                    <button type="button" class="lock-btn" data-lock-el="<%= elName %>" title="Pin color">🔓</button>
+                    <% if (slaveInfo) { %>
+                      <button type="button" class="unlink-btn" data-unlink-el="<%= elName %>" title="Unlink from <%= slaveInfo.master.replace(/_/g, ' ') %>" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px;color:var(--chrome-text-dim);">⛓️</button>
+                    <% } %>
+                  </label>
+                <% } %>
+              <% }); %>
+            </div>
+          </details>
+          <% if (idx === 5) { %></div><% } %>
+        <% }); %>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Hidden data for JS -->
+<script>
+  window.__ARCHETYPES = <%- JSON.stringify(ARCHETYPES) %>;
+  window.__ARCHETYPE_LIST = <%- JSON.stringify(ARCHETYPE_LIST) %>;
+  window.__CLUSTERS = <%- JSON.stringify(CLUSTERS) %>;
+  window.__VU_PRESETS = <%- JSON.stringify(VU_METER_PRESETS) %>;
+  window.__STUDIO_MODE = '<%= mode %>';
+  <% if (typeof remixColors !== 'undefined') { %>
+  window.__REMIX_COLORS = <%- JSON.stringify(remixColors) %>;
+  <% } %>
+</script>
+
+<script src="/js/color-utils.js"></script>
+<script src="/js/creator-constants.js"></script>
+<script src="/js/reinvented-color-wheel.js"></script>
+<script src="/js/color-wheel.js"></script>
+<script src="/js/studio-generator.js"></script>
+<script src="/js/studio.js"></script>
+<script src="/js/creator-locks.js"></script>
+<script src="/js/creator-sync.js"></script>
+<script src="/js/creator-global-hsl.js"></script>
+<script src="/js/archetypes.js"></script>
+<script src="/js/creator-palette.js"></script>
+<%- include('partials/footer') %>
