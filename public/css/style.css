@@ -2670,10 +2670,10 @@ main.container {
 
 /* ── RESPONSIVE ────────────────────────────── */
 @media (max-width: 900px) {
-  .tracker-layout { flex-direction: column; height: auto; }
+  .tracker-layout { flex-direction: column; height: auto; margin: 0; width: 100%; }
   .track-list { border-right: none; border-bottom: 1px solid var(--chrome-border); }
   .side-panel { order: -1; width: 100%; flex-direction: column; gap: 0; margin-bottom: 12px; background: transparent; }
-  .side-panel .panel-section { flex: none; min-width: auto; border: none; border-bottom: 1px solid var(--chrome-border); padding: 6px 4px; }
+  .side-panel .panel-section { flex: none; min-width: auto; border: none; border-bottom: 1px solid var(--chrome-border); padding: 8px 0; }
   .side-panel .panel-section:last-child { border-bottom: none; }
 
   .detail-layout { flex-direction: column; height: auto; }
