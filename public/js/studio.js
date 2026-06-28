@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         r.grade === 'AA' || r.grade === 'AA-lg' ? 'audit-aa' : 'audit-fail-grade';
 
       pair.innerHTML = `
-        <span class="audit-swatch" style="background:#${r.fontHex};color:#${r.bgHex};">Aa</span>
+        <span class="audit-swatch" style="background:${r.fontHex};color:${r.bgHex};">Aa</span>
         <span class="audit-label">${r.label}</span>
         <span class="audit-ratio">${r.ratio > 0 ? r.ratio + ':1' : '—'}</span>
         <span class="audit-grade ${gradeClass}">${r.grade}</span>
