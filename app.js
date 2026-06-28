@@ -334,22 +334,21 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
     }
 
     // Regenerate session to prevent session fixation
-    // Log the user in immediately
-    req.session.regenerate((err) => {
-      if (err) {
-        console.error('Session regeneration error:', err);
-        return res.render('register', { error: 'Account created but session error occurred. Please log in.', success: null });
-      }
-      req.session.user = { id: result.userId, username, email, title: result.title || null };
+    // Generate verification token
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    createVerificationToken(result.userId, verifyToken);
+    const verifyUrl = req.protocol + '://' + req.get('host') + '/verify-email/' + verifyToken;
 
-      // Send welcome + verification emails in background (best-effort)
-      sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
-      const verifyToken = crypto.randomBytes(32).toString('hex');
-      createVerificationToken(result.userId, verifyToken);
-      const verifyUrl = req.protocol + '://' + req.get('host') + '/verify-email/' + verifyToken;
-      sendVerificationEmail(email, username, verifyUrl).catch(err => console.error('Verification email failed:', err));
+    // Send verification email
+    sendVerificationEmail(email, username, verifyUrl).then(() => {
+      console.log('[EMAIL] Verification sent to', email);
+    }).catch(err => {
+      console.error('[EMAIL] Verification email failed:', err);
+    });
 
-      res.redirect('/');
+    res.render('register', {
+      success: 'Account created! We sent a verification link to <strong>' + email + '</strong>. Check your inbox (and spam folder).',
+      error: null
     });
   } catch (err) {
     console.error('Registration error:', err);
@@ -375,6 +374,16 @@ app.post('/login', authLimiter, csrfProtection, async (req, res) => {
     const result = await authenticateUser(username, password);
     if (!result.success) {
       return res.render('login', { error: result.error, success: null });
+    }
+
+    // Check email verification
+    if (!result.emailVerified) {
+      return res.render('login', { 
+        error: 'Please verify your email before logging in.',
+        verifyEmail: result.email,
+        verifyUsername: result.username,
+        success: null 
+      });
     }
 
     // Regenerate session to prevent session fixation
@@ -1302,6 +1311,28 @@ app.get('/verify-email/:token', async (req, res) => {
   } else {
     res.render('login', { error: 'Invalid or expired verification link.', success: null });
   }
+});
+
+// ── Resend Verification Email ─────────────────────────
+
+app.post('/resend-verification', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.render('login', { error: 'Email is required', success: null });
+
+  const user = db.prepare('SELECT id, username, email, email_verified FROM users WHERE email = ?').get(email);
+  if (!user) return res.render('login', { error: 'No account found with that email.', success: null });
+  if (user.email_verified) return res.render('login', { success: 'Email already verified! You can log in.', error: null });
+
+  const verifyToken = crypto.randomBytes(32).toString('hex');
+  createVerificationToken(user.id, verifyToken);
+  const verifyUrl = req.protocol + '://' + req.get('host') + '/verify-email/' + verifyToken;
+
+  const sent = sendVerificationEmail(user.email, user.username, verifyUrl).then(() => true).catch(() => false);
+  // Don't await — show message immediately
+  res.render('login', {
+    success: 'Verification email resent to <strong>' + user.email + '</strong>. Check your inbox.',
+    error: null
+  });
 });
 
 app.get('/health', (req, res) => {
