@@ -2658,24 +2658,21 @@ main.container {
   overflow: auto;
 }
 .audit-pair {
-  grid-template-columns: 24px 1fr auto auto;
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 6px;
+  grid-template-columns: 22px 1fr 40px 38px;
+  gap: 8px;
   align-items: center;
-  padding: 4px 6px;
+  padding: 5px 8px;
   border: 1px solid transparent;
   background: var(--chrome-panel);
-  font-size: 10px;
+  font-size: 11px;
 }
 .audit-pair:hover {
   cursor: pointer;
   border-color: var(--accent);
   background: var(--chrome-panel-hover);
 }
-.audit-swatch {
-  width: 20px;
-  height: 20px;
+.audit-swatch { width: 18px; height: 18px;
   border: 1px solid var(--chrome-border-light);
   border-radius: 2px;
   font-size: 8px;
@@ -2690,13 +2687,9 @@ main.container {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.audit-ratio {
-  color: var(--chrome-text-dim);
-  font-variant-numeric: tabular-nums;
-}
+.audit-ratio { color: var(--chrome-text-dim); font-variant-numeric: tabular-nums; text-align: center; }
 .audit-grade {
-  min-width: 42px;
-  text-align: right;
+  
   font-weight: 700;
 }
 .audit-aaa { color: var(--chrome-accent); }
