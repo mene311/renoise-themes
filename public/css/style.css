@@ -2703,6 +2703,7 @@ main.container {
 .audit-aa { color: var(--chrome-warn); }
 .audit-fail-grade { color: var(--chrome-danger); }
 .trap-warning {
+  align-items: center;
   display: flex;
   gap: 6px;
   padding: 5px 6px;

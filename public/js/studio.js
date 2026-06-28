@@ -231,7 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const t of traps) {
       const el = document.createElement('div');
       el.className = `trap-warning trap-${t.severity}`;
-      el.innerHTML = `<span class="trap-icon">${t.severity === 'high' ? '❌' : '⚠️'}</span> <span class="trap-msg">${t.message}</span>`;
+      let swatchHtml = '';
+      if (t.element && map[t.element]) {
+        const hex = map[t.element];
+        const bg = '#' + hex.map(v => v.toString(16).padStart(2,'0')).join('');
+        swatchHtml = `<span class="trap-swatch" style="background:${bg}"></span> `;
+      }
+      el.innerHTML = `<span class="trap-icon">${t.severity === 'high' ? '❌' : '⚠️'}</span>${swatchHtml}<span class="trap-msg">${t.message}</span>`;
       trapsList.appendChild(el);
     }
   }
