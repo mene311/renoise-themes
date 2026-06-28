@@ -1,0 +1,33 @@
+<%- include('partials/header', { pageTitle: 'Resend Verification — Renoise Theme Share' }) %>
+
+<style>
+  .form-page { max-width: 480px; margin: 48px auto; padding: 0 16px; }
+  .form-page h1 { font-size: 1.2rem; margin-bottom: 8px; }
+  .form-page p { color: var(--chrome-text-dim); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+  .form-page label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--chrome-text-bright); margin-bottom: 14px; }
+  .form-page input { background: var(--chrome-bg-deep); border: 1px solid var(--chrome-border); color: var(--chrome-text); font-family: var(--font-mono); font-size: 14px; padding: 10px 12px; border-radius: 4px; }
+  .form-page input:focus { border-color: var(--accent); outline: none; }
+</style>
+
+<div class="form-page">
+  <a href="/login" class="back-link">&larr; Back to login</a>
+  <h1>Resend Verification Email</h1>
+  <p>Enter the email you used to create your account and we'll send you a new verification link.</p>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success"><span class="alert-icon">✅</span><span><%- success %></span></div>
+  <% } %>
+
+  <form method="POST" action="/resend-verification">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Email
+      <input type="email" name="email" placeholder="you@email.com" required>
+    </label>
+    <button type="submit" class="btn-submit">Send New Link</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

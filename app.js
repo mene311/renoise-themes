@@ -1309,11 +1309,15 @@ app.get('/verify-email/:token', async (req, res) => {
   if (ok) {
     res.render('login', { success: 'Email verified! You can now log in.', error: null });
   } else {
-    res.render('login', { error: 'Invalid or expired verification link.', success: null });
+    res.render('login', { error: 'Invalid or expired verification link. <a href="/resend-verification">Request a new one</a>.', success: null });
   }
 });
 
 // ── Resend Verification Email ─────────────────────────
+
+app.get('/resend-verification', (req, res) => {
+  res.render('resend-verification', { success: null, error: null });
+});
 
 app.post('/resend-verification', async (req, res) => {
   const { email } = req.body;
