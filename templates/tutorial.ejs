@@ -1,0 +1,191 @@
+<%- include('partials/header', { pageTitle: 'Creating Themes — Renoise Theme Share' }) %>
+
+<style>
+  .tutorial-page { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+  .tutorial-page h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .tutorial-page h2 { font-size: 1.15rem; margin-top: 36px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--chrome-border); }
+  .tutorial-page h3 { font-size: 1rem; margin-top: 24px; margin-bottom: 8px; color: var(--chrome-text-bright); }
+  .tutorial-page p { font-size: 14px; line-height: 1.7; color: var(--chrome-text-dim); margin-bottom: 14px; }
+  .tutorial-page strong { color: var(--chrome-text-bright); }
+  .tutorial-page a { color: var(--accent); }
+  .tutorial-page ul, .tutorial-page ol { color: var(--chrome-text-dim); font-size: 14px; line-height: 1.7; margin-bottom: 14px; padding-left: 24px; }
+  .tutorial-page li { margin-bottom: 6px; }
+  .tutorial-page code { font-family: var(--font-mono); font-size: 0.85em; background: var(--chrome-bg-deep); padding: 1px 5px; border: 1px solid var(--chrome-border); color: var(--accent); }
+  .tutorial-page .screenshot { width: 100%; border: 1px solid var(--chrome-border); margin: 16px 0; display: block; background: var(--chrome-bg-deep); }
+  .tutorial-page .tip-box { border-left: 3px solid var(--accent); padding: 10px 14px; margin: 16px 0; background: var(--chrome-bg); color: var(--chrome-text-dim); font-size: 13px; line-height: 1.6; }
+  .tutorial-page .tip-box strong { color: var(--accent); }
+  .tutorial-page .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  @media (max-width: 640px) { .tutorial-page .two-col { grid-template-columns: 1fr; } }
+  .tutorial-page .back-link { display: inline-flex; margin-bottom: 24px; }
+  .tutorial-page table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .tutorial-page th { background: var(--chrome-bg); border: 1px solid var(--chrome-border); padding: 8px 12px; text-align: left; color: var(--chrome-text-bright); font-size: 11px; text-transform: uppercase; }
+  .tutorial-page td { border: 1px solid var(--chrome-border); padding: 6px 12px; color: var(--chrome-text-dim); }
+</style>
+
+<div class="tutorial-page">
+
+  <a href="/" class="back-link">&larr; Back to browse</a>
+
+  <h1>Creating Renoise Themes — A Complete Guide</h1>
+  <p style="color: var(--chrome-text-faint); font-size: 12px; margin-bottom: 24px;">Everything you need to design, preview, and publish Renoise color themes — no Renoise installation required.</p>
+
+  <hr>
+
+  <h2>Two Ways to Create</h2>
+
+  <p>We offer two theme creation tools, each suited for different workflows:</p>
+
+  <table>
+    <tr><th>Tool</th><th>Best For</th><th>Access</th></tr>
+    <tr>
+      <td><a href="/studio"><strong>Theme Studio</strong></a></td>
+      <td>Guided creation. Start from an archetype, get automated contrast feedback, and let algorithms handle the details.</td>
+      <td><a href="/studio">/studio</a> (login required)</td>
+    </tr>
+    <tr>
+      <td><a href="/create"><strong>Advanced Editor</strong></a></td>
+      <td>Full control. 70+ individual color pickers organized by UI group. Palette generation with hue modes.</td>
+      <td><a href="/create">/create</a> (login required)</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <h2>Theme Studio — Guided Creation</h2>
+
+  <p>The Studio is the recommended starting point. Instead of confronting you with 70 pickers immediately, it guides you through archetypes, automated fills, and real-time contrast auditing.</p>
+
+  <img src="/uploads/screenshots/tutorial-studio.png" class="screenshot" alt="Theme Studio interface" loading="lazy">
+
+  <h3>Step 1: Pick an Archetype</h3>
+
+  <p>Six archetypes provide a starting palette tuned to a specific visual mood:</p>
+
+  <table>
+    <tr><th>Archetype</th><th>Vibe</th><th>Character</th></tr>
+    <tr><td><strong>Workhorse</strong></td><td>Daily driver</td><td>Muted blue-grey backgrounds, high contrast text, subtle accent. Comfortable for long sessions.</td></tr>
+    <tr><td><strong>Cyberpunk</strong></td><td>Neon-drenched</td><td>Deep purple-black base, cyan highlights, hot magenta accents. Blade Runner's tracker.</td></tr>
+    <tr><td><strong>Forest</strong></td><td>Organic calm</td><td>Dark olive greens, warm cream text, muted sage accents. Natural and easy on the eyes.</td></tr>
+    <tr><td><strong>Sunset</strong></td><td>Warm & inviting</td><td>Deep amber-brown backgrounds, golden text, orange-red highlights.</td></tr>
+    <tr><td><strong>Midnight</strong></td><td>Minimal dark</td><td>Near-black base, cool blue-white text, restrained blue accents. Purely functional.</td></tr>
+    <<tr><td><strong>Paper</strong></td><td>Light mode</td><td>Off-white backgrounds, dark navy text, subtle sepia highlights. Daytime use.</td></tr>
+  </table>
+
+  <p>Click any archetype card to instantly seed all 70+ elements with a cohesive palette. The preview updates in real-time.</p>
+
+  <h3>Step 2: Use Smart Fill</h3>
+
+  <p>Changed a few colors but the rest look disconnected? Hit <strong>🎲 Smart Fill</strong>. The algorithm:</p>
+  <ol>
+    <li>Identifies your locked (pinned) colors as anchors</li>
+    <li>Fills unlocked elements using role-appropriate HSL ranges</li>
+    <li>Propagates font colors through tracker columns with hue offsets</li>
+    <li>Ensures minimum contrast ratios between backgrounds and text</li>
+  </ol>
+
+  <h3>Step 3: Read the Contrast Audit</h3>
+
+  <p>Below the preview, a live <strong>Contrast Audit</strong> panel shows every font-vs-background pair in the UI with WCAG grades:</p>
+
+  <ul>
+    <li><span style="color:var(--accent);">AAA</span> — Excellent contrast</li>
+    <li><span style="color:var(--chrome-warn);">AA</span> — Acceptable</li>
+    <li><span style="color:var(--chrome-danger);">FAIL</span> — Needs attention</li>
+  </ul>
+
+  <p>Click any row to jump directly to that element's color picker. The <strong>Design Traps</strong> panel warns about common mistakes: silent selections, invisible scrollbars, and muddied selection states.</p>
+
+  <h3>Step 4: Tweak with Global HSL</h3>
+
+  <p>The <strong>🌐 Global HSL</strong> slider lets you shift the entire theme's hue, saturation, and lightness at once. Want to see your cyberpunk theme shifted toward warm tones? Slide Hue to +60° and hit <strong>✓</strong>.</p>
+
+  <h3>Step 5: Go Advanced</h3>
+
+  <p>Ready for granular control? Click <strong>⚙️ Show Advanced Editor</strong> to reveal all 70+ color pickers organized by UI group. You can still use Smart Fill, the audit panel, and global HSL — they all work in advanced mode too.</p>
+
+  <img src="/uploads/screenshots/tutorial-studio-advanced.png" class="screenshot" alt="Studio advanced editor with full color pickers" loading="lazy">
+
+  <div class="tip-box">
+    <strong>Pro tip:</strong> Lock a few core elements (Main_Back, Main_Font, Selection_Back) by clicking the 🔓 icon on their color swatch. Then use Smart Fill to derive everything else from those anchors. This is the fastest way to build a cohesive theme.
+  </div>
+
+  <hr>
+
+  <h2>Advanced Editor — Full Control</h2>
+
+  <p>The Advanced Editor (<a href="/create">/create</a>) gives you direct access to every Renoise UI element, organized into logical groups:</p>
+
+  <img src="/uploads/screenshots/tutorial-creator.png" class="screenshot" alt="Advanced Theme Creator" loading="lazy">
+
+  <h3>Element Groups</h3>
+
+  <table>
+    <tr><th>Group</th><th>Elements</th><th>What It Controls</th></tr>
+    <tr><td>Backgrounds</td><td>11</td><td>Main_Back, Body_Back, Pattern areas — 46%+ of screen</td></tr>
+    <tr><td>Text & Typography</td><td>17</td><td>All fonts including tracker column text</td></tr>
+    <tr><td>Buttons & Controls</td><td>8</td><td>Buttons, selections, scrollbars, sliders</td></tr>
+    <tr><td>Automation Editor</td><td>8</td><td>Automation curves, markers, grid</td></tr>
+    <tr><td>Pattern Editor</td><td>19</td><td>Tracker note data, play position, mute states</td></tr>
+    <tr><td>VU Meters</td><td>7</td><td>Level meters with preset themes</td></tr>
+  </table>
+
+  <p>Each color picker shows the element's <strong>pixel coverage percentage</strong> — how much of the screen it affects. The top 10 elements control 97.9% of the visible UI.</p>
+
+  <h3>Palette Generator</h3>
+
+  <p>The <strong>🎲 Randomize</strong> button generates complete palettes using four color relation modes:</p>
+
+  <table>
+    <tr><th>Mode</th><th>Behavior</th></tr>
+    <tr><td><strong>Truly Random</strong></td><td>Complete chaos — every element gets an independent random color. Fun but rarely usable.</td></tr>
+    <tr><td><strong>Same Hue</strong></td><td>All elements share a single hue, varying only in saturation and lightness. Produces monochromatic themes.</td></tr>
+    <tr><td><strong>Bi Opposite</strong></td><td>Two opposing hues — backgrounds/UI use one, accents use the complementary hue. High visual interest.</td></tr>
+    <tr><td><strong>Triadic</strong></td><td>Three evenly-spaced hues — background, UI, and accents each get their own. Maximum color variety while staying harmonious.</td></tr>
+  </table>
+
+  <p>The <strong>Boldness</strong> slider (0–100%) controls how aggressively the palette departs from safe, conservative ranges. At 100%, colors are vivid and high-contrast. At 0%, they stay subtle and muted.</p>
+
+  <h3>Master/Slave Linking</h3>
+
+  <p>Some elements are linked — changing <code>Main_Back</code> also updates <code>Body_Back</code> and <code>Alternate_Main_Back</code>. Linked elements show a ⛓️ indicator. Master elements (👑) control their slaves. You can unlink pairs individually if you want independent control.</p>
+
+  <h3>VU Meter Presets</h3>
+
+  <p>Instead of picking 5 VU meter colors manually, choose a preset from the dropdown row. Each preset sets the full gradient from low (green/yellow) through middle to high (red/peak).</p>
+
+  <hr>
+
+  <h2>Saving & Exporting</h2>
+
+  <p>When you're happy with your design:</p>
+
+  <ul>
+    <li><strong>💾 Save to Profile</strong> — Saves the theme to your Backstage. Draft by default; publish when ready.</li>
+    <li><strong>⬇ Download .xrnc</strong> — Generates a valid Renoise theme file. Drop it into <code>~/.config/Renoise/V3.x/Themes/</code> and restart Renoise.</li>
+  </ul>
+
+  <p>Draft themes are visible only to you on your Backstage. Hit <strong>Publish</strong> to make them visible in the public gallery.</p>
+
+  <div class="tip-box">
+    <strong>Pro tip:</strong> Found a theme in the gallery you like? Click <strong>Remix</strong> on any theme's detail page to open it in the Advanced Editor as a starting point. All colors are pre-loaded and editable.
+  </div>
+
+  <hr>
+
+  <h2>Keyboard Shortcuts</h2>
+
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td><code>/</code></td><td>Focus search on browse page</td></tr>
+    <tr><td><code>↑</code> <code>↓</code></td><td>Navigate theme grid</td></tr>
+    <tr><td><code>Enter</code></td><td>Open selected theme</td></tr>
+    <tr><td><code>Esc</code></td><td>Close lightbox / color wheel</td></tr>
+  </table>
+
+  <hr>
+
+  <p style="font-size: 12px; color: var(--chrome-text-faint);">Need the technical details? Read the <a href="/how-it-works">full technical overview</a> of the pixel map system, rendering pipeline, and automation tools.</p>
+
+</div>
+
+<%- include('partials/footer') %>

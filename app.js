@@ -677,6 +677,10 @@ app.get('/how-it-works', (req, res) => {
   res.render('how-it-works');
 });
 
+app.get('/tutorial', (req, res) => {
+  res.render('tutorial');
+});
+
 // ── Theme Creator ──────────────────────────────────────
 
 // Element pixel coverage rankings (precomputed from pixel maps)
