@@ -334,17 +334,22 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
     }
 
     // Regenerate session to prevent session fixation
-    // Generate verification token
-    const verifyToken = crypto.randomBytes(32).toString('hex');
-    createVerificationToken(result.userId, verifyToken);
+    // Log the user in immediately
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.render('register', { error: 'Account created but session error occurred. Please log in.', success: null });
+      }
+      req.session.user = { id: result.userId, username, email, title: result.title || null };
 
-    // Send verification email
-    const verifyUrl = `${req.protocol}://${req.get('host')}/verify-email/${verifyToken}`;
-    sendVerificationEmail(email, username, verifyUrl).catch(err => console.error('Verification email failed:', err));
+      // Send welcome + verification emails in background (best-effort)
+      sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
+      const verifyToken = crypto.randomBytes(32).toString('hex');
+      createVerificationToken(result.userId, verifyToken);
+      const verifyUrl = req.protocol + '://' + req.get('host') + '/verify-email/' + verifyToken;
+      sendVerificationEmail(email, username, verifyUrl).catch(err => console.error('Verification email failed:', err));
 
-    res.render('register', {
-      success: 'Account created! Check your email for a verification link to activate your account.',
-      error: null
+      res.redirect('/');
     });
   } catch (err) {
     console.error('Registration error:', err);
@@ -370,11 +375,6 @@ app.post('/login', authLimiter, csrfProtection, async (req, res) => {
     const result = await authenticateUser(username, password);
     if (!result.success) {
       return res.render('login', { error: result.error, success: null });
-    }
-
-    // Check if email is verified
-    if (!result.emailVerified) {
-      return res.render('login', { error: 'Please verify your email before logging in. Check your inbox.', success: null });
     }
 
     // Regenerate session to prevent session fixation
