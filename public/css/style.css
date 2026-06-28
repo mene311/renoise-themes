@@ -2703,13 +2703,14 @@ main.container {
   .header-search input { font-size: 12px; padding: 2px 4px; }
 
   .theme-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 10px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 8px;
   }
-  .card-preview { height: 180px; margin: 6px 6px 0; }
-  .card-preview img { height: 180px; }
-  .card-title { font-size: 14px; }
+  .theme-card { overflow: hidden; }
+  .card-preview { height: 140px; margin: 4px 4px 0; }
+  .card-preview img { height: 140px; }
+  .card-title { font-size: 12px; white-space: normal; }
   .card-meta { font-size: 12px; }
   .card-info { padding: 8px 10px 4px; }
   .card-palette { margin: 0 10px 10px; }
