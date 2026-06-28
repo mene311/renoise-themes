@@ -241,6 +241,7 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.csrfToken = generateCsrfToken(req);
   res.locals._css = getInlineCss();
+  res.setHeader('Cache-Control', 'no-cache');
   next();
 });
 
