@@ -31,6 +31,7 @@ import {
   getThemesByAuthor, getThemesByAuthorPublic, updateThemeDescription, updateTheme, deleteTheme,
   getProfileComments, addProfileComment, deleteProfileComment,
   getUserStats, deleteUser, publishTheme, unpublishTheme,
+  createVerificationToken, verifyEmailToken,
   db
 } from './lib/database.js';
 
@@ -333,14 +334,17 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
     }
 
     // Regenerate session to prevent session fixation
-    req.session.regenerate((err) => {
-      if (err) {
-        console.error('Session regeneration error:', err);
-        return res.render('register', { error: 'Registration succeeded but session error occurred. Please log in.', success: null });
-      }
-      req.session.user = { id: result.userId, username, email, title: result.title || null };
-      sendWelcome(email, username).catch(err => console.error('Welcome email failed:', err));
-      res.redirect('/');
+    // Generate verification token
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    createVerificationToken(result.userId, verifyToken);
+
+    // Send verification email
+    const verifyUrl = `${req.protocol}://${req.get('host')}/verify-email/${verifyToken}`;
+    sendVerificationEmail(email, username, verifyUrl).catch(err => console.error('Verification email failed:', err));
+
+    res.render('register', {
+      success: 'Account created! Check your email for a verification link to activate your account.',
+      error: null
     });
   } catch (err) {
     console.error('Registration error:', err);
@@ -366,6 +370,11 @@ app.post('/login', authLimiter, csrfProtection, async (req, res) => {
     const result = await authenticateUser(username, password);
     if (!result.success) {
       return res.render('login', { error: result.error, success: null });
+    }
+
+    // Check if email is verified
+    if (!result.emailVerified) {
+      return res.render('login', { error: 'Please verify your email before logging in. Check your inbox.', success: null });
     }
 
     // Regenerate session to prevent session fixation
@@ -1282,6 +1291,17 @@ app.get('/admin/feedback', requireAdmin, (req, res) => {
 app.post('/admin/feedback/:id/read', requireAdmin, (req, res) => {
   markFeedbackRead(Number(req.params.id));
   res.redirect('/admin/feedback?filter=' + (req.query.redirect || 'all'));
+});
+
+// ── Email Verification ─────────────────────────────────
+
+app.get('/verify-email/:token', async (req, res) => {
+  const ok = verifyEmailToken(req.params.token);
+  if (ok) {
+    res.render('login', { success: 'Email verified! You can now log in.', error: null });
+  } else {
+    res.render('login', { error: 'Invalid or expired verification link.', success: null });
+  }
 });
 
 app.get('/health', (req, res) => {
