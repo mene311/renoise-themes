@@ -30,7 +30,7 @@ import {
   searchThemes, countSearchThemes,
   getThemesByAuthor, getThemesByAuthorPublic, updateThemeDescription, updateTheme, deleteTheme,
   getProfileComments, addProfileComment, deleteProfileComment,
-  getUserStats, publishTheme, unpublishTheme,
+  getUserStats, deleteUser, publishTheme, unpublishTheme,
   db
 } from './lib/database.js';
 
@@ -656,6 +656,25 @@ app.post('/theme/:slug/unpublish', requireAuth, csrfProtection, (req, res) => {
   unpublishTheme(theme.id);
   invalidateMarquee();
   res.redirect(`/theme/${theme.slug}`);
+});
+
+// ── Account Deletion ──────────────────────────────────
+
+app.get('/account/delete', requireAuth, (req, res) => {
+  res.render('account-delete');
+});
+
+app.post('/account/delete', requireAuth, csrfProtection, (req, res) => {
+  const username = req.session.user.username;
+  const success = deleteUser(username);
+  if (success) {
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.redirect('/?deleted=1');
+    });
+  } else {
+    res.render('account-delete', { error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // ── Admin ──────────────────────────────────────────────

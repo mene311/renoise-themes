@@ -1,0 +1,39 @@
+<%- include('partials/header', { pageTitle: 'Delete Account — Renoise Theme Share' }) %>
+
+<style>
+  .form-page { max-width: 480px; margin: 48px auto; padding: 0 16px; }
+  .form-page h1 { font-size: 1.2rem; margin-bottom: 8px; }
+  .form-page p { color: var(--chrome-text-dim); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+  .warning-box { border: 1px solid var(--chrome-danger); background: rgba(204,68,68,0.08); padding: 14px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; color: var(--chrome-danger); line-height: 1.6; }
+  .error-msg { background: var(--chrome-danger); color: #fff; padding: 12px 16px; border-radius: 4px; font-size: 13px; margin-bottom: 16px; }
+  .btn-group { display: flex; gap: 8px; }
+</style>
+
+<div class="form-page">
+  <a href="/backstage" class="back-link">&larr; Back to Backstage</a>
+  <h1>Delete Account</h1>
+  <p>This will permanently delete your account, all your themes, and all your comments. There is no undo.</p>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="error-msg"><%= error %></div>
+  <% } %>
+
+  <div class="warning-box">
+    <strong>You will lose:</strong>
+    <ul style="margin:8px 0 0 16px; padding:0;">
+      <li>All your uploaded themes</li>
+      <li>All your comments on other themes</li>
+      <li>Your profile and all data</li>
+    </ul>
+  </div>
+
+  <form method="POST" action="/account/delete" onsubmit="return confirm('Delete your account permanently? This cannot be undone.')">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="btn-group">
+      <button type="submit" class="btn-submit" style="background:var(--chrome-danger);border-color:var(--chrome-danger);">Yes, Delete My Account</button>
+      <a href="/backstage" class="btn-submit" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<%- include('partials/footer') %>
