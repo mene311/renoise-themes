@@ -709,7 +709,7 @@ app.post('/account/delete', requireAuth, csrfProtection, (req, res) => {
 
 // ── Admin ──────────────────────────────────────────────
 
-app.post('/admin/reload-maps', requireAdmin, async (req, res) => {
+app.post('/admin/reload-maps', requireAdmin, csrfProtection, async (req, res) => {
   try {
     const pr = await import('./lib/preview-renderer.js');
     pr.invalidateRendererCache();
@@ -1309,7 +1309,7 @@ app.get('/admin/feedback', requireAdmin, (req, res) => {
   res.render('admin-feedback', { items, filter });
 });
 
-app.post('/admin/feedback/:id/read', requireAdmin, (req, res) => {
+app.post('/admin/feedback/:id/read', requireAdmin, csrfProtection, (req, res) => {
   markFeedbackRead(Number(req.params.id));
   res.redirect('/admin/feedback?filter=' + (req.query.redirect || 'all'));
 });
@@ -1321,7 +1321,7 @@ app.get('/verify-email/:token', async (req, res) => {
   if (ok) {
     res.render('login', { success: 'Email verified! You can now log in.', error: null });
   } else {
-    res.render('login', { error: 'Invalid or expired verification link. <a href="/resend-verification">Request a new one</a>.', success: null });
+    res.render('login', { error: 'Invalid or expired verification link. Please request a new one at /resend-verification', success: null });
   }
 });
 
@@ -1331,7 +1331,7 @@ app.get('/resend-verification', (req, res) => {
   res.render('resend-verification', { success: null, error: null });
 });
 
-app.post('/resend-verification', async (req, res) => {
+app.post('/resend-verification', csrfProtection, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.render('login', { error: 'Email is required', success: null });
 
