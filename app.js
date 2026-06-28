@@ -152,7 +152,7 @@ app.use(helmet({
       upgradeInsecureRequests: null,
     },
   },
-  hsts: false,
+  hsts: { maxAge: 15552000, includeSubDomains: true },
   crossOriginEmbedderPolicy: false,
 }));
 
