@@ -15,7 +15,7 @@ import { categorizeColors } from './lib/categorize.js';
 import { generatePaletteSVG } from './lib/palette.js';
 import { generatePreviews } from './lib/preview-renderer.js';
 import { generateXrnc } from './lib/xrnc-generator.js';
-import { sendPasswordReset, sendWelcome } from './lib/email.js';
+import { sendPasswordReset, sendWelcome, sendVerificationEmail } from './lib/email.js';
 import { GROUPS as ELEMENT_GROUPS } from './lib/element-groups.js';
 import { CLUSTERS, VU_METER_PRESETS, buildSlaveMap } from './lib/element-clusters.js';
 import { ARCHETYPES, ARCHETYPE_LIST } from './lib/archetype-seeds.js';
