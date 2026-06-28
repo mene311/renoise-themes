@@ -1,0 +1,49 @@
+<%- include('partials/header', { pageTitle: 'Feedback — Renoise Theme Share' }) %>
+
+<style>
+  .form-page { max-width: 520px; margin: 48px auto; padding: 0 16px; }
+  .form-page h1 { font-size: 1.2rem; margin-bottom: 8px; }
+  .form-page p { color: var(--chrome-text-dim); font-size: 14px; margin-bottom: 20px; }
+  .feedback-form { display: flex; flex-direction: column; gap: 14px; }
+  .feedback-form label { font-size: 13px; color: var(--chrome-text-bright); display: flex; flex-direction: column; gap: 4px; }
+  .feedback-form input, .feedback-form textarea {
+    background: var(--chrome-bg-deep); border: 1px solid var(--chrome-border);
+    color: var(--chrome-text); font-family: var(--font-mono); font-size: 14px;
+    padding: 10px 12px; border-radius: 4px;
+  }
+  .feedback-form textarea { min-height: 140px; resize: vertical; }
+  .feedback-form input:focus, .feedback-form textarea:focus {
+    border-color: var(--accent); outline: none;
+  }
+  .success-msg { background: var(--chrome-accent); color: #111; padding: 12px 16px; border-radius: 4px; font-size: 13px; margin-bottom: 16px; }
+  .error-msg { background: var(--chrome-danger); color: #fff; padding: 12px 16px; border-radius: 4px; font-size: 13px; margin-bottom: 16px; }
+</style>
+
+<div class="form-page">
+  <a href="/" class="back-link">&larr; Back</a>
+  <h1>Feedback</h1>
+  <p>Found a bug? Have a feature idea? Want to say something nice? We read every message.</p>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="success-msg"><%= success %></div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="error-msg"><%= error %></div>
+  <% } %>
+
+  <form method="POST" action="/feedback" class="feedback-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Name (optional)
+      <input type="text" name="name" maxlength="100" placeholder="How should we call you?">
+    </label>
+    <label>Email (optional)
+      <input type="email" name="email" maxlength="200" placeholder="If you want a reply">
+    </label>
+    <label>Message
+      <textarea name="message" maxlength="5000" placeholder="What's on your mind?" required></textarea>
+    </label>
+    <button type="submit" class="btn-submit">Send Feedback</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

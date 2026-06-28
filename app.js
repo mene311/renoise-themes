@@ -20,6 +20,7 @@ import { GROUPS as ELEMENT_GROUPS } from './lib/element-groups.js';
 import { CLUSTERS, VU_METER_PRESETS, buildSlaveMap } from './lib/element-clusters.js';
 import { ARCHETYPES, ARCHETYPE_LIST } from './lib/archetype-seeds.js';
 import {
+  insertFeedback, getFeedback, markFeedbackRead,
   saveTheme, listThemes, listThemesPage, countThemes,
   getTheme, getThemeBySlug, listTags,
   likeTheme, unlikeTheme, trackDownload,
@@ -1233,6 +1234,37 @@ app.use((err, req, res, next) => {
 });
 
 // ── Health check ───────────────────────────────────────
+// ── Feedback ──────────────────────────────────────────
+
+app.get('/feedback', (req, res) => {
+  res.render('feedback', { success: null, error: null });
+});
+
+app.post('/feedback', (req, res) => {
+  const { name, email, message } = req.body;
+  if (!message || !message.trim()) {
+    return res.render('feedback', { error: 'Message is required', success: null });
+  }
+  try {
+    insertFeedback(name, email, message);
+    res.render('feedback', { success: 'Thanks! Your feedback has been received.', error: null });
+  } catch (err) {
+    console.error('Feedback error:', err);
+    res.render('feedback', { error: 'Something went wrong. Please try again.', success: null });
+  }
+});
+
+app.get('/admin/feedback', requireAdmin, (req, res) => {
+  const filter = req.query.filter || 'all';
+  const items = filter === 'all' ? getFeedback(null) : filter === 'unread' ? getFeedback('unread') : getFeedback('read');
+  res.render('admin-feedback', { items, filter });
+});
+
+app.post('/admin/feedback/:id/read', requireAdmin, (req, res) => {
+  markFeedbackRead(Number(req.params.id));
+  res.redirect('/admin/feedback?filter=' + (req.query.redirect || 'all'));
+});
+
 app.get('/health', (req, res) => {
   let dbOk = false;
   try {
