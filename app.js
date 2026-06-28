@@ -812,7 +812,7 @@ app.get('/create', requireAuth, (req, res) => {
   res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP, CLUSTERS, VU_METER_PRESETS, SLAVE_MAP });
 });
 
-app.get('/studio', requireAuth, (req, res) => {
+app.get('/studio', requireAdmin, (req, res) => {
   const SLAVE_MAP = buildSlaveMap();
   res.render('studio', {
     mode: 'studio',
