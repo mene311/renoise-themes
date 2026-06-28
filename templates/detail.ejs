@@ -44,6 +44,12 @@
               <button type="submit" class="btn-submit" style="height:24px;font-size:10px;padding:0 8px;background:var(--chrome-warning);border-color:var(--chrome-warning);color:#111;">Unpublish</button>
             </form>
           <% } %>
+          <a href="/theme/<%= theme.slug %>/edit" class="btn-submit" style="height:24px;font-size:10px;padding:0 8px;text-decoration:none;display:inline-flex;align-items:center;">Edit</a>
+          <a href="/theme/<%= theme.slug %>/edit-colors" class="btn-submit" style="height:24px;font-size:10px;padding:0 8px;text-decoration:none;display:inline-flex;align-items:center;background:var(--accent);border-color:var(--accent);color:#111;">🎨 Colors</a>
+          <form action="/theme/<%= theme.slug %>/delete" method="POST" style="margin:0;" onsubmit="return confirm('Delete this theme permanently?')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn-submit" style="height:24px;font-size:10px;padding:0 8px;background:var(--chrome-danger);border-color:var(--chrome-danger);">Delete</button>
+          </form>
         </div>
       <% } %>
 
