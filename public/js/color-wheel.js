@@ -33,21 +33,24 @@ document.addEventListener('DOMContentLoaded', () => {
   panel.innerHTML = `
     <div class="wheel-panel-header">
       <span class="wheel-panel-title" id="wheelActiveLabel">Pick a color</span>
-      <button class="wheel-close" aria-label="Close color wheel" title="Close (Esc)">&times;</button>
     </div>
     <div class="wheel-canvas-wrap" id="wheelCanvasWrap"></div>
     <div class="wheel-hex-row">
       <span class="wheel-hex-hash">#</span>
       <input type="text" class="wheel-hex-input" id="wheelHexInput" maxlength="6" placeholder="hex" spellcheck="false">
-      <span class="wheel-hex-label" id="wheelHexElement"></span>
+    </div>
+    <div class="wheel-actions">
+      <button class="wheel-btn wheel-btn-cancel" id="wheelCancelBtn" title="Discard changes (Esc)">Cancel</button>
+      <button class="wheel-btn wheel-btn-accept" id="wheelAcceptBtn" title="Apply color (Enter)">✓ Accept</button>
     </div>
   `;
   document.body.appendChild(panel);
 
-  const closeBtn = panel.querySelector('.wheel-close');
+  const acceptBtn = panel.querySelector('#wheelAcceptBtn');
+  const cancelBtn = panel.querySelector('#wheelCancelBtn');
   const hexInput = panel.querySelector('#wheelHexInput');
   const activeLabel = panel.querySelector('#wheelActiveLabel');
-  const hexElement = panel.querySelector('#wheelHexElement');
+  // hexElement removed — label is in the header now
 
   // ── Copy/paste toast ──────────────────────────
 
@@ -169,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     syncInProgress = false;
     hexInput.value = hex.replace('#', '');
     activeLabel.textContent = elName.replace(/_/g, ' ');
-    hexElement.textContent = elName.replace(/_/g, ' ');
 
     // Scroll the swatch into view if needed
     if (swatch) {
@@ -308,7 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Close button ──────────────────────────────
 
-  closeBtn.addEventListener('click', () => closePanel(true));
+  acceptBtn.addEventListener('click', () => closePanel(false));
+  cancelBtn.addEventListener('click', () => closePanel(true));
 
   // ── Public API ────────────────────────────────
 
@@ -353,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectField,
     updateSwatch,
     syncAllSwatches,
-    closePanel: () => closePanel(true),
+    closePanel: (discard) => closePanel(discard !== false),
     get activeEl() { return activeEl; },
   };
 });
