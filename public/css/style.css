@@ -2695,6 +2695,13 @@ main.container {
 }
 
 @media (max-width: 640px) {
+  .header-inner { gap: 4px; }
+  .header-nav { gap: 0; flex-shrink: 1; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .header-nav a, .header-nav button { padding: 0 6px; font-size: 12px; }
+  .logo { font-size: 12px; }
+  .header-search { max-width: 80px; }
+  .header-search input { font-size: 12px; padding: 2px 4px; }
+
   .theme-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
