@@ -117,6 +117,18 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// ── Global rate limiting ───────────────────────────
+
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  skip: skipForMene,
+  message: 'Too many requests',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
+
 // ── App configuration ──────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'templates'));
@@ -1340,26 +1352,7 @@ app.post('/resend-verification', async (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  let dbOk = false;
-  try {
-    db.prepare('SELECT 1').get();
-    dbOk = true;
-  } catch (e) {
-    dbOk = false;
-  }
-
-  const checks = {
-    database: dbOk,
-    uploads: fs.existsSync(path.join(__dirname, 'public/uploads')),
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  };
-
-  const healthy = checks.database && checks.uploads;
-  res.status(healthy ? 200 : 503).json({
-    status: healthy ? 'healthy' : 'unhealthy',
-    checks,
-  });
+  res.json({ status: 'healthy' });
 });
 
 // ── Periodic cleanup: old creator preview dirs ─────────
