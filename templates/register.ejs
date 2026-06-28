@@ -12,7 +12,7 @@
       <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
     <% } %>
 
-    <form action="/register" method="POST">
+    <form action="/register" method="POST" novalidate>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <label for="username">
@@ -37,7 +37,7 @@
         <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="Type your password again" required minlength="8">
       </label>
 
-      <button type="submit" class="btn-submit">Create Account</button>
+      <button type="submit" class="btn-submit" id="regSubmitBtn">Create Account</button>
     </form>
 
     <p class="auth-switch">
@@ -45,5 +45,38 @@
     </p>
   </article>
 </section>
+
+<script>
+(function() {
+  var btn = document.getElementById('regSubmitBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function(e) {
+    var form = btn.closest('form');
+    var u = form.querySelector('[name=username]').value.trim();
+    var em = form.querySelector('[name=email]').value.trim();
+    var pw = form.querySelector('[name=password]').value;
+    var p2 = form.querySelector('[name=passwordConfirm]').value;
+    var err = '';
+    if (!u) err = 'Username is required';
+    else if (u.length < 2 || u.length > 30) err = 'Username must be 2-30 characters';
+    else if (!/^[a-zA-Z0-9_-]+$/.test(u)) err = 'Username can only contain letters, numbers, _ or -';
+    else if (!em) err = 'Email is required';
+    else if (!/^[^@]+@[^@]+\.[^@]+$/.test(em)) err = 'Please enter a valid email address';
+    else if (!pw) err = 'Password is required';
+    else if (pw.length < 8) err = 'Password must be at least 8 characters';
+    else if (pw !== p2) err = 'Passwords do not match';
+    if (err) {
+      e.preventDefault();
+      var old = form.querySelector('.alert-error');
+      if (old) old.remove();
+      var div = document.createElement('div');
+      div.className = 'alert alert-error';
+      div.innerHTML = '<span class="alert-icon">❌</span><span>' + err + '</span>';
+      form.insertBefore(div, form.firstChild);
+      div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+})();
+</script>
 
 <%- include('partials/footer') %>
