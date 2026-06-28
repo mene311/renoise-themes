@@ -2672,8 +2672,9 @@ main.container {
 @media (max-width: 900px) {
   .tracker-layout { flex-direction: column; height: auto; }
   .track-list { border-right: none; border-bottom: 1px solid var(--chrome-border); }
-  .side-panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
-  .panel-section { flex: 1; min-width: 200px; border-bottom: 1px solid var(--chrome-border); border-right: 1px solid var(--chrome-border); }
+  .side-panel { order: -1; width: 100%; flex-direction: column; gap: 0; margin-bottom: 16px; }
+  .side-panel .panel-section { flex: none; min-width: auto; border-bottom: 1px solid var(--chrome-border); border-right: none; padding: 8px 10px; }
+  .side-panel .panel-section:last-child { border-bottom: none; }
 
   .detail-layout { flex-direction: column; height: auto; }
   .detail-sidebar-left { width: 100%; border-right: none; border-bottom: 1px solid var(--chrome-border); }
