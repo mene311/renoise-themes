@@ -2218,6 +2218,38 @@ main.container {
 }
 
 /* ── Color swatch copy/paste states ──────────── */
+/* ── Color wheel action buttons ───────────── */
+.wheel-actions {
+  display: flex;
+  gap: 6px;
+  padding: 4px 8px 8px;
+}
+.wheel-btn {
+  flex: 1;
+  height: 30px;
+  border: 1px solid var(--chrome-border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.wheel-btn-cancel {
+  background: var(--chrome-panel);
+  color: var(--chrome-text-dim);
+}
+.wheel-btn-cancel:hover {
+  background: var(--chrome-panel-hover);
+  color: var(--chrome-text);
+}
+.wheel-btn-accept {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #111;
+}
+.wheel-btn-accept:hover {
+  background: var(--accent-hover);
+}
 .color-swatch.copied-from {
   outline: 2px dashed var(--accent);
   outline-offset: 2px;
