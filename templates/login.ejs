@@ -6,7 +6,7 @@
     <p class="hero-sub">Welcome back! Sign in to continue.</p>
 
     <% if (error) { %>
-      <div class="alert alert-error"><span class="alert-icon">❌</span><span><%= error %></span></div>
+      <div class="alert alert-error"><span class="alert-icon">❌</span><span><%- error %></span></div>
     <% } %>
     <% if (success) { %>
       <div class="alert alert-success"><span class="alert-icon">✅</span><span><%= success %></span></div>
