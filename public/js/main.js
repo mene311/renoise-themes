@@ -13,22 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ════════════════════════════════════════════
-  // WHAT'S NEW BANNER
-  // ════════════════════════════════════════════
-  const banner = document.getElementById('whatsNewBanner');
-  const closeBanner = document.getElementById('closeBanner');
-  if (banner && closeBanner) {
-    const BANNER_KEY = 'dismissedBanner_v1';
-    if (!localStorage.getItem(BANNER_KEY)) {
-      banner.hidden = false;
-    }
-    closeBanner.addEventListener('click', () => {
-      banner.hidden = true;
-      localStorage.setItem(BANNER_KEY, '1');
-    });
-  }
-
-  // ════════════════════════════════════════════
   // DYNAMIC ACCENT COLOR (detail page)
   // ════════════════════════════════════════════
   const detailLayout = document.querySelector('.detail-layout[data-accent]');
