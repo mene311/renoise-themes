@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+// Welcome banner — shown once per visitor  (() => {    const banner = document.getElementById("welcomeBanner");    const closeBtn = document.getElementById("closeWelcome");    if (banner && closeBtn && !localStorage.getItem("welcomeDismissed")) {      banner.hidden = false;      closeBtn.addEventListener("click", () => {        banner.hidden = true;        localStorage.setItem("welcomeDismissed", "1");      });    }  })();
 
   // ════════════════════════════════════════════
   // UTILITIES

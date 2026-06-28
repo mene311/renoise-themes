@@ -2817,3 +2817,47 @@ select:focus-visible {
   .theme-card { border-width: 2px; }
   .site-header { border-bottom-width: 2px; }
 }
+
+/* ── Welcome Banner ─────────────────────────── */
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin: 0;
+  background: var(--chrome-panel);
+  border-bottom: 1px solid var(--chrome-border);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.welcome-icon {
+  font-size: 20px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.welcome-text {
+  color: var(--chrome-text-dim);
+  flex: 1;
+  min-width: 0;
+}
+.welcome-text strong {
+  color: var(--chrome-text-bright);
+}
+.welcome-close {
+  background: none;
+  border: 1px solid var(--chrome-border);
+  color: var(--chrome-text-faint);
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+.welcome-close:hover {
+  color: var(--chrome-text);
+  border-color: var(--chrome-border-light);
+}
