@@ -377,7 +377,7 @@ app.post('/login', authLimiter, csrfProtection, async (req, res) => {
     }
 
     // Check email verification
-    if (!result.emailVerified) {
+    if (!result.user.email_verified) {
       return res.render('login', { 
         error: 'Please verify your email before logging in.',
         verifyEmail: result.user.email,
