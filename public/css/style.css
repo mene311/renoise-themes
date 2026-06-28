@@ -2658,6 +2658,7 @@ main.container {
   overflow: auto;
 }
 .audit-pair {
+  grid-template-columns: 24px 1fr auto auto;
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 6px;
@@ -2668,9 +2669,22 @@ main.container {
   font-size: 10px;
 }
 .audit-pair:hover {
+  cursor: pointer;
   border-color: var(--accent);
   background: var(--chrome-panel-hover);
 }
+.audit-swatch {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--chrome-border-light);
+  border-radius: 2px;
+  font-size: 8px;
+  line-height: 20px;
+  text-align: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .audit-label {
   overflow: hidden;
   text-overflow: ellipsis;
