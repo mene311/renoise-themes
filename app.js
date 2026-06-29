@@ -73,10 +73,19 @@ const downloadLimiter = rateLimit({
 });
 
 const previewLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
+  windowMs: 60 * 1000,
   max: 10,
   skip: skipForMene,
   message: 'Too many preview requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const guestLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  skip: skipForMene,
+  message: 'Preview limited for guests. Create a free account for higher limits.',
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -877,7 +886,10 @@ app.get('/studio', (req, res) => {
   });
 });
 
-app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res) => {
+app.post('/api/render-preview', (req, res, next) => {
+  if (!req.session.user) return guestLimiter(req, res, next);
+  return previewLimiter(req, res, next);
+}, csrfProtection, async (req, res) => {
   try {
     const { elementColorMap } = req.body;
     if (!elementColorMap || Object.keys(elementColorMap).length === 0) {
@@ -918,7 +930,10 @@ app.post('/api/render-preview', previewLimiter, csrfProtection, async (req, res)
   }
 });
 
-app.post('/api/download-xrnc', downloadLimiter, csrfProtection, (req, res) => {
+app.post('/api/download-xrnc', (req, res, next) => {
+  if (!req.session.user) return guestLimiter(req, res, next);
+  return downloadLimiter(req, res, next);
+}, csrfProtection, (req, res) => {
   try {
     const { elementColorMap } = req.body;
     if (!elementColorMap || Object.keys(elementColorMap).length === 0) {
