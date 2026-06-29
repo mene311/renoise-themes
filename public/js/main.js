@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 // Welcome banner — shown once per visitor  (() => {    const banner = document.getElementById("welcomeBanner");    const closeBtn = document.getElementById("closeWelcome");    if (banner && closeBtn && !localStorage.getItem("welcomeDismissed")) {      banner.hidden = false;      closeBtn.addEventListener("click", () => {        banner.hidden = true;        localStorage.setItem("welcomeDismissed", "1");      });    }  })();
 
-  // Splash: hide on revisit if previously dismissed
+  // Splash: hide on revisit if previously dismissed (localStorage + cookie fallback)
   (() => {
     const splash = document.getElementById('vibeSplash');
-    if (splash && localStorage.getItem('splashDismissed')) {
+    const dismissed = localStorage.getItem('splashDismissed') || document.cookie.includes('splashDismissed=1');
+    if (splash && dismissed) {
       splash.hidden = true;
     }
   })();
