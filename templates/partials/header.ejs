@@ -23,8 +23,9 @@
   <div class="splash-overlay" id="vibeSplash">
     <div class="splash-card">
       <div class="splash-icon">⚠</div>
-      <h2>Vibe-coded</h2>
-      <p class="splash-quote">&ldquo;<%= splashQuote %>&rdquo;</p>
+      <h2>Heads-up</h2>
+      <p>This site was <strong>vibe-coded with AI</strong> — it's a hobby project, not a product.</p>
+      <p class="splash-sub">If that bothers you, close the tab. Otherwise, carry on.</p>
       <button class="btn splash-dismiss" id="splashDismiss" onclick="var s=document.getElementById('vibeSplash');s.classList.add('splash-fade-out');setTimeout(function(){s.hidden=true},300);document.cookie='splashDismissed=1;max-age=31536000;path=/;SameSite=Lax';try{localStorage.setItem('splashDismissed','1')}catch(e){}">Got it</button>
     </div>
   </div>
