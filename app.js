@@ -260,6 +260,7 @@ function getInlineCss() {
 }
 
 app.use((req, res, next) => {
+  res.locals.splashDismissed = !!req.cookies.splashDismissed;
   res.locals.uiTheme = req.cookies.theme === 'light' ? 'light' : 'dark';
   res.locals.marquee = getMarquee();
   res.locals.user = req.session.user || null;
