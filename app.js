@@ -1123,11 +1123,12 @@ app.get('/upload', requireAuth, (req, res) => {
   res.render('upload', { error: null, success: null });
 });
 
-app.post('/upload', requireAuth, uploadLimiter, csrfProtection,
+app.post('/upload', requireAuth, uploadLimiter,
   upload.fields([
     { name: 'theme', maxCount: 1 },
     { name: 'screenshots', maxCount: 5 }
   ]),
+  csrfProtection,
   async (req, res) => {
     if (!req.files || !req.files.theme) {
       return res.render('upload', { error: 'Please select a .xrnc theme file!', success: null });
