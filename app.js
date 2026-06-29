@@ -15,7 +15,7 @@ import { categorizeColors } from './lib/categorize.js';
 import { generatePaletteSVG } from './lib/palette.js';
 import { generatePreviews } from './lib/preview-renderer.js';
 import { generateXrnc } from './lib/xrnc-generator.js';
-import { sendPasswordReset, sendWelcome, sendVerificationEmail } from './lib/email.js';
+import { sendPasswordReset, sendWelcome, sendVerificationEmail, sendFeedbackReply } from './lib/email.js';
 import { GROUPS as ELEMENT_GROUPS } from './lib/element-groups.js';
 import { CLUSTERS, VU_METER_PRESETS, buildSlaveMap } from './lib/element-clusters.js';
 import { ARCHETYPES, ARCHETYPE_LIST } from './lib/archetype-seeds.js';
@@ -1377,6 +1377,23 @@ app.get('/admin/feedback', requireAdmin, (req, res) => {
 app.post('/admin/feedback/:id/read', requireAdmin, csrfProtection, (req, res) => {
   markFeedbackRead(Number(req.params.id));
   res.redirect('/admin/feedback?filter=' + (req.query.redirect || 'all'));
+});
+
+app.post('/admin/feedback/:id/reply', requireAdmin, csrfProtection, async (req, res) => {
+  const id = Number(req.params.id);
+  const redirect = req.query.redirect || 'all';
+  const item = db.prepare('SELECT * FROM feedback WHERE id = ?').get(id);
+  if (!item) return res.status(404).send('Feedback not found');
+  if (!item.email) return res.status(400).send('Feedback has no email address');
+
+  const reply = (req.body.reply || '').trim();
+  if (!reply) return res.status(400).send('Reply cannot be empty');
+
+  const result = await sendFeedbackReply(item.email, item.name, item.message, reply);
+  if (!result.success) return res.status(500).send('Email failed: ' + result.error);
+
+  db.prepare('UPDATE feedback SET read = 1, reply_message = ?, replied_at = CURRENT_TIMESTAMP WHERE id = ?').run(reply, id);
+  res.redirect('/admin/feedback?filter=' + redirect);
 });
 
 // ── Email Verification ─────────────────────────────────

@@ -11,6 +11,10 @@
   .feedback-meta { display: flex; gap: 16px; font-size: 11px; color: var(--chrome-text-faint); margin-bottom: 6px; }
   .feedback-message { font-size: 14px; color: var(--chrome-text-dim); line-height: 1.6; white-space: pre-wrap; }
   .feedback-actions { margin-top: 8px; }
+  .feedback-reply { margin-top: 8px; }
+  .feedback-reply summary { cursor: pointer; font-size: 12px; color: var(--accent); }
+  .feedback-reply textarea { width: 100%; margin: 8px 0; background: var(--chrome-panel); color: var(--chrome-text); border: 1px solid var(--chrome-border); padding: 8px; font-family: inherit; font-size: 13px; }
+  .feedback-replied { margin-top: 8px; font-size: 11px; color: var(--accent); }
   .empty { text-align: center; color: var(--chrome-text-faint); padding: 40px; }
 </style>
 
@@ -35,13 +39,27 @@
           <span><%= new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
         </div>
         <div class="feedback-message"><%= item.message %></div>
-        <% if (!item.read) { %>
-          <div class="feedback-actions">
+        <% if (item.replied_at) { %>
+          <div class="feedback-replied">Replied <%= new Date(item.replied_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></div>
+        <% } %>
+        <div class="feedback-actions">
+          <% if (!item.read) { %>
             <form method="POST" action="/admin/feedback/<%= item.id %>/read?redirect=<%= filter %>" style="display:inline;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <button type="submit" class="btn-submit" style="height:24px;font-size:11px;padding:0 10px;">Mark Read</button>
             </form>
-          </div>
-        <% } %>
+          <% } %>
+          <% if (item.email) { %>
+            <details class="feedback-reply">
+              <summary>Reply by email</summary>
+              <form method="POST" action="/admin/feedback/<%= item.id %>/reply?redirect=<%= filter %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <textarea name="reply" rows="4" placeholder="Write reply to <%= item.email %>" required></textarea>
+                <button type="submit" class="btn-submit" style="height:26px;font-size:11px;padding:0 12px;">Send Reply</button>
+              </form>
+            </details>
+          <% } %>
+        </div>
       </div>
     <% }) %>
   <% } %>
