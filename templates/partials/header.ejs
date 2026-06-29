@@ -33,9 +33,9 @@
 
       <nav class="header-nav" aria-label="Main navigation">
         <a href="/">Browse</a>
-        <% if (user) { %>
           <a href="/tutorial">Tutorial</a>
           <a href="/create">Create</a>
+        <% if (user) { %>
           <a href="/upload" class="btn-nav-upload">Upload</a>
           <a href="/backstage">Backstage</a>
           <% if (user.rank_level >= 5) { %>
