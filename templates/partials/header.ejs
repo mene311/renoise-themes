@@ -9,6 +9,8 @@
   <meta property="og:title" content="<%= typeof ogTitle !== 'undefined' ? ogTitle : 'Renoise Theme Share' %>">
   <meta property="og:description" content="<%= typeof ogDescription !== 'undefined' ? ogDescription : 'Community color themes for Renoise DAW — auto-analyzed with palettes and tags.' %>">
   <meta property="og:type" content="<%= typeof ogType !== 'undefined' ? ogType : 'website' %>">
+  <meta property="og:url" content="<%= canonicalUrl %>">
+  <link rel="canonical" href="<%= canonicalUrl %>">
   <% if (typeof ogImage !== 'undefined' && ogImage) { %>
   <meta property="og:image" content="<%= ogImage %>">
   <meta name="twitter:card" content="summary_large_image">
@@ -17,19 +19,6 @@
   <style><%- _css %></style>
 </head>
 <body>
-
-  <% if (!splashDismissed) { %>
-  <!-- Splash: vibe-coded disclaimer — shown once per visitor -->
-  <div class="splash-overlay" id="vibeSplash">
-    <div class="splash-card">
-      <div class="splash-icon">⚠</div>
-      <h2>Heads-up</h2>
-      <p>This site was <strong>vibe-coded with AI</strong> — it's a hobby project, not a product.</p>
-      <p class="splash-sub">If that bothers you, close the tab. Otherwise, carry on.</p>
-      <button class="btn splash-dismiss" id="splashDismiss" onclick="var s=document.getElementById('vibeSplash');s.classList.add('splash-fade-out');setTimeout(function(){s.hidden=true},300);document.cookie='splashDismissed=1;max-age=31536000;path=/;SameSite=Lax';try{localStorage.setItem('splashDismissed','1')}catch(e){}">Got it</button>
-    </div>
-  </div>
-  <% } %>
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <header class="site-header">
@@ -44,7 +33,11 @@
         <input type="search" id="headerSearchInput" placeholder="Search…" autocomplete="off" aria-label="Search themes">
       </div>
 
-      <nav class="header-nav" aria-label="Main navigation">
+      <button class="header-menu-toggle" id="headerMenuToggle" type="button" aria-controls="headerNav" aria-expanded="false">
+        Menu
+      </button>
+
+      <nav class="header-nav" id="headerNav" aria-label="Main navigation">
         <a href="/">Browse</a>
           <a href="/tutorial">Tutorial</a>
           <a href="/create">Create</a>

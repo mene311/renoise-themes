@@ -1,14 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
 // Welcome banner — shown once per visitor  (() => {    const banner = document.getElementById("welcomeBanner");    const closeBtn = document.getElementById("closeWelcome");    if (banner && closeBtn && !localStorage.getItem("welcomeDismissed")) {      banner.hidden = false;      closeBtn.addEventListener("click", () => {        banner.hidden = true;        localStorage.setItem("welcomeDismissed", "1");      });    }  })();
 
-  // Splash: hide on revisit if previously dismissed (localStorage + cookie fallback)
-  (() => {
-    const splash = document.getElementById('vibeSplash');
-    const dismissed = localStorage.getItem('splashDismissed') || document.cookie.includes('splashDismissed=1');
-    if (splash && dismissed) {
-      splash.hidden = true;
-    }
-  })();
+  const headerMenuToggle = document.getElementById('headerMenuToggle');
+  const headerNav = document.getElementById('headerNav');
+  if (headerMenuToggle && headerNav) {
+    const syncMenuState = () => {
+      if (window.innerWidth > 640) {
+        headerNav.classList.remove('header-nav-open');
+        headerMenuToggle.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    headerMenuToggle.addEventListener('click', () => {
+      const expanded = headerNav.classList.toggle('header-nav-open');
+      headerMenuToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    });
+
+    window.addEventListener('resize', syncMenuState);
+    syncMenuState();
+  }
 
 
   // ════════════════════════════════════════════

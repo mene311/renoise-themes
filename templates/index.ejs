@@ -8,7 +8,7 @@
 <!-- What's New Banner -->
 <div class="welcome-banner" id="welcomeBanner" hidden>  <span class="welcome-icon">◈</span>  <div class="welcome-text">    &ldquo;<%= splashQuote %>&rdquo;  </div>  <button class="welcome-close" id="closeWelcome" aria-label="Dismiss">×</button></div>
 
-<div class="tracker-layout" role="application" aria-label="Renoise theme browser">
+<div class="tracker-layout" aria-label="Renoise theme browser">
 
   <!-- LEFT: Theme Gallery -->
   <section class="track-list" aria-label="Theme gallery">
@@ -73,7 +73,7 @@
       <div class="tag-grid" role="group" aria-label="Filter by tag">
         <a href="/<%= sort !== 'newest' ? '?sort=' + sort : '' %>"
            class="tag-btn <%= !filterTag ? 'active' : '' %>">all</a>
-        <% allTags.forEach(t => { %>
+        <% allTags.filter(t => t.count > 0).forEach(t => { %>
           <a href="/?tag=<%= t.name %><%= sort !== 'newest' ? '&sort=' + sort : '' %>"
              class="tag-btn tag-<%= t.name %> <%= filterTag === t.name ? 'active' : '' %>">
             <%= t.name %>

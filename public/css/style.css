@@ -438,6 +438,27 @@ main.container {
   gap: 2px;
   flex-shrink: 0;
 }
+.header-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--chrome-text);
+  background: var(--chrome-panel);
+  border: 1px solid var(--chrome-border);
+  cursor: pointer;
+}
+.header-menu-toggle:hover {
+  background: var(--chrome-panel-hover);
+  border-color: var(--chrome-border-light);
+}
+.header-menu-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .header-nav a,
 .header-nav button {
   display: inline-flex;
@@ -2724,11 +2745,53 @@ main.container {
 }
 
 @media (max-width: 640px) {
-  .header-inner { gap: 4px; }
-  .header-nav { gap: 0; flex-shrink: 1; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .header-nav a, .header-nav button { padding: 0 6px; font-size: 12px; }
+  .site-header { height: auto; min-height: var(--header-height); }
+  .header-inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    position: relative;
+  }
+  .header-menu-toggle { display: inline-flex; }
+  .header-nav {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 12px;
+    left: 12px;
+    z-index: 120;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 10px;
+    background: var(--chrome-bg);
+    border: 1px solid var(--chrome-border);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+  }
+  .header-nav.header-nav-open { display: flex; }
+  .header-nav a, .header-nav button {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 13px;
+    justify-content: flex-start;
+    border-color: var(--chrome-border);
+    background: var(--chrome-panel);
+  }
+  .nav-sep { display: none; }
+  .user-menu {
+    width: 100%;
+    height: 32px;
+    justify-content: flex-start;
+    padding: 0 8px;
+  }
   .logo { font-size: 12px; }
-  .header-search { max-width: 80px; }
+  .header-search {
+    max-width: none;
+    min-width: 0;
+  }
   .header-search input { font-size: 12px; padding: 2px 4px; }
 
   .theme-grid {
@@ -2743,9 +2806,7 @@ main.container {
   .card-meta { font-size: 12px; }
   .card-info { padding: 8px 10px 4px; }
   .card-palette { margin: 0 10px 10px; }
-
-  .header-search { max-width: 140px; }
-  .user-name { display: none; }
+  .user-name { display: inline; max-width: none; }
 }
 
 /* ── ACCESSIBILITY ─────────────────────────── */

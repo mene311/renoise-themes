@@ -23,7 +23,7 @@
   <div class="card-info">
     <div class="card-title" title="<%= theme.name %>"><%= theme.name %></div>
     <div class="card-meta">
-      <% if (theme.source === 'creator') { %><span class="card-source" title="Created with site's creator tool">🎨</span><% } %><span class="card-author" role="link" tabindex="0" data-href="/backstage/<%= encodeURIComponent(theme.author) %>" onclick="event.stopPropagation(); window.location.href='/backstage/<%= encodeURIComponent(theme.author) %>'" onkeydown="if(event.key==='Enter'||event.key===' '){event.stopPropagation();window.location.href='/backstage/<%= encodeURIComponent(theme.author) %>'}"><%= theme.author %></span>
+      <% if (theme.source === 'creator') { %><span class="card-source" title="Created with site's creator tool">🎨</span><% } %><span class="card-author"><%= theme.author %></span>
       <span class="card-likes" aria-label="<%= theme.likes %> likes">♥ <%= theme.likes %></span>
     </div>
   </div>

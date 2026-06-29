@@ -32,6 +32,7 @@ import {
   getProfileComments, addProfileComment, deleteProfileComment,
   getUserStats, deleteUser, publishTheme, unpublishTheme,
   createVerificationToken, verifyEmailToken,
+  listPublishedThemeSlugs,
   db
 } from './lib/database.js';
 
@@ -262,16 +263,10 @@ function getInlineCss() {
 app.use((req, res, next) => {
 
   const splashQuotes = [
-    "Vibe-coded with AI. Cope.",
-    "Yes, AI wrote most of this. You're still here, though.",
-    "Hand-crafted by a human and three LLMs in a trenchcoat.",
-    "Vibe-coded. Works on my machine. No refunds.",
-    "Built with vibes, deployed with spite.",
-    "AI-assisted, human-disastered.",
-    "The code runs on vibes and one really good prompt.",
-    "Vibe-coded — because life's too short for boilerplate.",
-    "Made by someone who asked an AI 'how hard could it be?'",
-    "This site was vibe-coded. If that bothers you, the door's right there.",
+    'Browse published Renoise themes and download the .xrnc directly.',
+    'Theme previews are approximate. The download is the source of truth.',
+    'Use tags to narrow by contrast, palette temperature, and accent color.',
+    'Open a theme page to inspect the full palette before downloading.',
   ];
   res.locals.splashQuote = splashQuotes[Math.floor(Math.random() * splashQuotes.length)];
   res.locals.splashDismissed = !!req.cookies.splashDismissed;
@@ -280,6 +275,7 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.csrfToken = generateCsrfToken(req);
   res.locals._css = getInlineCss();
+  res.locals.canonicalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
   res.setHeader('Cache-Control', 'no-cache');
   next();
 });
@@ -298,6 +294,31 @@ app.use((req, res, next) => {
 });
 
 const PAGE_SIZE = 24;
+
+app.get('/sitemap.xml', (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  const staticPages = ['/', '/tutorial', '/create', '/feedback'];
+  const themePages = listPublishedThemeSlugs().map((theme) => ({
+    loc: `/theme/${theme.slug}`,
+    lastmod: new Date(theme.uploaded_at).toISOString(),
+  }));
+
+  const urls = [
+    ...staticPages.map((loc) => ({ loc, lastmod: null })),
+    ...themePages,
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(({ loc, lastmod }) => `  <url>
+    <loc>${baseUrl}${loc}</loc>${lastmod ? `
+    <lastmod>${lastmod}</lastmod>` : ''}
+  </url>`).join('\n')}
+</urlset>`;
+
+  res.type('application/xml');
+  res.send(xml);
+});
 
 // ── Upload config ──────────────────────────────────────
 const storage = multer.diskStorage({
