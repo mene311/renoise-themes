@@ -51,8 +51,7 @@
         <% if (user) { %>
           <a href="/upload" class="btn-nav-upload">Upload</a>
           <a href="/backstage">Backstage</a>
-          <% if (user.rank_level >= 5) { %>
-          <% } %>
+          <% if (user.rank_level >= 10) { %><a href="/admin">Admin</a><% } %>
           <span class="nav-sep" aria-hidden="true"></span>
           <div class="user-menu" aria-label="User menu">
             <span class="user-avatar" aria-hidden="true"><%= user.username.charAt(0).toUpperCase() %></span>

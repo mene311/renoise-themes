@@ -1,0 +1,128 @@
+<%- include('partials/header', { pageTitle: 'Admin — Renoise Theme Share' }) %>
+
+<style>
+  .admin-dash { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  .admin-dash h1 { font-size: 1.2rem; margin-bottom: 16px; }
+
+  .stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .stat-card { background: var(--chrome-bg); border: 1px solid var(--chrome-border); padding: 12px 14px; }
+  .stat-card .stat-num { font-size: 24px; font-weight: 700; color: var(--chrome-text); }
+  .stat-card .stat-label { font-size: 11px; color: var(--chrome-text-faint); margin-top: 2px; }
+  .stat-card.warn { border-left: 3px solid var(--chrome-warn); }
+
+  .admin-section { margin-bottom: 24px; }
+  .admin-section h2 { font-size: 14px; margin-bottom: 8px; color: var(--chrome-text-dim); }
+  .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .admin-table th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--chrome-border); color: var(--chrome-text-faint); font-weight: 400; font-size: 11px; text-transform: uppercase; }
+  .admin-table td { padding: 6px 8px; border-bottom: 1px solid var(--chrome-border-hair); color: var(--chrome-text-dim); }
+  .admin-table a { color: var(--accent); text-decoration: none; }
+  .admin-table a:hover { text-decoration: underline; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--chrome-border); }
+  .badge-draft { color: var(--chrome-text-faint); }
+  .badge-published { color: var(--accent); border-color: var(--accent); }
+  .badge-creator { color: var(--accent); }
+  .badge-upload { color: var(--chrome-text-faint); }
+  .truncate { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+
+  .admin-nav { display: flex; gap: 8px; margin-bottom: 20px; }
+  .admin-nav a { padding: 5px 12px; font-size: 13px; text-decoration: none; border: 1px solid var(--chrome-border); color: var(--chrome-text-dim); }
+  .admin-nav a:hover { background: var(--chrome-panel); }
+  .admin-nav a.active { background: var(--accent); color: #111; border-color: var(--accent); }
+</style>
+
+<div class="admin-dash">
+  <h1>Admin</h1>
+
+  <div class="admin-nav">
+    <a href="/admin" class="active">Dashboard</a>
+    <a href="/admin/feedback">Feedback</a>
+  </div>
+
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-num"><%= stats.themes %></div>
+      <div class="stat-label">Total Themes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= stats.published %></div>
+      <div class="stat-label">Published</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= stats.users %></div>
+      <div class="stat-label">Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= stats.downloads7d %></div>
+      <div class="stat-label">Downloads (7d)</div>
+    </div>
+    <div class="stat-card <%= stats.feedbackUnread > 0 ? 'warn' : '' %>">
+      <div class="stat-num"><%= stats.feedbackUnread %>/<%= stats.feedback %></div>
+      <div class="stat-label">Feedback (unread/total)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= stats.errors7d.toLocaleString() %></div>
+      <div class="stat-label">Errors (7d)</div>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <h2>Recent Feedback</h2>
+    <% if (recentFeedback.length === 0) { %>
+      <p style="color:var(--chrome-text-faint);">No feedback yet.</p>
+    <% } else { %>
+      <table class="admin-table">
+        <thead><tr><th>From</th><th>Message</th><th>Date</th><th></th></tr></thead>
+        <% recentFeedback.forEach(f => { %>
+          <tr>
+            <td><%= f.name || '—' %></td>
+            <td><span class="truncate" title="<%= f.message.replace(/"/g, '&quot;') %>"><%= f.message.substring(0, 80) %></span></td>
+            <td><%= new Date(f.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) %></td>
+            <td><% if (!f.read) { %>●<% } %></td>
+          </tr>
+        <% }); %>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="admin-section">
+    <h2>Recent Themes</h2>
+    <% if (recentThemes.length === 0) { %>
+      <p style="color:var(--chrome-text-faint);">No themes yet.</p>
+    <% } else { %>
+      <table class="admin-table">
+        <thead><tr><th>ID</th><th>Name</th><th>Author</th><th>Status</th><th>Source</th><th>Date</th></tr></thead>
+        <% recentThemes.forEach(t => { %>
+          <tr>
+            <td><%= t.id %></td>
+            <td><a href="/theme/<%= t.id %>"><%= t.name %></a></td>
+            <td><%= t.author %></td>
+            <td><span class="badge <%= t.status === 'published' ? 'badge-published' : 'badge-draft' %>"><%= t.status %></span></td>
+            <td><span class="badge <%= t.source === 'creator' ? 'badge-creator' : 'badge-upload' %>"><%= t.source %></span></td>
+            <td><%= t.uploaded_at ? new Date(t.uploaded_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '—' %></td>
+          </tr>
+        <% }); %>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="admin-section">
+    <h2>Recent Users</h2>
+    <% if (recentUsers.length === 0) { %>
+      <p style="color:var(--chrome-text-faint);">No users yet.</p>
+    <% } else { %>
+      <table class="admin-table">
+        <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Joined</th></tr></thead>
+        <% recentUsers.forEach(u => { %>
+          <tr>
+            <td><%= u.id %></td>
+            <td><%= u.username %></td>
+            <td><%= u.email %></td>
+            <td><%= new Date(u.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) %></td>
+          </tr>
+        <% }); %>
+      </table>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1351,6 +1351,23 @@ app.post('/feedback', (req, res) => {
   }
 });
 
+// ── Admin Dashboard ────────────────────────────────────
+app.get('/admin', requireAdmin, (req, res) => {
+  const stats = {
+    themes: db.prepare('SELECT COUNT(*) as n FROM themes').get().n,
+    published: db.prepare("SELECT COUNT(*) as n FROM themes WHERE status='published'").get().n,
+    users: db.prepare('SELECT COUNT(*) as n FROM users').get().n,
+    feedback: db.prepare('SELECT COUNT(*) as n FROM feedback').get().n,
+    feedbackUnread: db.prepare('SELECT COUNT(*) as n FROM feedback WHERE read=0').get().n,
+    downloads7d: db.prepare("SELECT COUNT(*) as n FROM request_log WHERE path LIKE '/download/%' AND created_at > datetime('now', '-7 days')").get().n,
+    errors7d: db.prepare("SELECT COUNT(*) as n FROM request_log WHERE status >= 400 AND created_at > datetime('now', '-7 days')").get().n,
+  };
+  const recentFeedback = db.prepare('SELECT * FROM feedback ORDER BY created_at DESC LIMIT 5').all();
+  const recentUsers = db.prepare('SELECT id, username, email, created_at FROM users ORDER BY id DESC LIMIT 5').all();
+  const recentThemes = db.prepare('SELECT id, name, author, status, source, uploaded_at FROM themes ORDER BY id DESC LIMIT 10').all();
+  res.render('admin', { stats, recentFeedback, recentUsers, recentThemes });
+});
+
 app.get('/admin/feedback', requireAdmin, (req, res) => {
   const filter = req.query.filter || 'all';
   const items = filter === 'all' ? getFeedback(null) : filter === 'unread' ? getFeedback('unread') : getFeedback('read');
