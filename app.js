@@ -857,12 +857,12 @@ app.get('/backstage', (req, res) => {
   res.redirect(`/backstage/${req.session.user.username}`);
 });
 
-app.get('/create', requireAuth, (req, res) => {
+app.get('/create', (req, res) => {
   const SLAVE_MAP = buildSlaveMap();
   res.render('create', { defaults: getDefaultColors(), ELEMENT_GROUPS, COVERAGE_MAP, CLUSTERS, VU_METER_PRESETS, SLAVE_MAP });
 });
 
-app.get('/studio', requireAdmin, (req, res) => {
+app.get('/studio', (req, res) => {
   const SLAVE_MAP = buildSlaveMap();
   res.render('studio', {
     mode: 'studio',
