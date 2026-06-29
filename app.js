@@ -23,8 +23,8 @@ import {
   insertFeedback, getFeedback, markFeedbackRead,
   saveTheme, listThemes, listThemesPage, countThemes,
   getTheme, getThemeBySlug, listTags,
-  likeTheme, unlikeTheme, trackDownload,
-  addComment, getThemeComments, getFeaturedThemes,
+  likeTheme, unlikeTheme, trackDownload, trackView,
+  addComment, getThemeComments, getFeaturedThemes, logRequest,
   getPopularThemes, registerUser, authenticateUser, getUserById,
   createPasswordResetToken, validateResetToken, consumeResetToken,
   searchThemes, countSearchThemes,
@@ -265,6 +265,19 @@ app.use((req, res, next) => {
   res.locals.csrfToken = generateCsrfToken(req);
   res.locals._css = getInlineCss();
   res.setHeader('Cache-Control', 'no-cache');
+  next();
+});
+
+// ── Request logging (lightweight, for debugging) ──────
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    // Skip asset requests and health checks to keep noise low
+    const p = req.path;
+    if (p.startsWith('/uploads/') || p.startsWith('/css/') || p.startsWith('/js/') ||
+        p === '/health' || p === '/favicon.ico' || p.startsWith('/cdn-cgi/')) return;
+    logRequest(p, req.method, res.statusCode, req.get('referer') || req.get('referrer') || '');
+  });
   next();
 });
 
@@ -1218,6 +1231,8 @@ app.get('/theme/:slug', (req, res) => {
     const ogImage = theme.previewSlug && theme.previewViews && theme.previewViews.includes('pattern')
       ? `${req.protocol}://${req.get('host')}/uploads/previews/${theme.previewSlug}/pattern.png?t=${Date.parse(theme.uploaded_at) || Date.now()}`
       : null;
+    // Track view (only for published themes, not drafts/authors previewing)
+    if (theme.status === 'published') trackView(theme.id);
     res.render('detail', { theme, comments, ogImage });
   } catch (err) {
     console.error('Detail page error:', err);
