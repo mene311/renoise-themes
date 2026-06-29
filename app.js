@@ -756,7 +756,7 @@ app.get('/tutorial', (req, res) => {
 // ── Theme Creator ──────────────────────────────────────
 
 // Element pixel coverage rankings (precomputed from pixel maps)
-// Total matched pixels: 4,868,286 across all 3 views
+// Total matched pixels: 4,868,286 across the pattern view
 const ELEMENT_COVERAGE = [
   { name: 'Main_Back',           pct: 46.38 },
   { name: 'Body_Back',           pct: 31.50 },
@@ -1030,8 +1030,8 @@ app.post('/api/save-theme', requireAuth, previewLimiter, csrfProtection, async (
     try {
       const previews = await generatePreviews(parsed.elementColorMap, previewDir);
       previewViews = Object.keys(previews);
-      if (previewViews.length < 3) {
-        previewError = `Partial render: ${previewViews.length}/3 views succeeded`;
+      if (previewViews.length < 1) {
+        previewError = 'Preview generation failed — no views rendered';
       }
     } catch (err) {
       previewError = err.message;
@@ -1171,9 +1171,8 @@ app.post('/upload', requireAuth, uploadLimiter,
         const previews = await generatePreviews(parsed.elementColorMap, previewDir);
         previewViews = Object.keys(previews);
         const totalViews = previewViews.length;
-        const expectedViews = 3;
-        if (totalViews < expectedViews) {
-          previewError = `Partial render: ${totalViews}/${expectedViews} views succeeded`;
+        if (totalViews < 1) {
+          previewError = 'Preview generation failed — no views rendered';
         }
         console.log(`🖼️  Generated ${totalViews} preview renders`);
       } catch (err) {

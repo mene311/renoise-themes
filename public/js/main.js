@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   (() => {
     const splash = document.getElementById("vibeSplash");
     const dismiss = document.getElementById("splashDismiss");
-    if (splash && dismiss && !localStorage.getItem("splashDismissed")) {
-      splash.hidden = false;
+    if (splash && dismiss) {
+      if (localStorage.getItem("splashDismissed")) { splash.hidden = true; }
       dismiss.addEventListener("click", () => {
         splash.classList.add("splash-fade-out");
         setTimeout(() => { splash.hidden = true; }, 300);

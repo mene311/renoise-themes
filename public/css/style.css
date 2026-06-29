@@ -370,24 +370,6 @@ main.container {
   transform: scale(1.1);
 }
 
-.preview-mixer {
-  background: var(--chrome-panel);
-  border: 1px solid var(--chrome-border);
-  padding: 16px;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.meter-bar {
-  height: 8px;
-  background: var(--chrome-bg);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
 .meter-bar::after {
   content: '';
   position: absolute;
