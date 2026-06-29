@@ -1058,6 +1058,7 @@ app.post('/api/save-theme', requireAuth, previewLimiter, csrfProtection, async (
     }));
 
     const themeId = saveTheme({
+      source: 'creator',
       name: displayName,
       filename,
       originalName: `${author}-theme.xrnc`,
@@ -1201,6 +1202,7 @@ app.post('/upload', requireAuth, uploadLimiter,
       const publishNow = req.body.publish === 'on';
       const themeId = saveTheme({
         name: displayName,
+        source: 'upload',
         filename: themeFile.filename,
         originalName: safeOriginal,
         author, description, screenshots,

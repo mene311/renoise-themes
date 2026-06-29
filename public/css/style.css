@@ -2900,3 +2900,23 @@ select:focus-visible {
   padding: 10px 32px;
   font-size: 14px;
 }
+
+.card-source {
+  font-size: 12px;
+  margin-right: 2px;
+  opacity: 0.7;
+}
+
+.detail-source-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--chrome-panel);
+  border: 1px solid var(--chrome-border);
+  margin-right: 6px;
+  opacity: 0.8;
+}
+.detail-source-badge.upload {
+  opacity: 0.55;
+}

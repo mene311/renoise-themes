@@ -26,7 +26,7 @@
 
     <div class="panel-section">
       <h1 class="detail-title"><%= theme.name %></h1>
-      <p class="detail-meta">by <a href="/backstage/<%= encodeURIComponent(theme.author) %>" class="detail-author"><strong><%= theme.author %></strong></a></p>
+      <p class="detail-meta"><% if (theme.source === 'creator') { %><span class="detail-source-badge" title="Created with the site's creator tool">🎨 Creator</span><% } else { %><span class="detail-source-badge upload" title="Uploaded .xrnc file">📤 Upload</span><% } %> by <a href="/backstage/<%= encodeURIComponent(theme.author) %>" class="detail-author"><strong><%= theme.author %></strong></a></p>
       <p class="detail-meta"><%= new Date(theme.uploaded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
 
       <% if (user && user.username === theme.author) { %>
