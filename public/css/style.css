@@ -534,7 +534,7 @@ main.container {
 
 /* ── FOOTER ────────────────────────────────── */
 .site-footer {
-  height: var(--footer-height);
+  min-height: var(--footer-height);
   background: var(--chrome-bg);
   border-top: 1px solid var(--chrome-border);
   display: flex;
@@ -545,6 +545,13 @@ main.container {
 }
 .site-footer a { color: var(--chrome-text-dim); }
 .site-footer a:hover { color: var(--chrome-text); }
+.footer-disclaimer {
+  display: block;
+  font-size: 11px;
+  color: var(--chrome-text-faint);
+  opacity: 0.6;
+  margin-top: 2px;
+}
 
 /* ── ANNOUNCEMENT BAR ──────────────────────── */
 .announcement-bar {
