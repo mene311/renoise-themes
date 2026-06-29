@@ -47,6 +47,13 @@ if (!process.env.SESSION_SECRET) {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const ASSET_VERSION = (() => {
+  try {
+    return Math.floor(fs.statSync(path.join(__dirname, "public/js/main.js")).mtimeMs).toString(36);
+  } catch {
+    return Date.now().toString(36);
+  }
+})();
 
 // ── Rate limiting ──────────────────────────────────────
 
@@ -275,6 +282,7 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.csrfToken = generateCsrfToken(req);
   res.locals._css = getInlineCss();
+  res.locals.assetVersion = ASSET_VERSION;
   res.locals.canonicalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
   res.setHeader('Cache-Control', 'no-cache');
   next();
