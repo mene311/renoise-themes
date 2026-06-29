@@ -276,7 +276,7 @@ app.use((req, res, next) => {
     const p = req.path;
     if (p.startsWith('/uploads/') || p.startsWith('/css/') || p.startsWith('/js/') ||
         p === '/health' || p === '/favicon.ico' || p.startsWith('/cdn-cgi/')) return;
-    logRequest(p, req.method, res.statusCode, req.get('referer') || req.get('referrer') || '');
+    logRequest(p, req.method, res.statusCode, req.get('referer') || req.get('referrer') || '', req.ip, req.get('user-agent') || '');
   });
   next();
 });
