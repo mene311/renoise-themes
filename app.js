@@ -260,6 +260,20 @@ function getInlineCss() {
 }
 
 app.use((req, res, next) => {
+
+  const splashQuotes = [
+    "Vibe-coded with AI. Cope.",
+    "Yes, AI wrote most of this. You're still here, though.",
+    "Hand-crafted by a human and three LLMs in a trenchcoat.",
+    "Vibe-coded. Works on my machine. No refunds.",
+    "Built with vibes, deployed with spite.",
+    "AI-assisted, human-disastered.",
+    "The code runs on vibes and one really good prompt.",
+    "Vibe-coded — because life's too short for boilerplate.",
+    "Made by someone who asked an AI 'how hard could it be?'",
+    "This site was vibe-coded. If that bothers you, the door's right there.",
+  ];
+  res.locals.splashQuote = splashQuotes[Math.floor(Math.random() * splashQuotes.length)];
   res.locals.splashDismissed = !!req.cookies.splashDismissed;
   res.locals.uiTheme = req.cookies.theme === 'light' ? 'light' : 'dark';
   res.locals.marquee = getMarquee();

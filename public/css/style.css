@@ -2888,10 +2888,12 @@ select:focus-visible {
   color: var(--chrome-text-dim);
   line-height: 1.5;
 }
-.splash-sub {
-  font-size: 13px !important;
-  color: var(--chrome-text-faint) !important;
-  opacity: 0.7;
+.splash-quote {
+  font-size: 16px !important;
+  color: var(--chrome-text) !important;
+  font-style: italic;
+  line-height: 1.6;
+  opacity: 0.9;
 }
 .splash-dismiss {
   margin-top: 18px;
