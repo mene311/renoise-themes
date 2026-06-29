@@ -1,6 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
 // Welcome banner — shown once per visitor  (() => {    const banner = document.getElementById("welcomeBanner");    const closeBtn = document.getElementById("closeWelcome");    if (banner && closeBtn && !localStorage.getItem("welcomeDismissed")) {      banner.hidden = false;      closeBtn.addEventListener("click", () => {        banner.hidden = true;        localStorage.setItem("welcomeDismissed", "1");      });    }  })();
 
+  // Splash: vibe-coded disclaimer — shown once per visit
+  (() => {
+    const splash = document.getElementById("vibeSplash");
+    const dismiss = document.getElementById("splashDismiss");
+    if (splash && dismiss && !localStorage.getItem("splashDismissed")) {
+      splash.hidden = false;
+      dismiss.addEventListener("click", () => {
+        splash.classList.add("splash-fade-out");
+        setTimeout(() => { splash.hidden = true; }, 300);
+        localStorage.setItem("splashDismissed", "1");
+      });
+    }
+  })();
+
   // ════════════════════════════════════════════
   // UTILITIES
   // ════════════════════════════════════════════
