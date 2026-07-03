@@ -91,7 +91,7 @@ const previewLimiter = rateLimit({
 
 const guestLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 3,
+  max: 20,
   skip: skipForMene,
   message: 'Preview limited for guests. Create a free account for higher limits.',
   standardHeaders: true,
@@ -412,22 +412,24 @@ app.post('/register', authLimiter, csrfProtection, async (req, res) => {
       return res.render('register', { error: result.error, success: null });
     }
 
-    // Regenerate session to prevent session fixation
-    // Generate verification token
-    const verifyToken = crypto.randomBytes(32).toString('hex');
-    createVerificationToken(result.userId, verifyToken);
-    const verifyUrl = req.protocol + '://' + req.get('host') + '/verify-email/' + verifyToken;
+    // Auto-verify and log in immediately — no email gate
+    db.prepare("UPDATE users SET email_verified = 1 WHERE id = ?").run(result.userId);
 
-    // Send verification email
-    sendVerificationEmail(email, username, verifyUrl).then(() => {
-      console.log('[EMAIL] Verification sent to', email);
+    // Send welcome email (fire-and-forget, non-blocking)
+    sendWelcome(email, username).then(() => {
+      console.log("[EMAIL] Welcome sent to", email);
     }).catch(err => {
-      console.error('[EMAIL] Verification email failed:', err);
+      console.error("[EMAIL] Welcome email failed:", err);
     });
 
-    res.render('register', {
-      success: 'Account created! We sent a verification link to <strong>' + email + '</strong>. Check your inbox (and spam folder).',
-      error: null
+    // Log user in immediately
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error("Session regenerate error:", err);
+        return res.redirect("/");
+      }
+      req.session.user = { id: result.userId, username, email };
+      req.session.save(() => res.redirect("/"));
     });
   } catch (err) {
     console.error('Registration error:', err);
@@ -453,16 +455,6 @@ app.post('/login', authLimiter, csrfProtection, async (req, res) => {
     const result = await authenticateUser(username, password);
     if (!result.success) {
       return res.render('login', { error: result.error, success: null });
-    }
-
-    // Check email verification
-    if (!result.user.email_verified) {
-      return res.render('login', { 
-        error: 'Please verify your email before logging in.',
-        verifyEmail: result.user.email,
-        verifyUsername: result.user.username,
-        success: null 
-      });
     }
 
     // Regenerate session to prevent session fixation
@@ -969,19 +961,43 @@ app.post('/api/render-preview', (req, res, next) => {
       }
     }
 
-    const slug = 'creator-' + Date.now();
-    const previewDir = path.join('public/uploads/previews', slug);
+    // Hash-based cache: identical color maps skip re-rendering
+    const hash = crypto.createHash('sha256')
+      .update(JSON.stringify(normalized, Object.keys(normalized).sort()))
+      .digest('hex');
+    const cacheDir = path.join('public/uploads/previews', '_cache', hash);
 
-    const previews = await generatePreviews(normalized, previewDir);
-    const views = Object.keys(previews);
+    let previews;
+    if (fs.existsSync(cacheDir)) {
+      // Cache hit — return existing renders
+      const files = fs.readdirSync(cacheDir).filter(f => f.endsWith('.png'));
+      previews = {};
+      for (const f of files) {
+        const view = f.replace('.png', '');
+        previews[view] = '/uploads/previews/_cache/' + hash + '/' + f;
+      }
+    } else {
+      // Cache miss — render fresh
+      const slug = 'creator-' + Date.now();
+      const previewDir = path.join('public/uploads/previews', slug);
+      previews = await generatePreviews(normalized, previewDir);
 
-    // Build URLs relative to public dir
-    const previewUrls = {};
-    for (const [view, filePath] of Object.entries(previews)) {
-      previewUrls[view] = '/uploads/previews/' + slug + '/' + path.basename(filePath);
+      // Copy to cache for future hits
+      fs.mkdirSync(cacheDir, { recursive: true });
+      for (const [view, filePath] of Object.entries(previews)) {
+        fs.copyFileSync(filePath, path.join(cacheDir, path.basename(filePath)));
+      }
+
+      // Rewrite URLs to cache path
+      const cached = {};
+      for (const [view, filePath] of Object.entries(previews)) {
+        cached[view] = '/uploads/previews/_cache/' + hash + '/' + path.basename(filePath);
+      }
+      previews = cached;
     }
 
-    res.json({ success: true, previewSlug: slug, views, previews: previewUrls });
+    const views = Object.keys(previews);
+    res.json({ success: true, previewSlug: hash, views, previews: previews });
   } catch (err) {
     console.error('Preview render error:', err);
     res.status(500).json({ success: false, error: process.env.NODE_ENV === 'production' ? 'Internal error' : err.message });
