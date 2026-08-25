@@ -1,12 +1,58 @@
 <%
-  let pageTitle = 'Renoise Theme Share';
-  if (searchQuery) pageTitle = 'Search: ' + searchQuery + ' — Renoise Theme Share';
-  else if (filterTag) pageTitle = filterTag.charAt(0).toUpperCase() + filterTag.slice(1) + ' themes — Renoise Theme Share';
+  const pageNumber = Math.max(1, parseInt(typeof page !== 'undefined' ? page : 1, 10) || 1);
+  const totalPageCount = Math.max(1, parseInt(typeof totalPages !== 'undefined' ? totalPages : 1, 10) || 1);
+  let pageTitle = 'Renoise Theme Share — browse and download .xrnc themes';
+  let pageDescription = 'Browse, preview, and download community Renoise color themes with generated palettes and tags.';
+
+  if (searchQuery) {
+    pageTitle = 'Search: ' + searchQuery + (pageNumber > 1 ? ' — page ' + pageNumber : '') + ' — Renoise Theme Share';
+    pageDescription = 'Search Renoise color themes for "' + searchQuery + '"' + (filterTag ? ' in ' + filterTag : '') + '.';
+  } else if (filterTag) {
+    pageTitle = filterTag.charAt(0).toUpperCase() + filterTag.slice(1) + ' Renoise themes' + (pageNumber > 1 ? ' — page ' + pageNumber : '') + ' — Renoise Theme Share';
+    pageDescription = 'Browse Renoise color themes tagged ' + filterTag + '.';
+  } else if (pageNumber > 1) {
+    pageTitle = 'Renoise Theme Share — page ' + pageNumber;
+  } else if (sort === 'popular') {
+    pageDescription = 'Browse the most popular Renoise color themes, previews, palettes, and downloads.';
+  }
+
+  const baseUrl = canonicalUrl.split('?')[0];
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Renoise Theme Share',
+    url: baseUrl,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: baseUrl + '?q={search_term_string}',
+      'query-input': 'required name=search_term_string'
+    }
+  };
 %>
-<%- include('partials/header', { pageTitle }) %>
+<%- include('partials/header', { pageTitle, pageDescription, jsonLd, paginationPrevUrl, paginationNextUrl }) %>
+
+<section class="page-intro" style="margin: 0 0 16px; max-width: 72ch;">
+  <h1 style="margin: 0 0 8px;">Renoise color themes, previews, and downloads</h1>
+  <p style="margin: 0 0 8px;">Browse community .xrnc themes, inspect generated previews, and download the originals. Search by tag, author, or color mood.</p>
+  <p style="margin: 0; display: flex; gap: 12px; flex-wrap: wrap;">
+    <a href="/tutorial">Theme tutorial</a>
+    <a href="/create">Open the creator</a>
+    <a href="/how-it-works">How previews work</a>
+  </p>
+</section>
 
 <!-- What's New Banner -->
 <div class="welcome-banner" id="welcomeBanner" hidden>  <span class="welcome-icon">◈</span>  <div class="welcome-text">    &ldquo;<%= splashQuote %>&rdquo;  </div>  <button class="welcome-close" id="closeWelcome" aria-label="Dismiss">×</button></div>
+
+<% if (totalPageCount > 1) { %>
+<nav class="pagination" aria-label="Browse pages" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px;">
+  <span class="pagination-current">Page <%= pageNumber %> of <%= totalPageCount %></span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <% if (paginationPrevUrl) { %><a href="<%= paginationPrevUrl %>" rel="prev">← Previous</a><% } %>
+    <% if (paginationNextUrl) { %><a href="<%= paginationNextUrl %>" rel="next">Next →</a><% } %>
+  </div>
+</nav>
+<% } %>
 
 <div class="tracker-layout" aria-label="Renoise theme browser">
 
@@ -46,7 +92,7 @@
       <% } %>
     </div>
 
-    <% if (themes.length > 0) { %>
+    <% if (pageNumber === 1 && themes.length > 0) { %>
       <div id="loadMoreSentinel" class="load-more-sentinel" aria-hidden="true">
         <span class="load-more-spinner">Loading more themes…</span>
       </div>
@@ -116,5 +162,15 @@
 
   </aside>
 </div>
+
+<% if (totalPageCount > 1) { %>
+<nav class="pagination" aria-label="Browse pages" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 0;">
+  <span class="pagination-current">Page <%= pageNumber %> of <%= totalPageCount %></span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <% if (paginationPrevUrl) { %><a href="<%= paginationPrevUrl %>" rel="prev">← Previous</a><% } %>
+    <% if (paginationNextUrl) { %><a href="<%= paginationNextUrl %>" rel="next">Next →</a><% } %>
+  </div>
+</nav>
+<% } %>
 
 <%- include('partials/footer') %>

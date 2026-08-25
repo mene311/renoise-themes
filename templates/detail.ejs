@@ -1,10 +1,25 @@
 <%
   const pageTitle = theme.name + ' by ' + theme.author + ' — Renoise Theme Share';
-  const pageDescription = (theme.description || 'A Renoise color theme').substring(0, 160);
+  const baseDescription = theme.description && theme.description.trim()
+    ? theme.description.trim()
+    : `Download ${theme.name} by ${theme.author}, a Renoise color theme with ${theme.unique_colors} unique colors.`;
+  const pageDescription = (baseDescription + (theme.tags.length ? ` Tags: ${theme.tags.slice(0, 4).join(', ')}.` : '')).substring(0, 160);
   const ogTitle = theme.name + ' by ' + theme.author;
   const ogDescription = pageDescription;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: theme.name,
+    description: pageDescription,
+    author: { '@type': 'Person', name: theme.author },
+    datePublished: theme.uploaded_at,
+    url: canonicalUrl,
+    keywords: theme.tags.join(', '),
+    inLanguage: 'en'
+  };
+  if (ogImage) jsonLd.image = ogImage;
 %>
-<%- include('partials/header', { pageTitle, pageDescription, ogTitle, ogDescription, ogImage }) %>
+<%- include('partials/header', { pageTitle, pageDescription, ogTitle, ogDescription, ogImage, jsonLd }) %>
 
 <%
   // Pick an accent color based on theme tags for dynamic UI tinting

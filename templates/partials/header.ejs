@@ -3,17 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Renoise Theme Share' %></title>
-  <meta name="description" content="<%= typeof pageDescription !== 'undefined' ? pageDescription : 'Upload, browse, and download Renoise color themes — auto-analyzed and tagged.' %>">
+  <% const metaTitle = typeof pageTitle !== 'undefined' ? pageTitle : 'Renoise Theme Share — browse and download .xrnc themes'; %>
+  <% const metaDescription = typeof pageDescription !== 'undefined' ? pageDescription : 'Browse, preview, and download Renoise color themes with generated palettes and tags.'; %>
+  <% const metaRobots = typeof pageRobots !== 'undefined' ? pageRobots : 'index,follow'; %>
+  <% const metaType = typeof ogType !== 'undefined' ? ogType : 'website'; %>
+  <% const metaImage = typeof ogImage !== 'undefined' && ogImage ? ogImage : null; %>
+  <title><%= metaTitle %></title>
+  <meta name="description" content="<%= metaDescription %>">
+  <meta name="robots" content="<%= metaRobots %>">
 
-  <meta property="og:title" content="<%= typeof ogTitle !== 'undefined' ? ogTitle : 'Renoise Theme Share' %>">
-  <meta property="og:description" content="<%= typeof ogDescription !== 'undefined' ? ogDescription : 'Community color themes for Renoise DAW — auto-analyzed with palettes and tags.' %>">
-  <meta property="og:type" content="<%= typeof ogType !== 'undefined' ? ogType : 'website' %>">
+  <meta property="og:site_name" content="Renoise Theme Share">
+  <meta property="og:title" content="<%= typeof ogTitle !== 'undefined' ? ogTitle : metaTitle %>">
+  <meta property="og:description" content="<%= typeof ogDescription !== 'undefined' ? ogDescription : metaDescription %>">
+  <meta property="og:type" content="<%= metaType %>">
   <meta property="og:url" content="<%= canonicalUrl %>">
   <link rel="canonical" href="<%= canonicalUrl %>">
-  <% if (typeof ogImage !== 'undefined' && ogImage) { %>
-  <meta property="og:image" content="<%= ogImage %>">
-  <meta name="twitter:card" content="summary_large_image">
+  <% if (typeof paginationPrevUrl !== 'undefined' && paginationPrevUrl) { %>
+  <link rel="prev" href="<%= paginationPrevUrl %>">
+  <% } %>
+  <% if (typeof paginationNextUrl !== 'undefined' && paginationNextUrl) { %>
+  <link rel="next" href="<%= paginationNextUrl %>">
+  <% } %>
+  <% if (metaImage) { %>
+  <meta property="og:image" content="<%= metaImage %>">
+  <% } %>
+  <meta name="twitter:card" content="<%= metaImage ? 'summary_large_image' : 'summary' %>">
+  <meta name="twitter:title" content="<%= typeof twitterTitle !== 'undefined' ? twitterTitle : (typeof ogTitle !== 'undefined' ? ogTitle : metaTitle) %>">
+  <meta name="twitter:description" content="<%= typeof twitterDescription !== 'undefined' ? twitterDescription : (typeof ogDescription !== 'undefined' ? ogDescription : metaDescription) %>">
+  <% if (metaImage) { %>
+  <meta name="twitter:image" content="<%= metaImage %>">
+  <% } %>
+  <% if (typeof jsonLd !== 'undefined' && jsonLd) { %>
+  <script type="application/ld+json"><%- JSON.stringify(jsonLd).replace(/</g, '\\u003c') %></script>
   <% } %>
 
   <style><%- _css %></style>

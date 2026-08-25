@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /resend-verification
+Disallow: /dashboard
+Disallow: /backstage
+Disallow: /admin
+Disallow: /account-delete
+Disallow: /upload
+Disallow: /create
+Disallow: /studio
+Disallow: /theme/*/edit
+Disallow: /theme/*/edit-colors
+Disallow: /theme/*/publish
+Disallow: /theme/*/unpublish
+Disallow: /theme/*/delete
+Disallow: /theme/*/remix
+
+Sitemap: https://renoisethemes.com/sitemap.xml
